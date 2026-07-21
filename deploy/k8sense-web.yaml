@@ -1,0 +1,147 @@
+# K8sense — in-cluster (web app) deployment.
+#
+# This runs K8sense as a hosted web application that a team browses to, rather
+# than as a desktop app. The same binary serves both modes.
+#
+# Prerequisites:
+#   kubectl apply -f deploy/k8sense-clusterrole.yaml   # scanner RBAC
+#   kubectl apply -f deploy/k8sense-web.yaml
+#
+# IMPORTANT — read before running in production:
+#   * replicas is 1 and must stay 1 while the SQLite backend is in use. SQLite
+#     is a single-writer store; two replicas sharing one volume will corrupt it.
+#     Multi-replica HA needs the Postgres backend.
+#   * The PVC below is what keeps scan history and the audit log across pod
+#     restarts. Without it both are destroyed on every restart, which would
+#     make the audit trail useless as a compliance record.
+#   * In this mode K8sense talks to the cluster with the ServiceAccount below,
+#     so every user of the web UI shares that identity's permissions. Scope the
+#     ClusterRole to what you are willing to grant everyone, and put an
+#     authenticating proxy (or OIDC) in front of the Service.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: k8sense
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8sense
+  namespace: k8sense
+---
+# Binds the read-only scanner role from k8sense-clusterrole.yaml.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: k8sense-scanner
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8sense-scanner
+subjects:
+  - kind: ServiceAccount
+    name: k8sense
+    namespace: k8sense
+---
+# Persistent store for scan history + audit log. 2Gi comfortably holds months
+# of scans; the retention pruner keeps it bounded.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: k8sense-data
+  namespace: k8sense
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8sense
+  namespace: k8sense
+  labels:
+    app.kubernetes.io/name: k8sense
+spec:
+  # Must remain 1 with the SQLite backend — see the note at the top of this file.
+  replicas: 1
+  strategy:
+    # Recreate, not RollingUpdate: two pods must never hold the same SQLite
+    # volume open at once.
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: k8sense
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: k8sense
+    spec:
+      serviceAccountName: k8sense
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 101
+      containers:
+        - name: k8sense
+          image: k8sense:dev
+          imagePullPolicy: IfNotPresent
+          args:
+            - "-in-cluster"
+            - "-html-static-dir"
+            - "/headlamp/frontend"
+            - "-plugins-dir"
+            - "/headlamp/plugins"
+          env:
+            # Keep the database on the mounted volume, not the pod filesystem.
+            - name: K8SENSE_DB_PATH
+              value: /data/k8sense.db
+            - name: K8SENSE_RULES_DIR
+              value: /headlamp/rules
+          ports:
+            - name: http
+              containerPort: 4466
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: k8sense-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8sense
+  namespace: k8sense
+spec:
+  selector:
+    app.kubernetes.io/name: k8sense
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

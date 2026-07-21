@@ -56,6 +56,14 @@ func Open(path string) (*sql.DB, error) {
 //   - Linux:   ~/.local/share/k8sense/k8sense.db
 //   - Windows: %APPDATA%\k8sense\k8sense.db
 func DefaultPath() (string, error) {
+	// K8SENSE_DB_PATH lets a containerised (web-mode) deployment point the
+	// database at a mounted volume. Without it the database would land on the
+	// pod's ephemeral filesystem and every scan history and audit-log entry
+	// would be destroyed on restart — unacceptable for a compliance record.
+	if override := os.Getenv("K8SENSE_DB_PATH"); override != "" {
+		return override, nil
+	}
+
 	base, err := appDataDir()
 	if err != nil {
 		return "", err
