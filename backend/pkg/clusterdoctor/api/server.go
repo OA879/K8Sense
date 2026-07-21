@@ -94,7 +94,28 @@ func (s *Server) lookupActive(scanID string) (*liveScan, bool) {
 // runScan executes the scan in the background: it relays progress events to
 // live as they happen and persists the final result once Run returns.
 func (s *Server) runScan(clientset kubernetes.Interface, cluster, scanID string, live *liveScan) {
-	scanner := clusterdoctor.NewScanner(s.rules)
+	// Honor this cluster's per-rule overrides by scanning only the rules that
+	// aren't disabled. If the lookup fails we log and fall back to the full set
+	// rather than aborting the scan — a missing override read shouldn't cost the
+	// user their diagnostics.
+	rules := s.rules
+
+	disabled, err := cddb.GetDisabledRuleIDs(context.Background(), s.db, cluster)
+	if err != nil {
+		logger.Log(logger.LevelError, map[string]string{"scanId": scanID, "cluster": cluster}, err,
+			"cluster-doctor: loading disabled rules, scanning full rule set")
+	} else if len(disabled) > 0 {
+		filtered := make([]clusterdoctor.Rule, 0, len(s.rules))
+		for _, rule := range s.rules {
+			if !disabled[rule.ID] {
+				filtered = append(filtered, rule)
+			}
+		}
+
+		rules = filtered
+	}
+
+	scanner := clusterdoctor.NewScanner(rules)
 	progress := make(chan clusterdoctor.ScanProgressEvent, 64) //nolint:mnd
 
 	relayDone := make(chan struct{})

@@ -1,0 +1,71 @@
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+
+	"github.com/gorilla/mux"
+
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+)
+
+// ListRulesForCluster handles GET /cluster-doctor/rules?cluster=name. It is the
+// cluster-aware replacement for ListRules: when a cluster is given, each rule's
+// Enabled flag reflects that cluster's overrides (a rule in the disabled set
+// comes back Enabled=false); without a cluster it mirrors ListRules and returns
+// the rule library as loaded.
+func (s *Server) ListRulesForCluster(w http.ResponseWriter, r *http.Request) {
+	cluster := r.URL.Query().Get("cluster")
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if cluster == "" {
+		_ = json.NewEncoder(w).Encode(s.rules)
+		return
+	}
+
+	disabled, err := cddb.GetDisabledRuleIDs(r.Context(), s.db, cluster)
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Copy so the per-request Enabled overrides never mutate the shared rule set.
+	rules := make([]clusterdoctor.Rule, len(s.rules))
+	copy(rules, s.rules)
+
+	for i := range rules {
+		rules[i].Enabled = !disabled[rules[i].ID]
+	}
+
+	_ = json.NewEncoder(w).Encode(rules)
+}
+
+// ToggleRule handles PUT /cluster-doctor/rules/{id}/toggle?cluster=name&enabled=bool.
+// It records the enable/disable decision for one rule on one cluster. The
+// cluster query param is required; enabled defaults to false when absent or
+// unparseable, matching the "off unless explicitly on" intent of a toggle.
+func (s *Server) ToggleRule(w http.ResponseWriter, r *http.Request) {
+	ruleID := mux.Vars(r)["id"]
+
+	cluster := r.URL.Query().Get("cluster")
+	if cluster == "" {
+		http.Error(w, `{"error": "cluster query param is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	enabled := r.URL.Query().Get("enabled") == "true"
+
+	if err := cddb.SetRuleOverride(r.Context(), s.db, cluster, ruleID, enabled); err != nil {
+		logger.Log(logger.LevelError, map[string]string{"cluster": cluster, "ruleId": ruleID}, err,
+			"cluster-doctor: setting rule override")
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"result": "ok"})
+}
