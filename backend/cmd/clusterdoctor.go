@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -66,6 +68,14 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 		return
 	}
 
+	// Load previously-imported custom rules and merge them into the built-in
+	// set so they're active from startup.
+	if customRules, err := loadCustomRules(database); err != nil {
+		logger.Log(logger.LevelError, nil, err, "cluster-doctor: loading custom rules")
+	} else {
+		rules = append(rules, customRules...)
+	}
+
 	getClient := func(req *http.Request, clusterName string) (kubernetes.Interface, error) {
 		ctxtProxy, err := config.KubeConfigStore.GetContext(clusterName)
 		if err != nil {
@@ -77,7 +87,17 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 		return ctxtProxy.ClientSetWithToken(token)
 	}
 
-	cdServer := cdapi.NewServer(database, rules, getClient)
+	licencePath := filepath.Join(filepath.Dir(dbPath), "licence.k8sense-licence")
+	cdServer := cdapi.NewServer(database, rules, getClient, licencePath)
+
+	// Enforce Free-tier retention on startup (keep the newest 10 scans per
+	// cluster). Pro/time-based retention is applied via the Settings purge UI.
+	if pruned, err := cddb.PruneScans(context.Background(), database, freeRetentionScans); err != nil {
+		logger.Log(logger.LevelError, nil, err, "cluster-doctor: pruning old scans")
+	} else if pruned > 0 {
+		logger.Log(logger.LevelInfo, map[string]string{"pruned": strconv.Itoa(pruned)}, nil,
+			"cluster-doctor: pruned old scans on startup")
+	}
 
 	r.HandleFunc("/cluster-doctor/scan", cdServer.StartScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/{id}/status", cdServer.ScanStatus).Methods("GET")
@@ -86,13 +106,52 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	r.HandleFunc("/cluster-doctor/findings/{scanId}/diff/{prevId}", cdServer.ScanDiff).Methods("GET")
 	r.HandleFunc("/cluster-doctor/history", cdServer.ListHistory).Methods("GET")
 	r.HandleFunc("/cluster-doctor/rules", cdServer.ListRulesForCluster).Methods("GET")
+	r.HandleFunc("/cluster-doctor/rules/validate", cdServer.ValidateRule).Methods("POST")
+	r.HandleFunc("/cluster-doctor/rules/import", cdServer.ImportRule).Methods("POST")
+	r.HandleFunc("/cluster-doctor/rules/custom", cdServer.ListCustomRules).Methods("GET")
+	r.HandleFunc("/cluster-doctor/rules/custom/{id}", cdServer.DeleteCustomRule).Methods("DELETE")
 	r.HandleFunc("/cluster-doctor/rules/{id}/toggle", cdServer.ToggleRule).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/guided-fix", cdServer.GuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/suppress", cdServer.SuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/unsuppress", cdServer.UnsuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/comment", cdServer.CommentFinding).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/audit-log", cdServer.ListAuditLog).Methods("GET")
+	r.HandleFunc("/cluster-doctor/audit-log/export", cdServer.ExportAuditLog).Methods("GET")
+	r.HandleFunc("/cluster-doctor/clusters/test", cdServer.TestConnection).Methods("GET")
+	r.HandleFunc("/cluster-doctor/storage", cdServer.GetStorageStats).Methods("GET")
+	r.HandleFunc("/cluster-doctor/storage/purge", cdServer.PurgeScans).Methods("POST")
+	r.HandleFunc("/cluster-doctor/licence", cdServer.GetLicence).Methods("GET")
+	r.HandleFunc("/cluster-doctor/licence/activate", cdServer.ActivateLicence).Methods("POST")
+	r.HandleFunc("/cluster-doctor/licence/trial", cdServer.StartTrial).Methods("POST")
 
 	logger.Log(logger.LevelInfo, map[string]string{"rulesLoaded": strconv.Itoa(len(rules)), "dbPath": dbPath}, nil,
 		"cluster-doctor: diagnostics engine ready")
+}
+
+// freeRetentionScans is how many scans per cluster the Free tier keeps.
+const freeRetentionScans = 10
+
+// loadCustomRules reads persisted custom rules from the DB and parses each
+// back into rule structs to merge into the active set.
+func loadCustomRules(database *sql.DB) ([]clusterdoctor.Rule, error) {
+	stored, err := cddb.ListCustomRules(context.Background(), database)
+	if err != nil {
+		return nil, err
+	}
+
+	var rules []clusterdoctor.Rule
+
+	for _, cr := range stored {
+		parsed, err := clusterdoctor.ParseRules([]byte(cr.YAML))
+		if err != nil {
+			logger.Log(logger.LevelError, map[string]string{"ruleId": cr.ID}, err,
+				"cluster-doctor: skipping invalid custom rule")
+
+			continue
+		}
+
+		rules = append(rules, parsed...)
+	}
+
+	return rules, nil
 }

@@ -67,15 +67,45 @@ func LoadRules(dir string) ([]Rule, error) {
 			return nil, fmt.Errorf("reading rule file %q: %w", path, err)
 		}
 
-		var file ruleFile
-		if err := yaml.Unmarshal(data, &file); err != nil {
+		parsed, err := ParseRules(data)
+		if err != nil {
 			return nil, fmt.Errorf("parsing rule file %q: %w", path, err)
 		}
 
-		for _, r := range file {
-			r.Enabled = true
-			rules = append(rules, r)
+		rules = append(rules, parsed...)
+	}
+
+	return rules, nil
+}
+
+// ParseRules unmarshals a rules YAML document (a list of rules) from raw
+// bytes, defaulting each to enabled. Used both by LoadRules and by custom
+// rule import. It validates that each rule has an id, name, severity, and
+// category so a malformed custom rule is rejected at import time.
+func ParseRules(data []byte) ([]Rule, error) {
+	var file ruleFile
+	if err := yaml.Unmarshal(data, &file); err != nil {
+		return nil, fmt.Errorf("invalid rule YAML: %w", err)
+	}
+
+	if len(file) == 0 {
+		return nil, fmt.Errorf("no rules found in document")
+	}
+
+	rules := make([]Rule, 0, len(file))
+
+	for i := range file {
+		r := file[i]
+		if r.ID == "" || r.Name == "" || r.Severity == "" || r.Category == "" {
+			return nil, fmt.Errorf("rule %d is missing required fields (id, name, severity, category)", i+1)
 		}
+
+		if r.Severity != SeverityCritical && r.Severity != SeverityWarning && r.Severity != SeverityInfo {
+			return nil, fmt.Errorf("rule %s has invalid severity %q", r.ID, r.Severity)
+		}
+
+		r.Enabled = true
+		rules = append(rules, r)
 	}
 
 	return rules, nil

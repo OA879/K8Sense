@@ -18,6 +18,7 @@ import (
 
 	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
 	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/licence"
 	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
 )
 
@@ -39,23 +40,78 @@ type Server struct {
 
 	mu     sync.Mutex
 	active map[string]*liveScan
+
+	licenceMu   sync.RWMutex
+	licenceInfo licence.Info
+	licencePath string
 }
 
 // NewServer builds a Server. rules is the fully loaded rule set (built-in +
-// custom, in a later phase); getClient resolves clusters by name.
-func NewServer(database *sql.DB, rules []clusterdoctor.Rule, getClient ClientProvider) *Server {
+// custom); getClient resolves clusters by name; licencePath points at the
+// (possibly absent) licence file, validated immediately so tier gating is
+// live from the first request.
+func NewServer(
+	database *sql.DB,
+	rules []clusterdoctor.Rule,
+	getClient ClientProvider,
+	licencePath string,
+) *Server {
 	byID := make(map[string]clusterdoctor.Rule, len(rules))
 	for _, rule := range rules {
 		byID[rule.ID] = rule
 	}
 
 	return &Server{
-		db:        database,
-		rules:     rules,
-		rulesByID: byID,
-		getClient: getClient,
-		active:    map[string]*liveScan{},
+		db:          database,
+		rules:       rules,
+		rulesByID:   byID,
+		getClient:   getClient,
+		active:      map[string]*liveScan{},
+		licencePath: licencePath,
+		licenceInfo: licence.Validate(licencePath),
 	}
+}
+
+// AddRules appends newly-imported custom rules to the in-memory rule set so
+// they take effect on the next scan without a restart.
+func (s *Server) AddRules(rules []clusterdoctor.Rule) {
+	s.rules = append(s.rules, rules...)
+	for _, rule := range rules {
+		s.rulesByID[rule.ID] = rule
+	}
+}
+
+// currentLicence returns the current resolved licence info (thread-safe).
+func (s *Server) currentLicence() licence.Info {
+	s.licenceMu.RLock()
+	defer s.licenceMu.RUnlock()
+
+	return s.licenceInfo
+}
+
+// reloadLicence re-validates the licence file (after activation / trial start).
+func (s *Server) reloadLicence() licence.Info {
+	info := licence.Validate(s.licencePath)
+
+	s.licenceMu.Lock()
+	s.licenceInfo = info
+	s.licenceMu.Unlock()
+
+	return info
+}
+
+// requirePaid writes a 402 and returns false if the current licence is Free
+// tier. Pro-only endpoints call this first. A licence in its grace window
+// still counts as paid.
+func (s *Server) requirePaid(w http.ResponseWriter) bool {
+	if s.currentLicence().Tier == licence.TierFree {
+		http.Error(w, `{"error":"This feature requires a Pro licence","code":"upgrade_required"}`,
+			http.StatusPaymentRequired)
+
+		return false
+	}
+
+	return true
 }
 
 // enrichGuidedFix re-populates each finding's guided-fix fields from the

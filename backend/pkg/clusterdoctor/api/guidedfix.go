@@ -50,6 +50,10 @@ var allowedGuidedFixActions = map[string]bool{
 // pre-approved remediation action and writes an audit entry regardless of
 // outcome.
 func (s *Server) GuidedFix(w http.ResponseWriter, r *http.Request) {
+	if !s.requirePaid(w) {
+		return
+	}
+
 	var req guidedFixRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error": "invalid request body"}`, http.StatusBadRequest)

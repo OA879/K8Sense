@@ -1,8 +1,10 @@
 package api
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -76,6 +78,10 @@ func (s *Server) GetFindings(w http.ResponseWriter, r *http.Request) {
 // (the default) renders a self-contained, air-gap-safe HTML report as a file
 // download.
 func (s *Server) ExportReport(w http.ResponseWriter, r *http.Request) {
+	if !s.requirePaid(w) {
+		return
+	}
+
 	scanID := mux.Vars(r)["scanId"]
 	format := r.URL.Query().Get("format")
 
@@ -158,4 +164,35 @@ func (s *Server) ListAuditLog(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(entries)
+}
+
+// ExportAuditLog handles GET /cluster-doctor/audit-log/export?cluster=name —
+// CSV download of the audit trail (Enterprise tier).
+func (s *Server) ExportAuditLog(w http.ResponseWriter, r *http.Request) {
+	cluster := r.URL.Query().Get("cluster")
+	if cluster == "" {
+		http.Error(w, `{"error": "cluster query param is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	entries, err := cddb.ListAudit(r.Context(), s.db, cluster, 10000) //nolint:mnd // full export
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="k8sense-audit-`+cluster+`.csv"`)
+
+	cw := csv.NewWriter(w)
+	_ = cw.Write([]string{"time", "actor", "action", "namespace", "resourceKind", "resourceName", "result", "error"})
+
+	for _, e := range entries {
+		_ = cw.Write([]string{
+			time.Unix(e.PerformedAt, 0).UTC().Format(time.RFC3339),
+			e.Actor, e.Action, e.Namespace, e.ResourceKind, e.ResourceName, e.Result, e.Error,
+		})
+	}
+
+	cw.Flush()
 }
