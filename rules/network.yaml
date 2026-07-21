@@ -1,0 +1,84 @@
+# NET-* rules — see backend/pkg/clusterdoctor/checks/network.go.
+- id: NET-001
+  name: CoreDNS Not Running
+  severity: CRITICAL
+  category: network
+  check_fn: check_coredns_not_running
+  description: >
+    No CoreDNS pods are Running and Ready in kube-system. Cluster DNS is down,
+    which breaks service discovery for every workload.
+  remediation: |
+    1. Check CoreDNS pods:
+       kubectl get pods -n kube-system -l k8s-app=kube-dns
+    2. Inspect logs and events:
+       kubectl describe deployment coredns -n kube-system
+       kubectl logs -n kube-system -l k8s-app=kube-dns
+    3. Common causes: node pressure, a bad ConfigMap, or the CoreDNS
+       deployment scaled to 0.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/"
+
+- id: NET-002
+  name: kube-proxy Not Running
+  severity: CRITICAL
+  category: network
+  check_fn: check_kube_proxy_not_running
+  description: >
+    No kube-proxy pods are Running and Ready in kube-system. Without it,
+    Service ClusterIPs won't route to pods.
+  remediation: |
+    1. Check kube-proxy:
+       kubectl get pods -n kube-system -l k8s-app=kube-proxy -o wide
+    2. Inspect the daemonset and logs:
+       kubectl describe daemonset kube-proxy -n kube-system
+       kubectl logs -n kube-system -l k8s-app=kube-proxy
+    Note: clusters using an eBPF dataplane (e.g. Cilium kube-proxy
+    replacement) legitimately run no kube-proxy — suppress this rule there.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/"
+
+- id: NET-004
+  name: Service Has No Endpoints
+  severity: WARNING
+  category: network
+  check_fn: check_service_no_endpoints
+  description: >
+    A Service with a selector has no ready endpoints — its selector matches no
+    running pods, or all backing pods are unready. Traffic to this Service
+    will fail.
+  remediation: |
+    1. Compare the Service selector with pod labels:
+       kubectl describe service <name> -n <namespace>
+       kubectl get pods -n <namespace> --show-labels
+    2. If pods exist but aren't ready, check their readiness probes (POD-012).
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/"
+
+- id: NET-005
+  name: Ingress Has No Address
+  severity: WARNING
+  category: network
+  check_fn: check_ingress_no_address
+  description: >
+    An Ingress has no load-balancer address assigned. Either no ingress
+    controller is watching it, or the controller hasn't provisioned an
+    address yet.
+  remediation: |
+    1. Confirm an ingress controller is running and owns this Ingress class:
+       kubectl get ingressclass
+       kubectl describe ingress <name> -n <namespace>
+    2. Check the ingress controller's logs for errors provisioning the LB.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/ingress/"

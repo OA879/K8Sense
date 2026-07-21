@@ -1,0 +1,78 @@
+# RES-* rules — see backend/pkg/clusterdoctor/checks/resources.go.
+- id: RES-001
+  name: ResourceQuota Nearly Exhausted
+  severity: WARNING
+  category: resources
+  check_fn: check_resourcequota_warn
+  description: >
+    A namespace ResourceQuota is between 85% and 95% consumed on at least one
+    tracked resource. New workloads in this namespace may soon be rejected.
+  remediation: |
+    1. See current usage vs. hard limits:
+       kubectl describe resourcequota -n <namespace>
+    2. Either raise the quota, or reduce requests from existing workloads.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+- id: RES-002
+  name: ResourceQuota Critically Exhausted
+  severity: CRITICAL
+  category: resources
+  check_fn: check_resourcequota_critical
+  description: >
+    A namespace ResourceQuota is at or above 95% consumed on at least one
+    tracked resource. New pods/PVCs in this namespace are likely being
+    rejected right now.
+  remediation: |
+    1. Identify the exhausted resource:
+       kubectl describe resourcequota -n <namespace>
+    2. Raise the quota or free capacity immediately — workloads are being
+       blocked from scheduling.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+- id: RES-004
+  name: HPA Unable To Compute Metrics
+  severity: WARNING
+  category: resources
+  check_fn: check_hpa_cannot_compute
+  description: >
+    A HorizontalPodAutoscaler reports ScalingActive=False — it can't read the
+    metrics it needs to make scaling decisions. Usually metrics-server is
+    missing/unhealthy, or the target's resource requests aren't set.
+  remediation: |
+    1. Check the HPA's condition detail:
+       kubectl describe hpa <name> -n <namespace>
+    2. Ensure metrics-server is installed and healthy:
+       kubectl get deployment metrics-server -n kube-system
+    3. Ensure the scale target's containers set resource requests (POD-009).
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+
+- id: RES-005
+  name: HPA At Maximum Replicas
+  severity: INFO
+  category: resources
+  check_fn: check_hpa_at_max
+  description: >
+    A HorizontalPodAutoscaler is pinned at its maxReplicas. If demand is still
+    rising, the workload can't scale further and may be under-provisioned.
+  remediation: |
+    1. Review whether maxReplicas is still appropriate:
+       kubectl describe hpa <name> -n <namespace>
+    2. If the workload is consistently at max under normal load, raise
+       maxReplicas (and check the cluster has capacity for it).
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"

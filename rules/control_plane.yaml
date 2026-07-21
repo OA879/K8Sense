@@ -1,0 +1,48 @@
+# CP-* rules — see backend/pkg/clusterdoctor/checks/control_plane.go.
+# These target self-hosted / kubeadm / kind control planes where the
+# components run as static pods in kube-system. On managed control planes
+# (EKS/GKE/AKS) the components aren't visible as pods, so these checks simply
+# find nothing — which is the correct result there.
+- id: CP-002
+  name: Control Plane Component Not Ready
+  severity: CRITICAL
+  category: control_plane
+  check_fn: check_control_plane_pod_not_ready
+  description: >
+    A control-plane component pod (etcd, kube-apiserver, kube-scheduler, or
+    kube-controller-manager) is not in a Ready state. This can degrade or
+    halt cluster operations.
+  remediation: |
+    1. Identify the unhealthy component:
+       kubectl get pods -n kube-system -l tier=control-plane -o wide
+    2. Inspect it:
+       kubectl describe pod <pod-name> -n kube-system
+       kubectl logs <pod-name> -n kube-system
+    3. For etcd specifically, check disk health and member list — do NOT
+       delete or restart etcd pods without a backup and a maintenance window.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/debug/debug-cluster/"
+
+- id: CP-005
+  name: Control Plane Pod Restarted Recently
+  severity: WARNING
+  category: control_plane
+  check_fn: check_control_plane_pod_restarted
+  description: >
+    A control-plane component pod restarted within the last hour. An
+    occasional restart may be benign (e.g. a node reboot), but repeated
+    restarts point to resource pressure, disk latency, or a crash loop.
+  remediation: |
+    1. Check restart history and the last termination reason:
+       kubectl describe pod <pod-name> -n kube-system
+    2. Correlate with node conditions (NODE-003/004) and etcd disk latency.
+    3. If restarts continue, gather logs before the restart:
+       kubectl logs <pod-name> -n kube-system --previous
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/debug/debug-cluster/"

@@ -51,7 +51,11 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 1d. Cluster Doctor API (HTTP+SSE) | ✅ Done | scan / status / findings / history / rules |
 | 1e. Cluster Doctor UI (React) | ✅ Done | ScanPage, FindingsPage, sidebar entry — MUI |
 | 1f. RBAC manifest | ✅ Done | `deploy/k8sense-clusterrole.yaml`, dry-run validated |
-| 2. Full rule library + Pro features | ⬜ Not started | CP/STOR/NET/RES/CERT/WL rules, export, Guided Fix, history UI |
+| 2a. Full rule library (46 rules) | ✅ Done | Added CP/STOR/NET/RES/CERT/WL — all 8 categories |
+| 2b. Scan History UI | ✅ Done | `HistoryPage`, wired to `/history` |
+| 2c. Report export (HTML/PDF) | ⬜ Not started | |
+| 2d. Guided Fix | ⬜ Not started | |
+| 2e. Rule management UI | ⬜ Not started | |
 | 3. Dashboard polish | ⬜ Not started | |
 | 4. Enterprise | ⬜ Not started | |
 | 5. Distribution | ⬜ Not started | |
@@ -86,7 +90,19 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 - `checks/pods.go` — 12 POD-* checks (CrashLoop, OOMKilled, Pending, Evicted,
   ImagePullBackOff, init stuck, missing limits/requests, stuck Terminating,
   root, no readiness probe, frequent restarts).
-- Rule metadata in `rules/nodes.yaml` + `rules/pods.yaml` (21 wired rules).
+- `checks/control_plane.go` — CP-002 (component not ready), CP-005 (restarted).
+- `checks/storage.go` — STOR-001/002/003/005 (PVC pending, PV released/failed,
+  StorageClass no provisioner, implicit default StorageClass).
+- `checks/network.go` — NET-001/002/004/005 (CoreDNS down, kube-proxy down,
+  Service no endpoints, Ingress no address).
+- `checks/resources.go` — RES-001/002/004/005 (quota 85%/95%, HPA can't
+  compute, HPA at max).
+- `checks/certificates.go` — CERT-001/002 (TLS cert expiring/expired) via real
+  x509 PEM parsing of `tls.crt` only (never `tls.key`).
+- `checks/workloads.go` — WL-001/003/004/005/006/009 (deployment 0-available /
+  below-desired, daemonset under-scheduled, statefulset not ready, job failed,
+  single-replica no-HA).
+- **46 rules total across 8 categories**, metadata in `rules/*.yaml`.
 
 ### Persistence — `backend/pkg/clusterdoctor/db/`
 - `db.go` — pure-Go `modernc.org/sqlite` (keeps single-binary distribution),
@@ -125,10 +141,13 @@ Read-only `k8sense-scanner` ClusterRole (all tiers) + `k8sense-guided-fix`
 ## Verified end-to-end
 
 Driven through a real headless browser against the kind cluster:
-scan → SSE progress (per-category chips) → **53 findings** persisted and
-rendered, severity-sorted, filterable. Correctly flags both the seeded `demo`
-namespace issues *and* genuine `kube-system` findings (control-plane pods with
-no resource limits, etc.).
+scan → SSE progress (per-category chips) → findings persisted and rendered,
+severity-sorted, filterable → scan history. All 8 categories fire correctly
+against seeded data (CERT-002 on the expired TLS secret, STOR-001 on the
+pending PVC, NET-004 on the orphan Service, WL-001 on zero-available
+deployments) plus genuine `kube-system` findings. Latest full scan: **67
+findings** (7 CRITICAL / 30 WARNING / 30 INFO). SQLite history survives colima
+VM restarts (scans from before a VM reboot still listed).
 
 ---
 
@@ -157,13 +176,32 @@ These are choices made during the build that deviate from or refine
    doc's "zero mention of Headlamp in the product UI" bar is met. Deep rename
    deferred to the year-2 incremental-rewrite plan.
 
+4. **CERT-* reads `tls.crt`, not "annotations only" (Stage 2).**
+   `K8SENSE_CONTEXT.md` says K8sense checks TLS expiry "via annotations,
+   never reads `.data`". In practice vanilla `kubernetes.io/tls` Secrets carry
+   no expiry annotation — you must parse the certificate. `checks/certificates.go`
+   reads only `tls.crt` (the **public** certificate, not a secret) and never
+   `tls.key`. K8s RBAC can't grant get-metadata-but-not-data on Secrets anyway,
+   so the shipped ClusterRole already allows this. Low risk; documented for
+   transparency.
+
+5. **CP-* checks target self-hosted control planes (Stage 2).**
+   CP checks inspect static control-plane pods in `kube-system` by the
+   `component` label / name prefix. Managed control planes (EKS/GKE/AKS) don't
+   expose these as pods, so the checks correctly find nothing there rather than
+   false-alarming. Deeper managed-control-plane health (via `/healthz`) is a
+   later addition.
+
 ---
 
-## Next up (Stage 2 candidates, in suggested order)
+## Next up (remaining Stage 2, in suggested order)
 
-1. Remaining rule categories: CP-*, STOR-*, NET-*, RES-*, CERT-*, WL-*
-   (+ certificate PEM parsing for CERT-*).
-2. Scan **history UI** (`HistoryPage`) — backend `/history` already exists.
-3. **Report export** — HTML first (self-contained), then PDF.
-4. **Guided Fix** — modal + `POST /cluster-doctor/guided-fix` + audit log.
-5. Rule management UI (toggle, custom YAML import).
+1. **Report export** — HTML first (self-contained, embedded fonts), then PDF
+   via bundled Chromium. Backend `/findings/:scanId/export?format=` stub.
+2. **Guided Fix** — `GuidedFixModal` + `POST /cluster-doctor/guided-fix` +
+   audit-log write. Safe actions only (delete evicted pod, uncordon, scale,
+   rollout restart). Rules already carry `guidedFix.action`.
+3. **Rule management UI** — list/toggle rules, import custom YAML (`/rules`
+   list endpoint already exists; needs toggle + import endpoints).
+4. **Finding suppression + comments** — mute a finding with a reason.
+5. **Scan diff** — compare two scans (new / resolved / persisted).

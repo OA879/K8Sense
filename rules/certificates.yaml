@@ -1,0 +1,45 @@
+# CERT-* rules — see backend/pkg/clusterdoctor/checks/certificates.go.
+# These parse only the public certificate (tls.crt) of kubernetes.io/tls
+# Secrets — never the private key (tls.key).
+- id: CERT-001
+  name: TLS Secret Expiring Within 30 Days
+  severity: WARNING
+  category: certificates
+  check_fn: check_tls_secret_expiring
+  description: >
+    A kubernetes.io/tls Secret's certificate expires within 30 days. Renew it
+    before expiry to avoid an outage (TLS handshake failures, rejected
+    ingress traffic).
+  remediation: |
+    1. Confirm the expiry:
+       kubectl get secret <name> -n <namespace> -o jsonpath='{.data.tls\.crt}' \
+         | base64 -d | openssl x509 -noout -enddate
+    2. If cert-manager manages it, check the Certificate resource:
+       kubectl describe certificate <name> -n <namespace>
+    3. Otherwise, reissue and update the Secret before it expires.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/certificates/"
+
+- id: CERT-002
+  name: TLS Secret Already Expired
+  severity: CRITICAL
+  category: certificates
+  check_fn: check_tls_secret_expired
+  description: >
+    A kubernetes.io/tls Secret's certificate has already expired. Any client
+    validating this certificate is now failing the TLS handshake.
+  remediation: |
+    1. Confirm and identify the certificate:
+       kubectl get secret <name> -n <namespace> -o jsonpath='{.data.tls\.crt}' \
+         | base64 -d | openssl x509 -noout -subject -enddate
+    2. Reissue immediately and update the Secret. If cert-manager owns it,
+       force renewal:
+       kubectl cert-manager renew <certificate> -n <namespace>
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/certificates/"

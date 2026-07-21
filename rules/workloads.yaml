@@ -1,0 +1,116 @@
+# WL-* rules — see backend/pkg/clusterdoctor/checks/workloads.go.
+- id: WL-001
+  name: Deployment Has Zero Available Replicas
+  severity: CRITICAL
+  category: workloads
+  check_fn: check_deployment_zero_available
+  description: >
+    A Deployment wants one or more replicas but has zero available. The
+    workload is effectively down.
+  remediation: |
+    1. Check the deployment and its pods:
+       kubectl describe deployment <name> -n <namespace>
+       kubectl get pods -n <namespace> -l <selector>
+    2. Drill into failing pods (CrashLoopBackOff/ImagePullBackOff — see
+       POD-001/POD-005) to find the root cause.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+
+- id: WL-003
+  name: Deployment Below Desired Replicas
+  severity: WARNING
+  category: workloads
+  check_fn: check_deployment_below_desired
+  description: >
+    A Deployment has fewer available replicas than desired (but not zero). It
+    is running degraded — reduced capacity and no full redundancy.
+  remediation: |
+    1. See which replicas are missing and why:
+       kubectl describe deployment <name> -n <namespace>
+       kubectl get pods -n <namespace> -l <selector>
+    2. Check node capacity, pod scheduling, and pod health.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+
+- id: WL-004
+  name: DaemonSet Not Fully Scheduled
+  severity: WARNING
+  category: workloads
+  check_fn: check_daemonset_not_fully_scheduled
+  description: >
+    A DaemonSet has fewer ready pods than the number of nodes it should run
+    on. Some nodes are missing this workload (common for CNI, logging, or
+    monitoring agents).
+  remediation: |
+    1. Check the daemonset status and which nodes are missing pods:
+       kubectl describe daemonset <name> -n <namespace>
+       kubectl get pods -n <namespace> -l <selector> -o wide
+    2. Look for taints blocking scheduling (NODE-007) or node pressure.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/"
+
+- id: WL-005
+  name: StatefulSet Pods Not All Running
+  severity: WARNING
+  category: workloads
+  check_fn: check_statefulset_not_all_running
+  description: >
+    A StatefulSet has fewer ready replicas than desired. Because StatefulSet
+    pods start in order, one stuck pod blocks all subsequent ones.
+  remediation: |
+    1. Check ordinal status — the lowest not-ready ordinal is the blocker:
+       kubectl get pods -n <namespace> -l <selector>
+       kubectl describe statefulset <name> -n <namespace>
+    2. Common causes: a Pending PVC (STOR-001) or a failing pod.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/"
+
+- id: WL-006
+  name: Job Failed
+  severity: WARNING
+  category: workloads
+  check_fn: check_job_failed
+  description: >
+    A Job has one or more failed pods. Depending on its backoffLimit it may
+    have given up entirely.
+  remediation: |
+    1. Check the job status and failed pod logs:
+       kubectl describe job <name> -n <namespace>
+       kubectl logs job/<name> -n <namespace>
+    2. Fix the underlying error and re-run the job (delete + reapply, since
+       completed/failed Jobs are immutable).
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
+
+- id: WL-009
+  name: Single-Replica Deployment (No HA)
+  severity: INFO
+  category: workloads
+  check_fn: check_single_replica_deployment
+  description: >
+    A Deployment runs a single replica, so it has no high availability — any
+    node failure or rollout briefly takes the workload fully offline.
+  remediation: |
+    If this workload should tolerate node failure, raise its replica count to
+    at least 2 and add a PodDisruptionBudget. Single replicas are fine for
+    dev/stateless-singleton workloads — suppress this finding if intentional.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"

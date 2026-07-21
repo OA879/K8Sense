@@ -21,11 +21,11 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useHistory } from 'react-router';
-import { CategoryState,ScanProgress } from '../../components/cluster-doctor/ScanProgress';
+import { CategoryState, ScanProgress } from '../../components/cluster-doctor/ScanProgress';
 import { startScan } from '../../lib/cluster-doctor-api';
 import { useCluster } from '../../lib/k8s';
 import { createRouteURL } from '../../lib/router/createRouteURL';
-import { ScanProgressEvent,watchScanProgress } from '../../lib/sse-client';
+import { ScanProgressEvent, watchScanProgress } from '../../lib/sse-client';
 
 export default function ScanPage() {
   const cluster = useCluster();
@@ -97,9 +97,12 @@ export default function ScanPage() {
 
   return (
     <Box sx={{ p: 3, maxWidth: 720 }}>
-      <Typography variant="h4" gutterBottom>
-        Cluster Doctor
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h4">Cluster Doctor</Typography>
+        <Button size="small" onClick={() => history.push(createRouteURL('clusterDoctorHistory'))}>
+          View History
+        </Button>
+      </Box>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         Scan <strong>{cluster}</strong> against K8sense's rule library and get a prioritised,
         remediation-ready findings report.

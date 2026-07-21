@@ -1,0 +1,79 @@
+# STOR-* rules — see backend/pkg/clusterdoctor/checks/storage.go.
+- id: STOR-001
+  name: PVC Pending (Unbound)
+  severity: CRITICAL
+  category: storage
+  check_fn: check_pvc_pending
+  description: >
+    A PersistentVolumeClaim is stuck Pending — no PersistentVolume could be
+    bound. Usually a missing/invalid StorageClass, no available PV that
+    matches, or a provisioner that isn't running.
+  remediation: |
+    1. See why it isn't binding:
+       kubectl describe pvc <pvc-name> -n <namespace>
+       (check the Events section)
+    2. Confirm the requested StorageClass exists and has a working provisioner:
+       kubectl get storageclass
+    3. For static provisioning, ensure a matching PV exists and is Available.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+
+- id: STOR-002
+  name: PV Released or Failed
+  severity: WARNING
+  category: storage
+  check_fn: check_pv_released_or_failed
+  description: >
+    A PersistentVolume is in Released (its claim was deleted but the volume
+    wasn't reclaimed) or Failed state. Released volumes with a Retain policy
+    won't be reused until manually cleaned up.
+  remediation: |
+    1. Inspect the volume:
+       kubectl describe pv <pv-name>
+    2. For a Released PV you want to reuse, clear its claimRef:
+       kubectl patch pv <pv-name> -p '{"spec":{"claimRef": null}}'
+    3. For a Failed PV, check the underlying storage backend.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#reclaiming"
+
+- id: STOR-003
+  name: StorageClass Has No Provisioner
+  severity: WARNING
+  category: storage
+  check_fn: check_storageclass_no_provisioner
+  description: >
+    A StorageClass has an empty provisioner and cannot dynamically provision
+    volumes. PVCs referencing it will stay Pending.
+  remediation: |
+    1. Check the StorageClass:
+       kubectl get storageclass <name> -o yaml
+    2. Set a valid provisioner, or remove the StorageClass if it's unused.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/storage/storage-classes/"
+
+- id: STOR-005
+  name: PVC Using Default StorageClass Implicitly
+  severity: INFO
+  category: storage
+  check_fn: check_pvc_using_default_storageclass
+  description: >
+    A PVC does not set storageClassName and relies on the cluster's default
+    StorageClass. If the default changes, this claim's behaviour changes
+    silently. Being explicit is safer.
+  remediation: |
+    Set storageClassName explicitly on the PVC spec to pin its storage
+    behaviour regardless of the cluster default.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/storage/storage-classes/#default-storageclass"
