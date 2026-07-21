@@ -121,9 +121,11 @@ import WorkloadDetails from '../../components/workload/Details';
 import WorkloadOverview from '../../components/workload/Overview';
 import { isElectron } from '../../helpers/isElectron';
 import LocaleSelect from '../../i18n/LocaleSelect/LocaleSelect';
+import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
+import ScanDiffPage from '../../pages/cluster-doctor/ScanDiffPage';
 import ScanPage from '../../pages/cluster-doctor/ScanPage';
 import { useCluster } from '..//k8s';
 import DaemonSet from '../k8s/daemonSet';
@@ -267,6 +269,20 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <RulesPage />,
+  },
+  clusterDoctorAuditLog: {
+    path: '/cluster-doctor/audit-log',
+    name: 'Audit Log',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <AuditLogPage />,
+  },
+  clusterDoctorDiff: {
+    path: '/cluster-doctor/diff/:scanId/:prevId',
+    name: 'Scan Comparison',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <ScanDiffPage />,
   },
   storageClasses: {
     path: '/storage/classes',
