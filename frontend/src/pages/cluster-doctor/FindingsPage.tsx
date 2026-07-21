@@ -30,7 +30,13 @@ import {
 import { FindingsTable } from '../../components/cluster-doctor/FindingsTable';
 import { GuidedFixModal } from '../../components/cluster-doctor/GuidedFixModal';
 import { SuppressModal } from '../../components/cluster-doctor/SuppressModal';
-import { downloadReport, Finding, getFindings, Severity } from '../../lib/cluster-doctor-api';
+import {
+  downloadReport,
+  fetchReportHTML,
+  Finding,
+  getFindings,
+  Severity,
+} from '../../lib/cluster-doctor-api';
 import { roleAtLeast, useRole } from '../../lib/cluster-doctor-branding-api';
 import { useCluster } from '../../lib/k8s';
 
@@ -94,6 +100,28 @@ export default function FindingsPage() {
   const [exporting, setExporting] = React.useState(false);
   const [exportError, setExportError] = React.useState<string | null>(null);
 
+  // The report's own print stylesheet turns the browser's "Save as PDF" into
+  // the PDF export, so there is no second report engine to maintain.
+  async function handleOpenForPrint() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const html = await fetchReportHTML(scanId);
+      const win = window.open('', '_blank');
+      if (!win) {
+        throw new Error('Popup blocked — allow popups to open the printable report.');
+      }
+      win.document.write(html);
+      win.document.close();
+      // Let the document lay out before invoking print.
+      win.addEventListener('load', () => win.print());
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function handleExport(format: 'html' | 'json') {
     setExporting(true);
     setExportError(null);
@@ -119,6 +147,15 @@ export default function FindingsPage() {
             onClick={() => handleExport('html')}
           >
             Export HTML
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={exporting || !findings}
+            startIcon={<Icon icon="mdi:file-pdf-box" />}
+            onClick={handleOpenForPrint}
+          >
+            PDF
           </Button>
           <Button
             size="small"

@@ -179,6 +179,24 @@ export function exportUrl(scanId: string, format: 'html' | 'json'): string {
   return apiUrl(`/findings/${encodeURIComponent(scanId)}/export?format=${format}`);
 }
 
+
+/**
+ * Fetches the self-contained HTML report as a string, for opening in a new tab
+ * where the browser's print dialog turns it into a PDF. Kept separate from
+ * downloadReport because printing needs the markup, not a file download.
+ */
+export async function fetchReportHTML(scanId: string): Promise<string> {
+  const response = await fetch(exportUrl(scanId, 'html'), {
+    headers: { ...getHeadlampAPIHeaders() },
+  });
+
+  if (!response.ok) {
+    throw new Error(`report fetch failed: ${response.status}`);
+  }
+
+  return response.text();
+}
+
 /**
  * Downloads a scan's report by fetching it with the backend auth header (a
  * plain anchor href can't send X-HEADLAMP_BACKEND-TOKEN) and triggering a
