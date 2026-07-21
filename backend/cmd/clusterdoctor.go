@@ -100,6 +100,7 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	}
 
 	r.HandleFunc("/cluster-doctor/scan", cdServer.StartScan).Methods("POST")
+	r.HandleFunc("/cluster-doctor/scan/multi", cdServer.StartMultiScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/{id}/status", cdServer.ScanStatus).Methods("GET")
 	r.HandleFunc("/cluster-doctor/findings/{scanId}", cdServer.GetFindings).Methods("GET")
 	r.HandleFunc("/cluster-doctor/findings/{scanId}/export", cdServer.ExportReport).Methods("GET")

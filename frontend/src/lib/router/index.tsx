@@ -124,6 +124,7 @@ import LocaleSelect from '../../i18n/LocaleSelect/LocaleSelect';
 import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
+import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
 import CDSettingsPage from '../../pages/cluster-doctor/SettingsPage';
 import ScanDiffPage from '../../pages/cluster-doctor/ScanDiffPage';
@@ -291,6 +292,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <CDSettingsPage />,
+  },
+  clusterDoctorMultiScan: {
+    path: '/cluster-doctor/multi-scan',
+    name: 'Multi-Cluster Scan',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <MultiScanPage />,
   },
   storageClasses: {
     path: '/storage/classes',

@@ -108,6 +108,24 @@ export function startScan(cluster: string): Promise<{ scanId: string }> {
   });
 }
 
+export interface MultiScanEntry {
+  cluster: string;
+  scanId?: string;
+  error?: string;
+}
+
+/**
+ * Starts scans across multiple clusters in parallel (bounded server-side to 5
+ * concurrent). Returns a scanId per cluster to follow individually.
+ */
+export function startMultiScan(clusters: string[]): Promise<MultiScanEntry[]> {
+  return apiFetch('/scan/multi', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ clusters }),
+  });
+}
+
 /** Fetches every finding recorded for a completed (or in-progress) scan. */
 export function getFindings(scanId: string): Promise<Finding[]> {
   return apiFetch(`/findings/${encodeURIComponent(scanId)}`);

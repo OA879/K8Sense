@@ -197,6 +197,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Scan'),
           },
           {
+            name: 'clusterDoctorMultiScan',
+            label: t('Multi-Cluster Scan'),
+          },
+          {
             name: 'clusterDoctorRules',
             label: t('Rule Library'),
           },
