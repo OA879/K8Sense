@@ -67,7 +67,9 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 3b. Scheduled scans | ✅ Done | Background scheduler, 5-min floor (migration 004/005) |
 | 3c. Slack/Teams notifications | ✅ Done | Alerts only on *newly appeared* criticals |
 | 3d. Cluster Doctor badges | ✅ Done | Sidebar critical count + Pod/Node findings panel |
-| 3e. Overview redesign / shortcuts | ⬜ Not started | Remaining Phase 3 polish |
+| 3e. Cluster overview redesign | ✅ Done | `ClusterHealthPanel` on the cluster landing page |
+| 3f. Keyboard shortcuts | ✅ Done | Ctrl+Shift+D scan, Ctrl+Shift+K findings (remappable) |
+| 3g. Rebrand audit | ✅ Done | 3 strings × 17 locales, tray labels, a11y label |
 | 4a. White-label branding | ✅ Done | Product name / colour / logo, Pro + admin gated |
 | 4b. In-app RBAC roles | ✅ Done | viewer/operator/admin guardrail (see caveat below) |
 | 4c. Audit CSV export | ✅ Done | `/audit-log/export` |
@@ -270,16 +272,16 @@ These are choices made during the build that deviate from or refine
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
 4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
-   Electron shell has never been built or launched.
+   Electron shell has never been built or launched. Note the tray-label
+   rebrand above is therefore untested at runtime — it will first be exercised
+   when a desktop build is produced in Phase 5.
 
 ## Next up (accurate as of the latest commit)
 
-1. **Phase 3 polish** — cluster overview redesign, keyboard shortcuts, and an
-   audit of remaining Headlamp screens for stray upstream branding.
-2. **PDF export** — bundled Chromium rendering the existing HTML report.
-3. **Lens-style resource forms** — surface/polish the inherited Headlamp
+1. **PDF export** — bundled Chromium rendering the existing HTML report.
+2. **Lens-style resource forms** — surface/polish the inherited Headlamp
    create/edit flows (RBAC, PVC, StorageClass, ServiceAccount).
-4. **Phase 5 distribution** — Electron packaging, signing, auto-update. Needs
+3. **Phase 5 distribution** — Electron packaging, signing, auto-update. Needs
    your Apple/EV certificates, domain and Stripe account.
 
 # K8sense — Build Progress Log
@@ -351,7 +353,9 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 3b. Scheduled scans | ✅ Done | Background scheduler, 5-min floor (migration 004/005) |
 | 3c. Slack/Teams notifications | ✅ Done | Alerts only on *newly appeared* criticals |
 | 3d. Cluster Doctor badges | ✅ Done | Sidebar critical count + Pod/Node findings panel |
-| 3e. Overview redesign / shortcuts | ⬜ Not started | Remaining Phase 3 polish |
+| 3e. Cluster overview redesign | ✅ Done | `ClusterHealthPanel` on the cluster landing page |
+| 3f. Keyboard shortcuts | ✅ Done | Ctrl+Shift+D scan, Ctrl+Shift+K findings (remappable) |
+| 3g. Rebrand audit | ✅ Done | 3 strings × 17 locales, tray labels, a11y label |
 | 4a. White-label branding | ✅ Done | Product name / colour / logo, Pro + admin gated |
 | 4b. In-app RBAC roles | ✅ Done | viewer/operator/admin guardrail (see caveat below) |
 | 4c. Audit CSV export | ✅ Done | `/audit-log/export` |
@@ -554,7 +558,9 @@ These are choices made during the build that deviate from or refine
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
 4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
-   Electron shell has never been built or launched.
+   Electron shell has never been built or launched. Note the tray-label
+   rebrand above is therefore untested at runtime — it will first be exercised
+   when a desktop build is produced in Phase 5.
 
 ## Next up (remaining Stage 2 / Phase 3, in suggested order)
 
