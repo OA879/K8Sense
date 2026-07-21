@@ -77,6 +77,49 @@ func (s *Server) enrichGuidedFix(findings []clusterdoctor.Finding) []clusterdoct
 	return findings
 }
 
+// enrichSuppressions marks each finding's Suppressed/Comment state from the
+// per-cluster suppressions table. Suppression state is keyed by resource
+// identity (not the per-scan finding UUID), so it's derived here whenever
+// findings are read back rather than stored on the finding row. Lookup errors
+// are logged and swallowed — findings are still returned, just un-enriched.
+func (s *Server) enrichSuppressions(ctx context.Context, cluster string, findings []clusterdoctor.Finding) []clusterdoctor.Finding {
+	if cluster == "" {
+		return findings
+	}
+
+	keys, err := cddb.GetSuppressionKeys(ctx, s.db, cluster)
+	if err != nil {
+		logger.Log(logger.LevelError, map[string]string{"cluster": cluster}, err,
+			"cluster-doctor: loading suppression keys")
+
+		return findings
+	}
+
+	comments, err := cddb.GetComments(ctx, s.db, cluster)
+	if err != nil {
+		logger.Log(logger.LevelError, map[string]string{"cluster": cluster}, err,
+			"cluster-doctor: loading finding comments")
+
+		return findings
+	}
+
+	for i := range findings {
+		key := cddb.SuppressionKey(
+			findings[i].RuleID, findings[i].Namespace,
+			findings[i].ResourceKind, findings[i].ResourceName,
+		)
+		if keys[key] {
+			findings[i].Suppressed = true
+		}
+
+		if comment, ok := comments[key]; ok {
+			findings[i].Comment = comment
+		}
+	}
+
+	return findings
+}
+
 func (s *Server) registerActive(scanID string, live *liveScan) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

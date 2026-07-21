@@ -17,6 +17,7 @@
 import { Icon } from '@iconify/react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
@@ -33,6 +34,8 @@ export interface FindingsTableProps {
   findings: Finding[];
   /** When set, findings with a guided fix show an "Apply Fix" button. */
   onApplyFix?: (finding: Finding) => void;
+  /** When set, findings show a "Suppress" button that opens the suppress modal. */
+  onSuppress?: (finding: Finding) => void;
 }
 
 const SEVERITY_ORDER: Record<Finding['severity'], number> = { CRITICAL: 0, WARNING: 1, INFO: 2 };
@@ -40,17 +43,26 @@ const SEVERITY_ORDER: Record<Finding['severity'], number> = { CRITICAL: 0, WARNI
 function FindingRow({
   finding,
   onApplyFix,
+  onSuppress,
 }: {
   finding: Finding;
   onApplyFix?: (finding: Finding) => void;
+  onSuppress?: (finding: Finding) => void;
 }) {
   const [open, setOpen] = React.useState(false);
 
   return (
     <>
-      <TableRow hover onClick={() => setOpen(o => !o)} sx={{ cursor: 'pointer' }}>
+      <TableRow
+        hover
+        onClick={() => setOpen(o => !o)}
+        sx={{ cursor: 'pointer', opacity: finding.suppressed ? 0.55 : 1 }}
+      >
         <TableCell>
-          <SeverityBadge severity={finding.severity} />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <SeverityBadge severity={finding.severity} />
+            {finding.suppressed && <Chip size="small" label="muted" variant="outlined" />}
+          </Box>
         </TableCell>
         <TableCell>{finding.ruleId}</TableCell>
         <TableCell>{finding.ruleName}</TableCell>
@@ -58,18 +70,32 @@ function FindingRow({
         <TableCell>{finding.namespace || '—'}</TableCell>
         <TableCell>{finding.resourceName}</TableCell>
         <TableCell padding="checkbox">
-          {onApplyFix && finding.guidedFixAvailable && (
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={e => {
-                e.stopPropagation();
-                onApplyFix(finding);
-              }}
-            >
-              Apply Fix
-            </Button>
-          )}
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {onApplyFix && finding.guidedFixAvailable && (
+              <Button
+                size="small"
+                variant="outlined"
+                onClick={e => {
+                  e.stopPropagation();
+                  onApplyFix(finding);
+                }}
+              >
+                Apply Fix
+              </Button>
+            )}
+            {onSuppress && (
+              <IconButton
+                size="small"
+                aria-label="Suppress finding"
+                onClick={e => {
+                  e.stopPropagation();
+                  onSuppress(finding);
+                }}
+              >
+                <Icon icon="mdi:bell-off-outline" />
+              </IconButton>
+            )}
+          </Box>
         </TableCell>
         <TableCell padding="checkbox">
           <IconButton size="small" aria-label={open ? 'Collapse' : 'Expand'}>
@@ -81,6 +107,15 @@ function FindingRow({
         <TableCell colSpan={8} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 2, px: 1 }}>
+              {finding.comment && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: 'italic', whiteSpace: 'pre-wrap', mb: 2 }}
+                >
+                  Comment: {finding.comment}
+                </Typography>
+              )}
               <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
                 {finding.description}
               </Typography>
@@ -108,7 +143,7 @@ function FindingRow({
   );
 }
 
-export function FindingsTable({ findings, onApplyFix }: FindingsTableProps) {
+export function FindingsTable({ findings, onApplyFix, onSuppress }: FindingsTableProps) {
   const sorted = React.useMemo(
     () => [...findings].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]),
     [findings]
@@ -138,7 +173,12 @@ export function FindingsTable({ findings, onApplyFix }: FindingsTableProps) {
       </TableHead>
       <TableBody>
         {sorted.map(finding => (
-          <FindingRow key={finding.id} finding={finding} onApplyFix={onApplyFix} />
+          <FindingRow
+            key={finding.id}
+            finding={finding}
+            onApplyFix={onApplyFix}
+            onSuppress={onSuppress}
+          />
         ))}
       </TableBody>
     </Table>

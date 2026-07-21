@@ -88,6 +88,9 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	r.HandleFunc("/cluster-doctor/rules", cdServer.ListRulesForCluster).Methods("GET")
 	r.HandleFunc("/cluster-doctor/rules/{id}/toggle", cdServer.ToggleRule).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/guided-fix", cdServer.GuidedFix).Methods("POST")
+	r.HandleFunc("/cluster-doctor/findings/suppress", cdServer.SuppressFinding).Methods("POST")
+	r.HandleFunc("/cluster-doctor/findings/unsuppress", cdServer.UnsuppressFinding).Methods("POST")
+	r.HandleFunc("/cluster-doctor/findings/comment", cdServer.CommentFinding).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/audit-log", cdServer.ListAuditLog).Methods("GET")
 
 	logger.Log(logger.LevelInfo, map[string]string{"rulesLoaded": strconv.Itoa(len(rules)), "dbPath": dbPath}, nil,

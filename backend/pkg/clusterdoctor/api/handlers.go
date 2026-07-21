@@ -58,8 +58,17 @@ func (s *Server) GetFindings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	findings = s.enrichGuidedFix(findings)
+
+	// Suppression/comment state is keyed by resource identity per-cluster, so
+	// we need the scan's cluster. If the scan can't be read, skip suppression
+	// enrichment gracefully and still return the findings.
+	if scan, err := cddb.GetScan(r.Context(), s.db, scanID); err == nil {
+		findings = s.enrichSuppressions(r.Context(), scan.ClusterID, findings)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(s.enrichGuidedFix(findings))
+	_ = json.NewEncoder(w).Encode(findings)
 }
 
 // ExportReport handles GET /cluster-doctor/findings/:scanId/export?format=.
