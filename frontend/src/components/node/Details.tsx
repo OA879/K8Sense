@@ -59,6 +59,7 @@ import { SectionBox } from '../common/SectionBox';
 import { NameValueTable } from '../common/SimpleTable';
 import { NodeShellAction } from './NodeShellAction';
 import { NodeTaintsLabel } from './utils';
+import { ResourceFindings } from '../cluster-doctor/ResourceFindings';
 
 function NodeConditionsLabel(props: { node: Node }) {
   const { node } = props;
@@ -398,6 +399,10 @@ export default function NodeDetails(props: { name?: string; cluster?: string }) 
         }}
         extraSections={item =>
           item && [
+            {
+              id: 'k8sense.node-findings',
+              section: <ResourceFindings kind="Node" name={item.metadata.name} />,
+            },
             {
               id: 'headlamp.node-resource-allocation',
               section: <AllocatedResourcesSection node={item} pods={nodePods} />,

@@ -20,6 +20,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getClusterAppearanceFromMeta } from '../../helpers/clusterAppearance';
 import { isElectron } from '../../helpers/isElectron';
+import { useLatestScan } from '../../lib/cluster-doctor-badge';
 import { useClustersConf, useSelectedClusters } from '../../lib/k8s';
 import CRD from '../../lib/k8s/crd';
 import { createRouteURL } from '../../lib/router/createRouteURL';
@@ -61,6 +62,7 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
   const shouldShowHomeItem = isElectron() || Object.keys(clusters).length !== 1;
   const selectedClusters = useSelectedClusters();
   const allClustersConf = useClustersConf();
+  const latestScan = useLatestScan(selectedClusters[0]);
   const { t } = useTranslation();
   const theme = useTheme();
 
@@ -138,6 +140,23 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
         </div>
       ) : undefined;
 
+    // Surface the latest scan's critical count next to Cluster Doctor so a
+    // problem is visible from anywhere in the app without opening the page.
+    const criticalCount = latestScan?.criticalCount ?? 0;
+    const clusterDoctorSubtitle =
+      criticalCount > 0 ? (
+        <div
+          style={{
+            marginTop: '2px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            color: theme.palette.error.main,
+          }}
+        >
+          {criticalCount} critical
+        </div>
+      ) : undefined;
+
     const homeItems: SidebarItemProps[] = [
       {
         name: 'home',
@@ -191,6 +210,7 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
         name: 'clusterDoctorScan',
         label: t('Cluster Doctor'),
         icon: 'mdi:stethoscope',
+        subtitle: clusterDoctorSubtitle,
         subList: [
           {
             name: 'clusterDoctorScan',
@@ -577,6 +597,8 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
     selectedClusters.join(','),
     allClustersConf,
     crdsSidebarEntries,
+    latestScan,
+    theme,
     t,
   ]);
 

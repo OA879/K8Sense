@@ -61,6 +61,7 @@ import { useLocalStorageState } from '../globalSearch/useLocalStorageState';
 import { colorizePrettifiedLog } from './jsonHandling';
 import { makePodStatusLabel } from './List';
 import { PodDebugAction } from './PodDebugAction';
+import { ResourceFindings } from '../cluster-doctor/ResourceFindings';
 
 const PaddedFormControlLabel = styled(FormControlLabel)(({ theme }) => ({
   margin: 0,
@@ -892,6 +893,16 @@ export default function PodDetails(props: PodDetailsProps) {
       extraInfo={item => prepareExtraInfo(item)}
       extraSections={item =>
         item && [
+          {
+            id: 'k8sense.pod-findings',
+            section: (
+              <ResourceFindings
+                kind="Pod"
+                name={item.metadata.name}
+                namespace={item.metadata.namespace}
+              />
+            ),
+          },
           {
             id: 'headlamp.pod-tolerations',
             section: <TolerationsSection tolerations={item?.spec?.tolerations || []} />,
