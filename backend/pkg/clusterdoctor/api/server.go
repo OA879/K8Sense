@@ -214,6 +214,24 @@ func (s *Server) runScan(clientset kubernetes.Interface, cluster, scanID string,
 		rules = filtered
 	}
 
+	// Apply any per-cluster severity overrides on top. Same fallback policy as
+	// above: a failed lookup means the rules keep their default severities.
+	if overrides, sevErr := cddb.GetSeverityOverrides(context.Background(), s.db, cluster); sevErr != nil {
+		logger.Log(logger.LevelError, map[string]string{"scanId": scanID, "cluster": cluster}, sevErr,
+			"cluster-doctor: loading severity overrides, using rule defaults")
+	} else if len(overrides) > 0 {
+		adjusted := make([]clusterdoctor.Rule, len(rules))
+		copy(adjusted, rules)
+
+		for i := range adjusted {
+			if sev, ok := overrides[adjusted[i].ID]; ok {
+				adjusted[i].Severity = sev
+			}
+		}
+
+		rules = adjusted
+	}
+
 	scanner := clusterdoctor.NewScanner(rules)
 	progress := make(chan clusterdoctor.ScanProgressEvent, 64) //nolint:mnd
 

@@ -112,6 +112,7 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	r.HandleFunc("/cluster-doctor/rules/custom", cdServer.ListCustomRules).Methods("GET")
 	r.HandleFunc("/cluster-doctor/rules/custom/{id}", cdServer.DeleteCustomRule).Methods("DELETE")
 	r.HandleFunc("/cluster-doctor/rules/{id}/toggle", cdServer.ToggleRule).Methods("PUT")
+	r.HandleFunc("/cluster-doctor/rules/{id}/severity", cdServer.SetRuleSeverity).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/guided-fix", cdServer.GuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/suppress", cdServer.SuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/unsuppress", cdServer.UnsuppressFinding).Methods("POST")

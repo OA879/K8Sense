@@ -18,7 +18,9 @@ import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
+import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
 import Switch from '@mui/material/Switch';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -30,7 +32,11 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { SeverityBadge } from '../../components/cluster-doctor/SeverityBadge';
 import { Rule } from '../../lib/cluster-doctor-api';
-import { listRulesForCluster, toggleRule } from '../../lib/cluster-doctor-rules-api';
+import {
+  listRulesForCluster,
+  setRuleSeverity,
+  toggleRule,
+} from '../../lib/cluster-doctor-rules-api';
 import { importRuleYAML, validateRuleYAML } from '../../lib/cluster-doctor-rules-import-api';
 import { useCluster } from '../../lib/k8s';
 
@@ -173,6 +179,26 @@ export default function RulesPage() {
     });
   }
 
+  function handleSeverityChange(rule: Rule, nextSeverity: string) {
+    if (!cluster) return;
+
+    const previous = rule.severity;
+
+    setRules(current =>
+      current
+        ? current.map(r => (r.id === rule.id ? { ...r, severity: nextSeverity as Rule['severity'] } : r))
+        : current
+    );
+    setError(null);
+
+    setRuleSeverity(cluster, rule.id, nextSeverity).catch(e => {
+      setRules(current =>
+        current ? current.map(r => (r.id === rule.id ? { ...r, severity: previous } : r)) : current
+      );
+      setError(e instanceof Error ? e.message : String(e));
+    });
+  }
+
   const grouped = rules ? groupByCategory(rules) : [];
 
   return (
@@ -225,7 +251,19 @@ export default function RulesPage() {
                   </TableCell>
                   <TableCell>{rule.name}</TableCell>
                   <TableCell>
-                    <SeverityBadge severity={rule.severity} />
+                    <Select
+                      size="small"
+                      variant="standard"
+                      disableUnderline
+                      value={rule.severity}
+                      onChange={e => handleSeverityChange(rule, e.target.value)}
+                      renderValue={value => <SeverityBadge severity={value as Rule['severity']} />}
+                      sx={{ '& .MuiSelect-select': { p: 0, pr: 3 } }}
+                    >
+                      <MenuItem value="CRITICAL">Critical</MenuItem>
+                      <MenuItem value="WARNING">Warning</MenuItem>
+                      <MenuItem value="INFO">Info</MenuItem>
+                    </Select>
                   </TableCell>
                   <TableCell align="right">
                     <Switch

@@ -46,3 +46,20 @@ export function toggleRule(
     { method: 'PUT' }
   );
 }
+
+/**
+ * Overrides a rule's severity for one cluster. Pass an empty severity to clear
+ * the override so the rule reverts to its built-in default.
+ */
+export function setRuleSeverity(
+  cluster: string,
+  ruleId: string,
+  severity: string
+): Promise<{ result: string }> {
+  return apiFetch(
+    `/rules/${encodeURIComponent(ruleId)}/severity?cluster=${encodeURIComponent(
+      cluster
+    )}&severity=${encodeURIComponent(severity)}`,
+    { method: 'PUT' }
+  );
+}

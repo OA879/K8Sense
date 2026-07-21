@@ -32,15 +32,58 @@ func (s *Server) ListRulesForCluster(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Copy so the per-request Enabled overrides never mutate the shared rule set.
+	overrides, err := cddb.GetSeverityOverrides(r.Context(), s.db, cluster)
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// Copy so the per-request Enabled/Severity overrides never mutate the
+	// shared rule set.
 	rules := make([]clusterdoctor.Rule, len(s.rules))
 	copy(rules, s.rules)
 
 	for i := range rules {
 		rules[i].Enabled = !disabled[rules[i].ID]
+
+		if sev, ok := overrides[rules[i].ID]; ok {
+			rules[i].Severity = sev
+		}
 	}
 
 	_ = json.NewEncoder(w).Encode(rules)
+}
+
+// SetRuleSeverity handles PUT /cluster-doctor/rules/{id}/severity?cluster=&severity=.
+// An empty severity clears the override so the rule reverts to its default.
+func (s *Server) SetRuleSeverity(w http.ResponseWriter, r *http.Request) {
+	ruleID := mux.Vars(r)["id"]
+
+	cluster := r.URL.Query().Get("cluster")
+	if cluster == "" {
+		http.Error(w, `{"error": "cluster query param is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	severity := r.URL.Query().Get("severity")
+	if severity != "" &&
+		severity != clusterdoctor.SeverityCritical &&
+		severity != clusterdoctor.SeverityWarning &&
+		severity != clusterdoctor.SeverityInfo {
+		http.Error(w, `{"error": "severity must be CRITICAL, WARNING, INFO, or empty"}`, http.StatusBadRequest)
+		return
+	}
+
+	if err := cddb.SetRuleSeverity(r.Context(), s.db, cluster, ruleID, severity); err != nil {
+		logger.Log(logger.LevelError, map[string]string{"cluster": cluster, "ruleId": ruleID}, err,
+			"cluster-doctor: setting rule severity override")
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"result": "ok"})
 }
 
 // ToggleRule handles PUT /cluster-doctor/rules/{id}/toggle?cluster=name&enabled=bool.
