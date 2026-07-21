@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
 	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
 	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
 )
@@ -51,6 +52,10 @@ var allowedGuidedFixActions = map[string]bool{
 // outcome.
 func (s *Server) GuidedFix(w http.ResponseWriter, r *http.Request) {
 	if !s.requirePaid(w) {
+		return
+	}
+
+	if !s.requireRole(w, clusterdoctor.RoleOperator) {
 		return
 	}
 

@@ -31,6 +31,7 @@ import { FindingsTable } from '../../components/cluster-doctor/FindingsTable';
 import { GuidedFixModal } from '../../components/cluster-doctor/GuidedFixModal';
 import { SuppressModal } from '../../components/cluster-doctor/SuppressModal';
 import { downloadReport, Finding, getFindings, Severity } from '../../lib/cluster-doctor-api';
+import { roleAtLeast, useRole } from '../../lib/cluster-doctor-branding-api';
 import { useCluster } from '../../lib/k8s';
 
 const ALL_SEVERITIES: Severity[] = ['CRITICAL', 'WARNING', 'INFO'];
@@ -38,6 +39,9 @@ const ALL_SEVERITIES: Severity[] = ['CRITICAL', 'WARNING', 'INFO'];
 export default function FindingsPage() {
   const { scanId } = useParams<{ scanId: string }>();
   const cluster = useCluster();
+  const role = useRole();
+  // Viewers get a read-only findings table: no Guided Fix, no suppression.
+  const canWrite = roleAtLeast(role, 'operator');
   const [findings, setFindings] = React.useState<Finding[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<FindingsFilterValue>({
@@ -146,8 +150,8 @@ export default function FindingsPage() {
           <FindingsFilter value={filter} onChange={setFilter} counts={counts} />
           <FindingsTable
             findings={filtered}
-            onApplyFix={setFixTarget}
-            onSuppress={setSuppressTarget}
+            onApplyFix={canWrite ? setFixTarget : undefined}
+            onSuppress={canWrite ? setSuppressTarget : undefined}
           />
         </Paper>
       )}

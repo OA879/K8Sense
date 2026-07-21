@@ -25,6 +25,7 @@ import LogoWithTextDark from '../../resources/logo-dark.svg?react';
 import LogoWithTextLight from '../../resources/logo-light.svg?react';
 import { EmptyContent } from '../common';
 import ErrorBoundary from '../common/ErrorBoundary';
+import { useBranding } from '../../lib/cluster-doctor-branding-api';
 
 export interface AppLogoProps {
   /** The size of the logo. 'small' for in mobile view, and 'large' for tablet and desktop sizes. By default the 'large' is used. */
@@ -46,6 +47,34 @@ export type AppLogoType =
 
 export default function OriginalAppLogo(props: AppLogoProps) {
   const { logoType, themeName } = props;
+  const branding = useBranding();
+
+  // A white-label install replaces the K8sense mark entirely: a custom logo
+  // image if one was uploaded, otherwise the product name as a wordmark.
+  if (branding.logoDataUri) {
+    return (
+      <img
+        src={branding.logoDataUri}
+        alt={branding.productName}
+        style={{ width: 'auto', height: '32px' }}
+      />
+    );
+  }
+
+  if (branding.productName && branding.productName !== 'K8sense') {
+    return (
+      <span
+        style={{
+          fontSize: '1.25rem',
+          fontWeight: 800,
+          color: branding.primaryColor || 'inherit',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {branding.productName}
+      </span>
+    );
+  }
 
   const Component =
     logoType === 'large'

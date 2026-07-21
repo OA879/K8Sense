@@ -49,6 +49,10 @@ func (s *Server) SetNotifyConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+		return
+	}
+
 	var req notifyUpdateRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Cluster == "" {
 		http.Error(w, `{"error": "cluster is required"}`, http.StatusBadRequest)

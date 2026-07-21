@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
 	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
 )
 
@@ -30,6 +31,10 @@ func writeOK(w http.ResponseWriter) {
 // SuppressFinding handles POST /cluster-doctor/findings/suppress. It mutes a
 // finding for a resource across scans; reason is required.
 func (s *Server) SuppressFinding(w http.ResponseWriter, r *http.Request) {
+	if !s.requireRole(w, clusterdoctor.RoleOperator) {
+		return
+	}
+
 	var req suppressRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error": "invalid request body"}`, http.StatusBadRequest)
@@ -73,6 +78,10 @@ func (s *Server) SuppressFinding(w http.ResponseWriter, r *http.Request) {
 // UnsuppressFinding handles POST /cluster-doctor/findings/unsuppress. It
 // removes a resource's suppression by primary key.
 func (s *Server) UnsuppressFinding(w http.ResponseWriter, r *http.Request) {
+	if !s.requireRole(w, clusterdoctor.RoleOperator) {
+		return
+	}
+
 	var req suppressRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error": "invalid request body"}`, http.StatusBadRequest)
@@ -99,6 +108,10 @@ func (s *Server) UnsuppressFinding(w http.ResponseWriter, r *http.Request) {
 // CommentFinding handles PUT /cluster-doctor/findings/comment. It attaches a
 // note to a resource without necessarily muting it.
 func (s *Server) CommentFinding(w http.ResponseWriter, r *http.Request) {
+	if !s.requireRole(w, clusterdoctor.RoleOperator) {
+		return
+	}
+
 	var req suppressRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, `{"error": "invalid request body"}`, http.StatusBadRequest)

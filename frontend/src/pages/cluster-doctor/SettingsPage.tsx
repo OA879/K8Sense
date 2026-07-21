@@ -5,8 +5,10 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
+import { BrandingSettings } from '../../components/cluster-doctor/BrandingSettings';
 import { LicenceStatus } from '../../components/cluster-doctor/LicenceStatus';
 import { NotificationSettings } from '../../components/cluster-doctor/NotificationSettings';
+import { useBranding } from '../../lib/cluster-doctor-branding-api';
 import { useCluster } from '../../lib/k8s';
 import {
   StorageStats,
@@ -36,6 +38,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function SettingsPage() {
   const cluster = useCluster();
+  const branding = useBranding();
   const [storage, setStorage] = React.useState<StorageStats | null>(null);
   const [conn, setConn] = React.useState<TestConnResult | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -72,7 +75,7 @@ export default function SettingsPage() {
   return (
     <Box sx={{ p: 3, maxWidth: 780 }}>
       <Typography variant="h4" gutterBottom>
-        K8sense Settings
+        {branding.productName} Settings
       </Typography>
 
       <Section title="Licence">
@@ -120,11 +123,15 @@ export default function SettingsPage() {
         )}
       </Section>
 
+      <Section title="Branding & Access">
+        <BrandingSettings />
+      </Section>
+
       <Section title="About">
         <Typography variant="body2" color="text.secondary">
-          K8sense — Kubernetes operations platform with built-in Cluster Doctor diagnostics.
-          Powered by open-source components (see NOTICE). All scans run locally; no cluster data
-          leaves your machine.
+          {branding.productName} — Kubernetes operations platform with built-in Cluster Doctor
+          diagnostics. Powered by open-source components (see NOTICE). All scans run locally; no
+          cluster data leaves your machine.
         </Typography>
       </Section>
     </Box>

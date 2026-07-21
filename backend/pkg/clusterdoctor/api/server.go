@@ -11,6 +11,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -107,6 +108,46 @@ func (s *Server) requirePaid(w http.ResponseWriter) bool {
 	if s.currentLicence().Tier == licence.TierFree {
 		http.Error(w, `{"error":"This feature requires a Pro licence","code":"upgrade_required"}`,
 			http.StatusPaymentRequired)
+
+		return false
+	}
+
+	return true
+}
+
+// configDir is the directory holding the licence, branding and role files —
+// derived from the licence path so all K8sense config lives together.
+func (s *Server) configDir() string {
+	return filepath.Dir(s.licencePath)
+}
+
+func (s *Server) brandingPath() string {
+	return filepath.Join(s.configDir(), "branding.json")
+}
+
+func (s *Server) rolePath() string {
+	return filepath.Join(s.configDir(), "role.json")
+}
+
+// currentRole reads the configured in-app role, defaulting to admin.
+func (s *Server) currentRole() clusterdoctor.Role {
+	role, err := clusterdoctor.LoadRole(s.rolePath())
+	if err != nil {
+		logger.Log(logger.LevelError, nil, err, "cluster-doctor: reading role config, defaulting to admin")
+		return clusterdoctor.DefaultRole
+	}
+
+	return role
+}
+
+// requireRole enforces the in-app role on a write endpoint, writing a 403 and
+// returning false when the configured role is insufficient. See the doc on
+// clusterdoctor.Role for what this does and does not guarantee.
+func (s *Server) requireRole(w http.ResponseWriter, required clusterdoctor.Role) bool {
+	if !s.currentRole().AtLeast(required) {
+		http.Error(w,
+			`{"error":"Your K8sense role does not permit this action","code":"role_forbidden"}`,
+			http.StatusForbidden)
 
 		return false
 	}
