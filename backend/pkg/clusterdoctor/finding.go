@@ -35,6 +35,12 @@ type Finding struct {
 	GuidedFixAvailable bool   `json:"guidedFixAvailable"`
 	GuidedFixAction    string `json:"guidedFixAction,omitempty"`
 	GuidedFixWarning   string `json:"guidedFixWarning,omitempty"`
+
+	// Suppressed and Comment are not persisted on the finding row (findings
+	// are per-scan snapshots). They're derived when findings are read back,
+	// from the resource-keyed suppressions table — see api.enrichSuppressions.
+	Suppressed bool   `json:"suppressed"`
+	Comment    string `json:"comment,omitempty"`
 }
 
 // RawFinding is what a check function returns: everything about the

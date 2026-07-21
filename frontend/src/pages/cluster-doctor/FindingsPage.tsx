@@ -29,6 +29,7 @@ import {
 } from '../../components/cluster-doctor/FindingsFilter';
 import { FindingsTable } from '../../components/cluster-doctor/FindingsTable';
 import { GuidedFixModal } from '../../components/cluster-doctor/GuidedFixModal';
+import { SuppressModal } from '../../components/cluster-doctor/SuppressModal';
 import { downloadReport, Finding, getFindings, Severity } from '../../lib/cluster-doctor-api';
 import { useCluster } from '../../lib/k8s';
 
@@ -44,6 +45,7 @@ export default function FindingsPage() {
     search: '',
   });
   const [fixTarget, setFixTarget] = React.useState<Finding | null>(null);
+  const [suppressTarget, setSuppressTarget] = React.useState<Finding | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -142,7 +144,11 @@ export default function FindingsPage() {
       {findings && (
         <Paper sx={{ p: 2 }}>
           <FindingsFilter value={filter} onChange={setFilter} counts={counts} />
-          <FindingsTable findings={filtered} onApplyFix={setFixTarget} />
+          <FindingsTable
+            findings={filtered}
+            onApplyFix={setFixTarget}
+            onSuppress={setSuppressTarget}
+          />
         </Paper>
       )}
 
@@ -154,6 +160,20 @@ export default function FindingsPage() {
         onApplied={() => {
           // Re-fetch so the resolved finding disappears on next scan; the
           // current scan's stored findings are historical, so we just reload.
+          getFindings(scanId)
+            .then(setFindings)
+            .catch(() => undefined);
+        }}
+      />
+
+      <SuppressModal
+        finding={suppressTarget}
+        cluster={cluster ?? ''}
+        open={suppressTarget !== null}
+        onClose={() => setSuppressTarget(null)}
+        onDone={() => {
+          setSuppressTarget(null);
+          // Re-fetch so the newly-suppressed finding shows its muted state.
           getFindings(scanId)
             .then(setFindings)
             .catch(() => undefined);
