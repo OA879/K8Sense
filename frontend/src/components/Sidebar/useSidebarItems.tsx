@@ -191,6 +191,24 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
         name: 'clusterDoctorScan',
         label: t('Cluster Doctor'),
         icon: 'mdi:stethoscope',
+        subList: [
+          {
+            name: 'clusterDoctorScan',
+            label: t('Scan'),
+          },
+          {
+            name: 'clusterDoctorRules',
+            label: t('Rule Library'),
+          },
+          {
+            name: 'clusterDoctorHistory',
+            label: t('History'),
+          },
+          {
+            name: 'clusterDoctorAuditLog',
+            label: t('Audit Log'),
+          },
+        ],
       },
       {
         name: 'cluster',

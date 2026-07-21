@@ -42,6 +42,9 @@ export interface Finding {
   guidedFixAvailable: boolean;
   guidedFixAction?: string;
   guidedFixWarning?: string;
+  /** Derived server-side from the per-cluster suppressions table. */
+  suppressed?: boolean;
+  comment?: string;
 }
 
 export interface ScanSummary {

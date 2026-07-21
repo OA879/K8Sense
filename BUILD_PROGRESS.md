@@ -55,7 +55,10 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 2b. Scan History UI | ✅ Done | `HistoryPage`, wired to `/history` |
 | 2c. Report export | ✅ Done | Self-contained HTML report + JSON; PDF deferred |
 | 2d. Guided Fix + audit log | ✅ Done | Confirm-gated write actions, audit trail |
-| 2e. Rule management UI | ⬜ Not started | |
+| 2e. Rule management UI | ✅ Done | Per-cluster enable/disable; scanner honors it |
+| 2f. Audit log viewer | ✅ Done | `AuditLogPage` |
+| 2g. Finding suppression + comments | ✅ Done | Per-resource mute (migration 002) |
+| 2h. Scan diff | ✅ Done | Added/resolved/persisted between two scans |
 | 3. Dashboard polish | ⬜ Not started | |
 | 4. Enterprise | ⬜ Not started | |
 | 5. Distribution | ⬜ Not started | |
@@ -225,15 +228,28 @@ These are choices made during the build that deviate from or refine
    requirement for regulated customers. Runbook auto-fix (Tier 3) remains out
    of scope until Phase 4.
 
+8. **Per-feature frontend API modules (Stage 2e).**
+   `apiFetch`/`apiUrl` in `cluster-doctor-api.ts` are exported so each feature
+   (rules, audit, diff, suppression) ships its own `cluster-doctor-*-api.ts`
+   importing them, instead of all editing one file. This was done to let three
+   features be built in parallel (isolated git worktrees) without fighting over
+   one shared API client. Rule enable/disable is persisted in `rule_overrides`
+   and honored by the scanner in `runScan`; suppression state lives in the
+   `suppressions` table (migration 002) keyed by resource identity
+   (cluster+rule+namespace+kind+name) so a mute survives across scans, and is
+   re-derived onto findings at read time via `enrichSuppressions`.
+
 ---
 
-## Next up (remaining Stage 2, in suggested order)
+## Next up (remaining Stage 2 / Phase 3, in suggested order)
 
-1. **Rule management UI** — list/toggle rules, import custom YAML (`/rules`
-   list endpoint already exists; needs toggle + import + validate endpoints).
-2. **Audit log viewer** — `AuditLogPage` (backend `/audit-log` already exists).
-3. **Finding suppression + comments** — mute a finding with a reason.
-4. **Scan diff** — compare two scans (new / resolved / persisted).
-5. **PDF export** — bundled Chromium (Puppeteer) rendering the HTML report.
-6. **Licence gating** — middleware blocking Guided Fix / export / history on
+1. **Custom rule import** — POST /rules/import + validate; RulesPage upload UI
+   (rule toggle already done; `custom_rules` table exists).
+2. **PDF export** — bundled Chromium (Puppeteer) rendering the HTML report.
+3. **Licence gating** — middleware blocking Guided Fix / export / history on
    Free tier (currently everything is unlocked in dev).
+4. **ScanDiff UI entry point** — link from HistoryPage to compare two selected
+   scans (backend `/diff` + `ScanDiffPage` already exist; needs a "compare"
+   affordance on the history table).
+5. **Phase 3 dashboard polish** — Lens-style per-resource create/edit forms
+   (RBAC, PVC, StorageClass) surfaced from the Headlamp base.
