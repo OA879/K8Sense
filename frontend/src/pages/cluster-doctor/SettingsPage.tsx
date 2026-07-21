@@ -6,6 +6,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { LicenceStatus } from '../../components/cluster-doctor/LicenceStatus';
+import { NotificationSettings } from '../../components/cluster-doctor/NotificationSettings';
 import { useCluster } from '../../lib/k8s';
 import {
   StorageStats,
@@ -92,6 +93,10 @@ export default function SettingsPage() {
               : `Unreachable: ${conn.error}`}
           </Alert>
         )}
+      </Section>
+
+      <Section title="Notifications & Scheduled Scans">
+        {cluster && <NotificationSettings cluster={cluster} />}
       </Section>
 
       <Section title="Storage">

@@ -90,6 +90,19 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	licencePath := filepath.Join(filepath.Dir(dbPath), "licence.k8sense-licence")
 	cdServer := cdapi.NewServer(database, rules, getClient, licencePath)
 
+	// Scheduled scans have no inbound request to derive a token from, so they
+	// resolve clients straight from the kubeconfig store instead of getClient.
+	scheduledClient := func(clusterName string) (kubernetes.Interface, error) {
+		ctxtProxy, err := config.KubeConfigStore.GetContext(clusterName)
+		if err != nil {
+			return nil, err
+		}
+
+		return ctxtProxy.ClientSetWithToken("")
+	}
+
+	cdServer.StartScheduler(context.Background(), scheduledClient)
+
 	// Enforce Free-tier retention on startup (keep the newest 10 scans per
 	// cluster). Pro/time-based retention is applied via the Settings purge UI.
 	if pruned, err := cddb.PruneScans(context.Background(), database, freeRetentionScans); err != nil {
@@ -118,6 +131,9 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	r.HandleFunc("/cluster-doctor/findings/unsuppress", cdServer.UnsuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/comment", cdServer.CommentFinding).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/audit-log", cdServer.ListAuditLog).Methods("GET")
+	r.HandleFunc("/cluster-doctor/notifications", cdServer.GetNotifyConfig).Methods("GET")
+	r.HandleFunc("/cluster-doctor/notifications", cdServer.SetNotifyConfig).Methods("PUT")
+	r.HandleFunc("/cluster-doctor/notifications/test", cdServer.TestNotification).Methods("POST")
 	r.HandleFunc("/cluster-doctor/audit-log/export", cdServer.ExportAuditLog).Methods("GET")
 	r.HandleFunc("/cluster-doctor/clusters/test", cdServer.TestConnection).Methods("GET")
 	r.HandleFunc("/cluster-doctor/storage", cdServer.GetStorageStats).Methods("GET")

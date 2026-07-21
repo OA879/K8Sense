@@ -253,8 +253,92 @@ func (s *Server) runScan(clientset kubernetes.Interface, cluster, scanID string,
 
 	<-relayDone
 
+	// Capture the previous scan's findings before persisting this one, so the
+	// notifier can tell what is genuinely new.
+	previous := s.previousFindings(cluster, scanID)
+
 	if err := cddb.SaveScan(context.Background(), s.db, result); err != nil {
 		logger.Log(logger.LevelError, map[string]string{"scanId": scanID, "cluster": cluster}, err,
 			"cluster-doctor: saving scan result")
+	}
+
+	s.notifyNewCriticals(cluster, scanID, result.Findings, previous)
+}
+
+// previousFindings loads the findings of the most recent completed scan for a
+// cluster, excluding the scan currently finishing. Returns nil on any error —
+// with no baseline, the notifier treats every critical as pre-existing rather
+// than alert-storming on first run.
+func (s *Server) previousFindings(cluster, currentScanID string) []clusterdoctor.Finding {
+	scans, err := cddb.ListScans(context.Background(), s.db, cluster, 2)
+	if err != nil {
+		return nil
+	}
+
+	for _, scan := range scans {
+		if scan.ID == currentScanID {
+			continue
+		}
+
+		findings, err := cddb.GetFindings(context.Background(), s.db, scan.ID)
+		if err != nil {
+			return nil
+		}
+
+		return findings
+	}
+
+	return nil
+}
+
+// notifyNewCriticals fires Slack/Teams webhooks for criticals that appeared in
+// this scan and weren't in the previous one. Best-effort: every failure is
+// logged and swallowed so alerting can never break scanning.
+func (s *Server) notifyNewCriticals(
+	cluster, scanID string,
+	current, previous []clusterdoctor.Finding,
+) {
+	// No baseline means this is the cluster's first scan — don't alert on the
+	// entire backlog.
+	if previous == nil {
+		return
+	}
+
+	cfg, err := cddb.GetNotificationConfig(context.Background(), s.db, cluster)
+	if err != nil || !cfg.NotifyCritical {
+		return
+	}
+
+	if cfg.SlackWebhook == "" && cfg.TeamsWebhook == "" {
+		return
+	}
+
+	newCriticals := clusterdoctor.NewCriticalFindings(current, previous)
+	if len(newCriticals) == 0 {
+		return
+	}
+
+	payload := clusterdoctor.NotificationPayload{
+		Cluster:     cluster,
+		NewCritical: newCriticals,
+		ScanID:      scanID,
+	}
+
+	if cfg.SlackWebhook != "" {
+		if err := clusterdoctor.PostWebhook(
+			context.Background(), cfg.SlackWebhook, clusterdoctor.SlackMessage(payload),
+		); err != nil {
+			logger.Log(logger.LevelError, map[string]string{"cluster": cluster}, err,
+				"cluster-doctor: posting Slack notification")
+		}
+	}
+
+	if cfg.TeamsWebhook != "" {
+		if err := clusterdoctor.PostWebhook(
+			context.Background(), cfg.TeamsWebhook, clusterdoctor.TeamsMessage(payload),
+		); err != nil {
+			logger.Log(logger.LevelError, map[string]string{"cluster": cluster}, err,
+				"cluster-doctor: posting Teams notification")
+		}
 	}
 }
