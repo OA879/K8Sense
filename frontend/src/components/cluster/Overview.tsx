@@ -34,6 +34,7 @@ import { StatusLabel } from '../common/Label';
 import Link from '../common/Link';
 import { PageGrid } from '../common/Resource';
 import ResourceListView from '../common/Resource/ResourceListView';
+import { ClusterHealthPanel } from '../cluster-doctor/ClusterHealthPanel';
 import { SectionBox } from '../common/SectionBox';
 import ShowHideLabel from '../common/ShowHideLabel';
 import { LightTooltip } from '../common/Tooltip';
@@ -89,6 +90,7 @@ export default function Overview() {
 
   return (
     <PageGrid>
+      <ClusterHealthPanel />
       <SectionBox title={t('translation|Overview')} py={2} mt={[4, 0, 0]}>
         {noPermissions ? (
           <ClusterGroupErrorMessage errors={[metricsError]} />

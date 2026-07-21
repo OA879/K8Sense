@@ -225,7 +225,7 @@ function buildTrayMenu(
 ): Menu {
   return Menu.buildFromTemplate([
     {
-      label: 'Open Headlamp',
+      label: 'Open K8sense',
       click: () => {
         void showWindow(options);
       },
@@ -243,7 +243,7 @@ function buildTrayMenu(
     },
     { type: 'separator' },
     {
-      label: 'About Headlamp',
+      label: 'About K8sense',
       click: () => openAboutDialog(options),
     },
     { type: 'separator' },

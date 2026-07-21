@@ -50,6 +50,7 @@ import ShortcutsSettings from './Settings/ShortcutsSettings';
 import { applyBackendThemeConfig } from './themeSlice';
 import TopBar from './TopBar';
 import VersionDialog from './VersionDialog';
+import { ClusterDoctorShortcuts } from '../cluster-doctor/ClusterDoctorShortcuts';
 
 export interface LayoutProps {}
 
@@ -320,6 +321,7 @@ export default function Layout({}: LayoutProps) {
           {panels.top.map(it => (
             <it.component key={it.id} />
           ))}
+          <ClusterDoctorShortcuts />
           <TopBar />
           <Box
             sx={{

@@ -288,7 +288,7 @@ export function PureAuthChooser({
                   <OauthPopup
                     onCode={handleOidcAuth}
                     url={oauthUrl}
-                    title={t('Headlamp Cluster Authentication')}
+                    title={t('K8sense Cluster Authentication')}
                     button={ColorButton as typeof Button}
                   >
                     {t('Sign In') as string}

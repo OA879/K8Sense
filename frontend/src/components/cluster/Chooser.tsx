@@ -56,6 +56,7 @@ import Loader from '../common/Loader';
 import { LightTooltip } from '../common/Tooltip';
 import ClusterChooser from './ClusterChooser';
 import ClusterChooserPopup from './ClusterChooserPopup';
+import { useBranding } from '../../lib/cluster-doctor-branding-api';
 
 export interface ClusterTitleProps {
   clusters?: {
@@ -286,6 +287,7 @@ interface ClusterDialogProps extends PropsWithChildren<Omit<DialogProps, 'open' 
 export function ClusterDialog(props: ClusterDialogProps) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const branding = useBranding();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const {
     open,
@@ -355,7 +357,7 @@ export function ClusterDialog(props: ClusterDialogProps) {
           }}
         />
         <Box component="span" sx={visuallyHidden}>
-          Headlamp
+          {branding.productName}
         </Box>
       </DialogTitle>
       <DialogContent
@@ -466,7 +468,7 @@ function Chooser(props: ClusterDialogProps) {
                 </DialogContentText>
                 {isElectron() && (
                   <DialogContentText>
-                    {t('Or try running Headlamp with a different kube config.')}
+                    {t('Or try running K8sense with a different kube config.')}
                   </DialogContentText>
                 )}
               </>

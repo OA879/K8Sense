@@ -73,6 +73,24 @@ export const DEFAULT_SHORTCUTS: Record<string, ShortcutConfig> = {
     defaultKey: 'ctrl+shift+f',
     category: 'search',
   },
+  // K8sense — Cluster Doctor shortcuts. Registered here (rather than with a
+  // bare useHotkeys) so they show up in Settings and stay user-remappable.
+  CLUSTER_DOCTOR_SCAN: {
+    id: 'CLUSTER_DOCTOR_SCAN',
+    name: i18next.t('Run Cluster Scan'),
+    description: i18next.t('Start a Cluster Doctor scan of the current cluster'),
+    key: 'ctrl+shift+d',
+    defaultKey: 'ctrl+shift+d',
+    category: 'navigation',
+  },
+  CLUSTER_DOCTOR_FINDINGS: {
+    id: 'CLUSTER_DOCTOR_FINDINGS',
+    name: i18next.t('Latest Findings'),
+    description: i18next.t("Open the most recent scan's findings"),
+    key: 'ctrl+shift+k',
+    defaultKey: 'ctrl+shift+k',
+    category: 'navigation',
+  },
 };
 
 export interface ShortcutsState {

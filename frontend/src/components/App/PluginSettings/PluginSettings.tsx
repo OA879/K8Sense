@@ -355,7 +355,7 @@ export function PluginSettingsPure(props: PluginSettingsPureProps) {
                   return (
                     <Tooltip
                       title={t(
-                        'translation|This plugin is not compatible with this version of Headlamp'
+                        'translation|This plugin is not compatible with this version of K8sense'
                       )}
                     >
                       <Chip label={t('translation|Incompatible')} size="small" color="error" />
