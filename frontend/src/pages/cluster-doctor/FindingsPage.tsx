@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import { Icon } from '@iconify/react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -26,18 +28,22 @@ import {
   FindingsFilterValue,
 } from '../../components/cluster-doctor/FindingsFilter';
 import { FindingsTable } from '../../components/cluster-doctor/FindingsTable';
-import { Finding, getFindings,Severity } from '../../lib/cluster-doctor-api';
+import { GuidedFixModal } from '../../components/cluster-doctor/GuidedFixModal';
+import { downloadReport, Finding, getFindings, Severity } from '../../lib/cluster-doctor-api';
+import { useCluster } from '../../lib/k8s';
 
 const ALL_SEVERITIES: Severity[] = ['CRITICAL', 'WARNING', 'INFO'];
 
 export default function FindingsPage() {
   const { scanId } = useParams<{ scanId: string }>();
+  const cluster = useCluster();
   const [findings, setFindings] = React.useState<Finding[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState<FindingsFilterValue>({
     severities: ALL_SEVERITIES,
     search: '',
   });
+  const [fixTarget, setFixTarget] = React.useState<Finding | null>(null);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -79,11 +85,51 @@ export default function FindingsPage() {
     });
   }, [findings, filter]);
 
+  const [exporting, setExporting] = React.useState(false);
+  const [exportError, setExportError] = React.useState<string | null>(null);
+
+  async function handleExport(format: 'html' | 'json') {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await downloadReport(scanId, format);
+    } catch (e) {
+      setExportError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Findings
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h4">Findings</Typography>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={exporting || !findings}
+            startIcon={<Icon icon="mdi:file-download-outline" />}
+            onClick={() => handleExport('html')}
+          >
+            Export HTML
+          </Button>
+          <Button
+            size="small"
+            disabled={exporting || !findings}
+            startIcon={<Icon icon="mdi:code-json" />}
+            onClick={() => handleExport('json')}
+          >
+            JSON
+          </Button>
+        </Box>
+      </Box>
+
+      {exportError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          Export failed: {exportError}
+        </Alert>
+      )}
 
       {error && <Alert severity="error">{error}</Alert>}
 
@@ -96,9 +142,23 @@ export default function FindingsPage() {
       {findings && (
         <Paper sx={{ p: 2 }}>
           <FindingsFilter value={filter} onChange={setFilter} counts={counts} />
-          <FindingsTable findings={filtered} />
+          <FindingsTable findings={filtered} onApplyFix={setFixTarget} />
         </Paper>
       )}
+
+      <GuidedFixModal
+        finding={fixTarget}
+        cluster={cluster ?? ''}
+        open={fixTarget !== null}
+        onClose={() => setFixTarget(null)}
+        onApplied={() => {
+          // Re-fetch so the resolved finding disappears on next scan; the
+          // current scan's stored findings are historical, so we just reload.
+          getFindings(scanId)
+            .then(setFindings)
+            .catch(() => undefined);
+        }}
+      />
     </Box>
   );
 }

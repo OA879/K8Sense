@@ -16,6 +16,7 @@
 
 import { Icon } from '@iconify/react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Collapse from '@mui/material/Collapse';
 import IconButton from '@mui/material/IconButton';
 import Table from '@mui/material/Table';
@@ -30,11 +31,19 @@ import { SeverityBadge } from './SeverityBadge';
 
 export interface FindingsTableProps {
   findings: Finding[];
+  /** When set, findings with a guided fix show an "Apply Fix" button. */
+  onApplyFix?: (finding: Finding) => void;
 }
 
 const SEVERITY_ORDER: Record<Finding['severity'], number> = { CRITICAL: 0, WARNING: 1, INFO: 2 };
 
-function FindingRow({ finding }: { finding: Finding }) {
+function FindingRow({
+  finding,
+  onApplyFix,
+}: {
+  finding: Finding;
+  onApplyFix?: (finding: Finding) => void;
+}) {
   const [open, setOpen] = React.useState(false);
 
   return (
@@ -49,13 +58,27 @@ function FindingRow({ finding }: { finding: Finding }) {
         <TableCell>{finding.namespace || '—'}</TableCell>
         <TableCell>{finding.resourceName}</TableCell>
         <TableCell padding="checkbox">
+          {onApplyFix && finding.guidedFixAvailable && (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={e => {
+                e.stopPropagation();
+                onApplyFix(finding);
+              }}
+            >
+              Apply Fix
+            </Button>
+          )}
+        </TableCell>
+        <TableCell padding="checkbox">
           <IconButton size="small" aria-label={open ? 'Collapse' : 'Expand'}>
             <Icon icon={open ? 'mdi:chevron-up' : 'mdi:chevron-down'} />
           </IconButton>
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={7} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
+        <TableCell colSpan={8} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 2, px: 1 }}>
               <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
@@ -85,7 +108,7 @@ function FindingRow({ finding }: { finding: Finding }) {
   );
 }
 
-export function FindingsTable({ findings }: FindingsTableProps) {
+export function FindingsTable({ findings, onApplyFix }: FindingsTableProps) {
   const sorted = React.useMemo(
     () => [...findings].sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity]),
     [findings]
@@ -110,11 +133,12 @@ export function FindingsTable({ findings }: FindingsTableProps) {
           <TableCell>Namespace</TableCell>
           <TableCell>Resource</TableCell>
           <TableCell padding="checkbox" />
+          <TableCell padding="checkbox" />
         </TableRow>
       </TableHead>
       <TableBody>
         {sorted.map(finding => (
-          <FindingRow key={finding.id} finding={finding} />
+          <FindingRow key={finding.id} finding={finding} onApplyFix={onApplyFix} />
         ))}
       </TableBody>
     </Table>

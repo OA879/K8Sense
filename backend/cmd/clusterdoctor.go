@@ -82,8 +82,11 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	r.HandleFunc("/cluster-doctor/scan", cdServer.StartScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/{id}/status", cdServer.ScanStatus).Methods("GET")
 	r.HandleFunc("/cluster-doctor/findings/{scanId}", cdServer.GetFindings).Methods("GET")
+	r.HandleFunc("/cluster-doctor/findings/{scanId}/export", cdServer.ExportReport).Methods("GET")
 	r.HandleFunc("/cluster-doctor/history", cdServer.ListHistory).Methods("GET")
 	r.HandleFunc("/cluster-doctor/rules", cdServer.ListRules).Methods("GET")
+	r.HandleFunc("/cluster-doctor/guided-fix", cdServer.GuidedFix).Methods("POST")
+	r.HandleFunc("/cluster-doctor/audit-log", cdServer.ListAuditLog).Methods("GET")
 
 	logger.Log(logger.LevelInfo, map[string]string{"rulesLoaded": strconv.Itoa(len(rules)), "dbPath": dbPath}, nil,
 		"cluster-doctor: diagnostics engine ready")

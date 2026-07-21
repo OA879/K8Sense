@@ -34,6 +34,7 @@ type ClientProvider func(r *http.Request, clusterName string) (kubernetes.Interf
 type Server struct {
 	db        *sql.DB
 	rules     []clusterdoctor.Rule
+	rulesByID map[string]clusterdoctor.Rule
 	getClient ClientProvider
 
 	mu     sync.Mutex
@@ -43,12 +44,37 @@ type Server struct {
 // NewServer builds a Server. rules is the fully loaded rule set (built-in +
 // custom, in a later phase); getClient resolves clusters by name.
 func NewServer(database *sql.DB, rules []clusterdoctor.Rule, getClient ClientProvider) *Server {
+	byID := make(map[string]clusterdoctor.Rule, len(rules))
+	for _, rule := range rules {
+		byID[rule.ID] = rule
+	}
+
 	return &Server{
 		db:        database,
 		rules:     rules,
+		rulesByID: byID,
 		getClient: getClient,
 		active:    map[string]*liveScan{},
 	}
+}
+
+// enrichGuidedFix re-populates each finding's guided-fix fields from the
+// current rule set. These aren't persisted in the findings table (findings
+// are resource snapshots; guided-fix availability is a property of the rule),
+// so they're derived here whenever findings are read back from the database.
+func (s *Server) enrichGuidedFix(findings []clusterdoctor.Finding) []clusterdoctor.Finding {
+	for i := range findings {
+		rule, ok := s.rulesByID[findings[i].RuleID]
+		if !ok || rule.GuidedFix.Action == "" {
+			continue
+		}
+
+		findings[i].GuidedFixAvailable = true
+		findings[i].GuidedFixAction = rule.GuidedFix.Action
+		findings[i].GuidedFixWarning = rule.GuidedFix.Warning
+	}
+
+	return findings
 }
 
 func (s *Server) registerActive(scanID string, live *liveScan) {

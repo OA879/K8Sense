@@ -115,7 +115,65 @@ export function listRules(): Promise<Rule[]> {
   return apiFetch('/rules');
 }
 
+export interface GuidedFixRequest {
+  cluster: string;
+  action: string;
+  namespace?: string;
+  resourceName: string;
+  confirmed: true;
+  force?: boolean;
+  replicas?: number;
+}
+
+export interface GuidedFixResponse {
+  result: 'success' | 'failed';
+  message: string;
+}
+
+/**
+ * Executes a Guided Fix action. The caller is responsible for having shown a
+ * confirmation modal first — the backend rejects any request without
+ * confirmed: true.
+ */
+export function applyGuidedFix(req: GuidedFixRequest): Promise<GuidedFixResponse> {
+  return apiFetch('/guided-fix', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+}
+
 /** Full URL for the SSE progress stream of one scan — see sse-client.ts. */
 export function scanStatusUrl(scanId: string): string {
   return apiUrl(`/scan/${encodeURIComponent(scanId)}/status`);
+}
+
+/** Full URL for downloading a scan's report in the given format. */
+export function exportUrl(scanId: string, format: 'html' | 'json'): string {
+  return apiUrl(`/findings/${encodeURIComponent(scanId)}/export?format=${format}`);
+}
+
+/**
+ * Downloads a scan's report by fetching it with the backend auth header (a
+ * plain anchor href can't send X-HEADLAMP_BACKEND-TOKEN) and triggering a
+ * browser save via a temporary object URL.
+ */
+export async function downloadReport(scanId: string, format: 'html' | 'json'): Promise<void> {
+  const response = await fetch(exportUrl(scanId, format), {
+    headers: { ...getHeadlampAPIHeaders() },
+  });
+
+  if (!response.ok) {
+    throw new Error(`export failed: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `k8sense-report-${scanId}.${format}`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
+	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
 	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
 )
 
@@ -58,7 +59,52 @@ func (s *Server) GetFindings(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(findings)
+	_ = json.NewEncoder(w).Encode(s.enrichGuidedFix(findings))
+}
+
+// ExportReport handles GET /cluster-doctor/findings/:scanId/export?format=.
+// format=json streams the raw findings (same as GetFindings); format=html
+// (the default) renders a self-contained, air-gap-safe HTML report as a file
+// download.
+func (s *Server) ExportReport(w http.ResponseWriter, r *http.Request) {
+	scanID := mux.Vars(r)["scanId"]
+	format := r.URL.Query().Get("format")
+
+	findings, err := cddb.GetFindings(r.Context(), s.db, scanID)
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	if format == "json" {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", `attachment; filename="k8sense-report-`+scanID+`.json"`)
+		_ = json.NewEncoder(w).Encode(findings)
+
+		return
+	}
+
+	scan, err := cddb.GetScan(r.Context(), s.db, scanID)
+	if err != nil {
+		http.Error(w, `{"error": "scan not found"}`, http.StatusNotFound)
+		return
+	}
+
+	report := clusterdoctor.BuildReportData(
+		scan.ClusterID, scan.Status,
+		scan.TotalFindings, scan.CriticalCount, scan.WarningCount, scan.InfoCount,
+		scan.SkippedChecks, findings,
+	)
+
+	html, err := clusterdoctor.RenderHTMLReport(report)
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="k8sense-report-`+scanID+`.html"`)
+	_, _ = w.Write(html)
 }
 
 const defaultHistoryLimit = 50
@@ -85,4 +131,22 @@ func (s *Server) ListHistory(w http.ResponseWriter, r *http.Request) {
 func (s *Server) ListRules(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(s.rules)
+}
+
+// ListAuditLog handles GET /cluster-doctor/audit-log?cluster=name.
+func (s *Server) ListAuditLog(w http.ResponseWriter, r *http.Request) {
+	cluster := r.URL.Query().Get("cluster")
+	if cluster == "" {
+		http.Error(w, `{"error": "cluster query param is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	entries, err := cddb.ListAudit(r.Context(), s.db, cluster, defaultHistoryLimit)
+	if err != nil {
+		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(entries)
 }

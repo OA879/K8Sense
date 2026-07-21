@@ -53,8 +53,8 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 1f. RBAC manifest | ✅ Done | `deploy/k8sense-clusterrole.yaml`, dry-run validated |
 | 2a. Full rule library (46 rules) | ✅ Done | Added CP/STOR/NET/RES/CERT/WL — all 8 categories |
 | 2b. Scan History UI | ✅ Done | `HistoryPage`, wired to `/history` |
-| 2c. Report export (HTML/PDF) | ⬜ Not started | |
-| 2d. Guided Fix | ⬜ Not started | |
+| 2c. Report export | ✅ Done | Self-contained HTML report + JSON; PDF deferred |
+| 2d. Guided Fix + audit log | ✅ Done | Confirm-gated write actions, audit trail |
 | 2e. Rule management UI | ⬜ Not started | |
 | 3. Dashboard polish | ⬜ Not started | |
 | 4. Enterprise | ⬜ Not started | |
@@ -108,29 +108,45 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 - `db.go` — pure-Go `modernc.org/sqlite` (keeps single-binary distribution),
   WAL mode, embedded numbered migrations, OS-appropriate data dir.
 - `migrations/001_initial.sql` — full schema from the context doc.
-- `scans.go` — `SaveScan` / `GetFindings` / `ListScans`.
+- `scans.go` — `SaveScan` / `GetFindings` / `GetScan` / `ListScans`.
+- `audit.go` — `WriteAudit` / `ListAudit` (Guided Fix audit trail).
 - `db_smoke_test.go` — open→migrate→save→read round-trip test (passing).
+
+### Reporting — `backend/pkg/clusterdoctor/reporter.go`
+- `RenderHTMLReport` — fully self-contained HTML (inline CSS, system fonts,
+  **zero external requests** — verified) so reports render on air-gapped
+  machines and email as one file. PDF export deferred (would add bundled
+  Chromium; HTML covers the demo-critical "send to your CTO" need for now).
 
 ### API — `backend/pkg/clusterdoctor/api/` + `backend/cmd/clusterdoctor.go`
 Routes registered on Headlamp's existing mux router:
 - `POST /cluster-doctor/scan` — start scan, returns `scanId` immediately.
 - `GET  /cluster-doctor/scan/:id/status` — **SSE** progress stream (EventSource).
-- `GET  /cluster-doctor/findings/:scanId` — findings (doubles as JSON export).
+- `GET  /cluster-doctor/findings/:scanId` — findings (guided-fix enriched).
+- `GET  /cluster-doctor/findings/:scanId/export?format=html|json` — report download.
 - `GET  /cluster-doctor/history?cluster=` — scan history.
 - `GET  /cluster-doctor/rules` — rule catalogue.
+- `POST /cluster-doctor/guided-fix` — execute a confirmed safe fix (Pro).
+- `GET  /cluster-doctor/audit-log?cluster=` — audit trail of fixes taken.
 
 `livescan.go` buffers + fans out progress events so a late SSE subscriber
 (frontend POSTs, *then* opens EventSource) still replays everything. Cluster
 resolution reuses Headlamp's kubeconfig store + token flow, so no separate auth.
+`guidedfix.go` enforces an action allowlist (delete_pod, delete_job,
+uncordon_node, scale_deployment, restart_deployment) + `confirmed: true` +
+audit write on every attempt.
 
 ### UI — React (MUI)
-- `frontend/src/lib/cluster-doctor-api.ts` — typed API client.
+- `frontend/src/lib/cluster-doctor-api.ts` — typed API client (scan, findings,
+  history, rules, export/download, guided fix).
 - `frontend/src/lib/sse-client.ts` — EventSource wrapper.
 - `frontend/src/components/cluster-doctor/` — `SeverityBadge`, `FindingsTable`
-  (expandable rows w/ remediation), `FindingsFilter`, `ScanProgress`.
-- `frontend/src/pages/cluster-doctor/` — `ScanPage`, `FindingsPage`.
-- Routes `clusterDoctorScan` / `clusterDoctorFindings` + sidebar entry
-  (stethoscope icon).
+  (expandable rows + Apply Fix button), `FindingsFilter`, `ScanProgress`,
+  `GuidedFixModal` (confirm-gated command preview).
+- `frontend/src/pages/cluster-doctor/` — `ScanPage`, `FindingsPage`
+  (export buttons), `HistoryPage`.
+- Routes `clusterDoctorScan` / `clusterDoctorFindings` / `clusterDoctorHistory`
+  + sidebar entry (stethoscope icon).
 
 ### RBAC — `deploy/k8sense-clusterrole.yaml`
 Read-only `k8sense-scanner` ClusterRole (all tiers) + `k8sense-guided-fix`
@@ -192,16 +208,32 @@ These are choices made during the build that deviate from or refine
    false-alarming. Deeper managed-control-plane health (via `/healthz`) is a
    later addition.
 
+6. **Guided-fix availability is derived at read time, not persisted (Stage 2).**
+   The `findings` table stores resource snapshots but no guided-fix columns.
+   `Server.enrichGuidedFix` re-maps each finding's `rule_id` to the current
+   rule set when findings are read back, so `guidedFixAvailable/Action/Warning`
+   always reflect the live rules (and updating a rule's guided fix applies to
+   historical scans). Avoids a schema migration and keeps guided-fix logic
+   single-sourced in the rule YAML.
+
+7. **Guided Fix safety model (Stage 2).**
+   Server enforces an action **allowlist** (delete_pod, delete_job,
+   uncordon_node, scale_deployment, restart_deployment) — anything else is 403.
+   Every request needs `confirmed: true` (400 otherwise), and **every attempt**
+   (success or failure) writes an `audit_log` row with actor/action/resource/
+   result. This matches the context doc's "explicit human intent + audit trail"
+   requirement for regulated customers. Runbook auto-fix (Tier 3) remains out
+   of scope until Phase 4.
+
 ---
 
 ## Next up (remaining Stage 2, in suggested order)
 
-1. **Report export** — HTML first (self-contained, embedded fonts), then PDF
-   via bundled Chromium. Backend `/findings/:scanId/export?format=` stub.
-2. **Guided Fix** — `GuidedFixModal` + `POST /cluster-doctor/guided-fix` +
-   audit-log write. Safe actions only (delete evicted pod, uncordon, scale,
-   rollout restart). Rules already carry `guidedFix.action`.
-3. **Rule management UI** — list/toggle rules, import custom YAML (`/rules`
-   list endpoint already exists; needs toggle + import endpoints).
-4. **Finding suppression + comments** — mute a finding with a reason.
-5. **Scan diff** — compare two scans (new / resolved / persisted).
+1. **Rule management UI** — list/toggle rules, import custom YAML (`/rules`
+   list endpoint already exists; needs toggle + import + validate endpoints).
+2. **Audit log viewer** — `AuditLogPage` (backend `/audit-log` already exists).
+3. **Finding suppression + comments** — mute a finding with a reason.
+4. **Scan diff** — compare two scans (new / resolved / persisted).
+5. **PDF export** — bundled Chromium (Puppeteer) rendering the HTML report.
+6. **Licence gating** — middleware blocking Guided Fix / export / history on
+   Free tier (currently everything is unlocked in dev).

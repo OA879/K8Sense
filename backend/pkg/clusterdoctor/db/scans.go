@@ -134,6 +134,35 @@ func GetFindings(ctx context.Context, database *sql.DB, scanID string) ([]cluste
 	return findings, rows.Err()
 }
 
+// GetScan returns the summary row for a single scan, or sql.ErrNoRows if no
+// such scan exists.
+func GetScan(ctx context.Context, database *sql.DB, scanID string) (ScanSummary, error) {
+	var s ScanSummary
+
+	var completedAt sql.NullInt64
+
+	err := database.QueryRowContext(ctx, `
+		SELECT id, cluster_id, started_at, completed_at, status,
+		       total_findings, critical_count, warning_count, info_count,
+		       skipped_checks, COALESCE(error_message, '')
+		FROM scans
+		WHERE id = ?
+	`, scanID).Scan(
+		&s.ID, &s.ClusterID, &s.StartedAt, &completedAt, &s.Status,
+		&s.TotalFindings, &s.CriticalCount, &s.WarningCount, &s.InfoCount,
+		&s.SkippedChecks, &s.ErrorMessage,
+	)
+	if err != nil {
+		return ScanSummary{}, err
+	}
+
+	if completedAt.Valid {
+		s.CompletedAt = &completedAt.Int64
+	}
+
+	return s, nil
+}
+
 // ListScans returns scan history for one cluster, most recent first.
 func ListScans(ctx context.Context, database *sql.DB, clusterID string, limit int) ([]ScanSummary, error) {
 	rows, err := database.QueryContext(ctx, `
