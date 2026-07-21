@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
@@ -22,23 +23,28 @@ import (
 // current working directory (true when running `npm run start` from the
 // repo root during development), then next to the running executable
 // (true for a packaged install).
-func resolveRulesDir() string {
+func resolveRulesDir() (string, []string) {
+	var searched []string
+
 	if dir := os.Getenv("K8SENSE_RULES_DIR"); dir != "" {
-		return dir
+		return dir, nil
 	}
 
+	searched = append(searched, "rules")
 	if _, err := os.Stat("rules"); err == nil {
-		return "rules"
+		return "rules", nil
 	}
 
 	if exe, err := os.Executable(); err == nil {
 		candidate := filepath.Join(filepath.Dir(exe), "rules")
+		searched = append(searched, candidate)
+
 		if _, err := os.Stat(candidate); err == nil {
-			return candidate
+			return candidate, nil
 		}
 	}
 
-	return "rules"
+	return "rules", searched
 }
 
 // setupClusterDoctor loads the rule library, opens the local SQLite store,
@@ -48,9 +54,19 @@ func resolveRulesDir() string {
 // upstream code. A failure here (bad rules, can't open the db) disables the
 // diagnostics engine but must never take down the rest of the app.
 func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
-	rules, err := clusterdoctor.LoadRules(resolveRulesDir())
+	rulesDir, searched := resolveRulesDir()
+
+	rules, err := clusterdoctor.LoadRules(rulesDir)
 	if err != nil {
-		logger.Log(logger.LevelError, nil, err, "cluster-doctor: loading rules, diagnostics engine disabled")
+		// Cluster Doctor is the product's core feature, so a missing rule
+		// library is not a quiet degradation — say exactly where we looked.
+		// Common cause: a container image that didn't ship the rules/ directory.
+		logger.Log(logger.LevelError, map[string]string{
+			"rulesDir": rulesDir,
+			"searched": strings.Join(searched, ", "),
+			"hint":     "set K8SENSE_RULES_DIR or ensure rules/ ships with the build",
+		}, err, "cluster-doctor: RULE LIBRARY NOT FOUND — diagnostics engine is DISABLED")
+
 		return
 	}
 

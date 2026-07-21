@@ -1,8 +1,13 @@
 package api_test
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -258,5 +263,58 @@ func TestGuidedFixUnknownClusterIsNotFound(t *testing.T) {
 
 	if rec.Code != http.StatusNotFound {
 		t.Errorf("unknown cluster: got %d, want 404", rec.Code)
+	}
+}
+
+// TestGuidedFixRecordsRealActorInAudit is the compliance case for shared (web)
+// deployments: the audit row must name the person who acted, not a generic
+// label, so "who deleted that pod?" is answerable.
+func TestGuidedFixRecordsRealActorInAudit(t *testing.T) {
+	t.Parallel()
+
+	env := newTestEnv(t, testPod("demo", "doomed"))
+	env.grantPro()
+
+	// An OIDC-style bearer token, as a browser session would carry.
+	claims := base64.RawURLEncoding.EncodeToString(
+		[]byte(`{"email":"olakunle@abbeymortgagebank.com","sub":"abc"}`))
+	token := base64.RawURLEncoding.EncodeToString([]byte(`{"alg":"none"}`)) +
+		"." + claims + "." + base64.RawURLEncoding.EncodeToString([]byte("sig"))
+
+	body, err := json.Marshal(map[string]any{
+		"cluster": testCluster, "action": "delete_pod",
+		"namespace": "demo", "resourceName": "doomed", "confirmed": true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/cluster-doctor/guided-fix", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	rec := httptest.NewRecorder()
+	env.router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("guided fix: got %d, body %s", rec.Code, rec.Body.String())
+	}
+
+	entries, err := cddb.ListAudit(context.Background(), env.db, testCluster, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(entries) != 1 {
+		t.Fatalf("got %d audit entries, want 1", len(entries))
+	}
+
+	if entries[0].Actor != "olakunle@abbeymortgagebank.com" {
+		t.Errorf("audit actor = %q, want the identity from the token", entries[0].Actor)
+	}
+
+	// The raw token must never reach the audit log.
+	if strings.Contains(entries[0].Actor, token) || strings.Contains(entries[0].Payload, token) {
+		t.Error("audit entry leaked the bearer token")
 	}
 }

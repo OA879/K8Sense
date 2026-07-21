@@ -88,10 +88,17 @@ COPY --from=frontend --link /headlamp/frontend/build /headlamp/frontend
 COPY --from=frontend --link /headlamp/plugins /headlamp/plugins
 COPY --from=static-plugins --link /plugins /headlamp/static-plugins
 
+# K8sense: the Cluster Doctor rule library must ship with the image. Without it
+# LoadRules fails and the diagnostics engine silently disables itself, leaving a
+# container build with no Cluster Doctor at all. resolveRulesDir() finds this via
+# the executable's directory (/headlamp), and K8SENSE_RULES_DIR pins it explicitly.
+COPY ./rules /headlamp/rules
+
 RUN chown -R headlamp:headlamp /headlamp
 USER headlamp
 
 EXPOSE 4466
 
 ENV HEADLAMP_STATIC_PLUGINS_DIR=/headlamp/static-plugins
+ENV K8SENSE_RULES_DIR=/headlamp/rules
 ENTRYPOINT ["/headlamp/headlamp-server", "-html-static-dir", "/headlamp/frontend", "-plugins-dir", "/headlamp/plugins"]

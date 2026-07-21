@@ -81,10 +81,10 @@ func (s *Server) GuidedFix(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	actor := r.Header.Get("X-K8sense-Actor")
-	if actor == "" {
-		actor = "operator"
-	}
+	// Derive the real identity from the request rather than labelling every
+	// action "operator" — a shared (web) deployment's audit log is worthless
+	// if it cannot answer "who did this?".
+	actor := actorFromRequest(r)
 
 	message, execErr := s.executeGuidedFix(r.Context(), clientset, req)
 
