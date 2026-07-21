@@ -73,11 +73,16 @@ export interface Rule {
   enabled: boolean;
 }
 
-function apiUrl(path: string): string {
+/** Builds a full /cluster-doctor/* URL. Exported so per-feature API modules
+ *  (rules, audit, suppression, diff) can share one base without re-editing
+ *  this file. */
+export function apiUrl(path: string): string {
   return getAppUrl() + 'cluster-doctor/' + path.replace(/^\//, '');
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+/** Authenticated JSON fetch against a /cluster-doctor/* endpoint. Exported for
+ *  per-feature API modules to reuse. */
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(apiUrl(path), {
     ...init,
     headers: { ...getHeadlampAPIHeaders(), ...(init?.headers ?? {}) },
