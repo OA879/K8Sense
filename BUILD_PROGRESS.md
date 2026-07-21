@@ -74,6 +74,10 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 4b. In-app RBAC roles | ✅ Done | viewer/operator/admin guardrail (see caveat below) |
 | 4c. Audit CSV export | ✅ Done | `/audit-log/export` |
 | 4d. SSO / team sharing | 🚫 Blocked | Needs a real IdP + Postgres (your infra) |
+| 4e. Web-app (in-cluster) mode | 🟡 Mostly | Container + manifests done; single-replica only |
+| 4f. Audit actor identity | ✅ Done | Derived from bearer-token claims (OIDC / service account) |
+| 4g. PDF export | ✅ Done | Print stylesheet — browser renders the PDF, no bundled engine |
+| 4h. Postgres backend (HA) | 🟡 Groundwork | Dialect layer tested; migrations not yet ported |
 | 5. Distribution | ⬜ Not started | Deliberately deferred until features are complete |
 
 ---
@@ -271,10 +275,21 @@ These are choices made during the build that deviate from or refine
    fail immediately.
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
-4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
-   Electron shell has never been built or launched. Note the tray-label
-   rebrand above is therefore untested at runtime — it will first be exercised
-   when a desktop build is produced in Phase 5.
+4. **Nothing is packaged for the desktop.** The Electron shell has never been
+   built or launched, so the tray-label rebrand is untested at runtime. The
+   *container* image, by contrast, now builds and is the basis of web mode.
+
+5. **Web mode is single-replica only.** SQLite is a single-writer store, so two
+   pods sharing the volume would corrupt it. `deploy/k8sense-web.yaml` pins
+   replicas to 1 and uses the Recreate strategy for exactly this reason.
+   Multi-replica HA needs the Postgres backend (groundwork only — see
+   `db/dialect.go`).
+
+6. **Web mode shares one ServiceAccount.** Every browser user acts with the
+   same cluster permissions, so the ClusterRole must be scoped to what you'd
+   grant everyone, and the Service should sit behind an authenticating proxy.
+   The audit log now records real per-user identity from the request token, so
+   *attribution* is correct even though *authorisation* is shared.
 
 ## Next up (accurate as of the latest commit)
 
@@ -360,6 +375,10 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 4b. In-app RBAC roles | ✅ Done | viewer/operator/admin guardrail (see caveat below) |
 | 4c. Audit CSV export | ✅ Done | `/audit-log/export` |
 | 4d. SSO / team sharing | 🚫 Blocked | Needs a real IdP + Postgres (your infra) |
+| 4e. Web-app (in-cluster) mode | 🟡 Mostly | Container + manifests done; single-replica only |
+| 4f. Audit actor identity | ✅ Done | Derived from bearer-token claims (OIDC / service account) |
+| 4g. PDF export | ✅ Done | Print stylesheet — browser renders the PDF, no bundled engine |
+| 4h. Postgres backend (HA) | 🟡 Groundwork | Dialect layer tested; migrations not yet ported |
 | 5. Distribution | ⬜ Not started | Deliberately deferred until features are complete |
 
 ---
@@ -557,10 +576,21 @@ These are choices made during the build that deviate from or refine
    fail immediately.
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
-4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
-   Electron shell has never been built or launched. Note the tray-label
-   rebrand above is therefore untested at runtime — it will first be exercised
-   when a desktop build is produced in Phase 5.
+4. **Nothing is packaged for the desktop.** The Electron shell has never been
+   built or launched, so the tray-label rebrand is untested at runtime. The
+   *container* image, by contrast, now builds and is the basis of web mode.
+
+5. **Web mode is single-replica only.** SQLite is a single-writer store, so two
+   pods sharing the volume would corrupt it. `deploy/k8sense-web.yaml` pins
+   replicas to 1 and uses the Recreate strategy for exactly this reason.
+   Multi-replica HA needs the Postgres backend (groundwork only — see
+   `db/dialect.go`).
+
+6. **Web mode shares one ServiceAccount.** Every browser user acts with the
+   same cluster permissions, so the ClusterRole must be scoped to what you'd
+   grant everyone, and the Service should sit behind an authenticating proxy.
+   The audit log now records real per-user identity from the request token, so
+   *attribution* is correct even though *authorisation* is shared.
 
 ## Next up (remaining Stage 2 / Phase 3, in suggested order)
 
