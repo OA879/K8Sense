@@ -259,11 +259,14 @@ These are choices made during the build that deviate from or refine
    prevent fat-fingered writes and to enable a read-only install. Real
    enforcement is (a) the cluster's own RBAC, which still governs every request
    K8sense makes, and (b) SSO-backed identity, which is not built yet.
-2. **Test coverage is uneven.** The rule engine, checks, licence, role and
-   branding logic have unit tests. The HTTP handlers, licence/role gating,
-   scheduler and webhook delivery are currently verified only by manual
-   end-to-end runs against a live kind cluster — they need real handler tests
-   before a regulated customer depends on them.
+2. ~~Test coverage is uneven.~~ **Closed.** 112 tests across all 5 packages
+   (`go vet` clean, `-race` clean, no skips) now cover the HTTP handlers,
+   licence/role gating, the guided-fix allowlist and audit trail, suppression
+   scoping, retention, schedule due-logic and webhook rendering. Route
+   registration was moved into `api.RegisterRoutes` so tests exercise the same
+   routing table the binary serves. The tests were mutation-verified: removing
+   a licence gate and breaking the suppression key each made the relevant test
+   fail immediately.
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
 4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
@@ -271,15 +274,12 @@ These are choices made during the build that deviate from or refine
 
 ## Next up (accurate as of the latest commit)
 
-1. **Handler + gating test coverage** — the biggest real gap. Table-driven
-   tests for licence gating (402), role gating (403), guided-fix allowlist,
-   and the scheduler's due-schedule logic.
-2. **Phase 3 polish** — cluster overview redesign, keyboard shortcuts, and an
+1. **Phase 3 polish** — cluster overview redesign, keyboard shortcuts, and an
    audit of remaining Headlamp screens for stray upstream branding.
-3. **PDF export** — bundled Chromium rendering the existing HTML report.
-4. **Lens-style resource forms** — surface/polish the inherited Headlamp
+2. **PDF export** — bundled Chromium rendering the existing HTML report.
+3. **Lens-style resource forms** — surface/polish the inherited Headlamp
    create/edit flows (RBAC, PVC, StorageClass, ServiceAccount).
-5. **Phase 5 distribution** — Electron packaging, signing, auto-update. Needs
+4. **Phase 5 distribution** — Electron packaging, signing, auto-update. Needs
    your Apple/EV certificates, domain and Stripe account.
 
 # K8sense — Build Progress Log
@@ -543,11 +543,14 @@ These are choices made during the build that deviate from or refine
    prevent fat-fingered writes and to enable a read-only install. Real
    enforcement is (a) the cluster's own RBAC, which still governs every request
    K8sense makes, and (b) SSO-backed identity, which is not built yet.
-2. **Test coverage is uneven.** The rule engine, checks, licence, role and
-   branding logic have unit tests. The HTTP handlers, licence/role gating,
-   scheduler and webhook delivery are currently verified only by manual
-   end-to-end runs against a live kind cluster — they need real handler tests
-   before a regulated customer depends on them.
+2. ~~Test coverage is uneven.~~ **Closed.** 112 tests across all 5 packages
+   (`go vet` clean, `-race` clean, no skips) now cover the HTTP handlers,
+   licence/role gating, the guided-fix allowlist and audit trail, suppression
+   scoping, retention, schedule due-logic and webhook rendering. Route
+   registration was moved into `api.RegisterRoutes` so tests exercise the same
+   routing table the binary serves. The tests were mutation-verified: removing
+   a licence gate and breaking the suppression key each made the relevant test
+   fail immediately.
 3. **PDF export is not implemented.** HTML and JSON export are. PDF needs a
    bundled Chromium, which is best done alongside the Phase 5 packaging work.
 4. **Nothing is packaged.** The app has only ever run in web dev-mode; the
