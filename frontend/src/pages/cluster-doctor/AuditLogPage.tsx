@@ -16,6 +16,7 @@
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -26,7 +27,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { AuditEntry, listAuditLog } from '../../lib/cluster-doctor-audit-api';
+import { AuditEntry, downloadAuditCSV, listAuditLog } from '../../lib/cluster-doctor-audit-api';
 import { useCluster } from '../../lib/k8s';
 
 function formatTimestamp(unixSeconds: number): string {
@@ -64,9 +65,17 @@ export default function AuditLogPage() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Audit Log
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h4">Audit Log</Typography>
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={!entries || entries.length === 0}
+          onClick={() => cluster && downloadAuditCSV(cluster).catch(() => undefined)}
+        >
+          Export CSV
+        </Button>
+      </Box>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         Guided Fix actions recorded for <strong>{cluster}</strong>.
       </Typography>

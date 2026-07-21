@@ -16,6 +16,7 @@
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Switch from '@mui/material/Switch';
@@ -24,12 +25,98 @@ import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { SeverityBadge } from '../../components/cluster-doctor/SeverityBadge';
 import { Rule } from '../../lib/cluster-doctor-api';
 import { listRulesForCluster, toggleRule } from '../../lib/cluster-doctor-rules-api';
+import { importRuleYAML, validateRuleYAML } from '../../lib/cluster-doctor-rules-import-api';
 import { useCluster } from '../../lib/k8s';
+
+const SAMPLE_RULE_YAML = `- id: CUSTOM-001
+  name: My Custom Rule
+  severity: WARNING
+  category: custom
+  check_fn: check_something
+  description: What this detects
+  remediation: |
+    Steps to fix it
+`;
+
+function CustomRuleImport({ onImported }: { onImported: () => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [yaml, setYaml] = React.useState(SAMPLE_RULE_YAML);
+  const [status, setStatus] = React.useState<{ ok: boolean; msg: string } | null>(null);
+  const [busy, setBusy] = React.useState(false);
+
+  async function handleValidate() {
+    setBusy(true);
+    setStatus(null);
+    try {
+      const res = await validateRuleYAML(yaml);
+      setStatus(
+        res.valid
+          ? { ok: true, msg: `Valid — ${res.rules?.length ?? 0} rule(s): ${res.rules?.join(', ')}` }
+          : { ok: false, msg: res.error ?? 'Invalid' }
+      );
+    } catch (e) {
+      setStatus({ ok: false, msg: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleImport() {
+    setBusy(true);
+    setStatus(null);
+    try {
+      const res = await importRuleYAML(yaml);
+      setStatus({ ok: true, msg: `Imported ${res.imported} rule(s).` });
+      onImported();
+    } catch (e) {
+      setStatus({ ok: false, msg: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Paper sx={{ p: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="h6">Custom Rules</Typography>
+        <Button size="small" onClick={() => setOpen(o => !o)}>
+          {open ? 'Cancel' : 'Import YAML Rule'}
+        </Button>
+      </Box>
+      {open && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            multiline
+            minRows={6}
+            fullWidth
+            value={yaml}
+            onChange={e => setYaml(e.target.value)}
+            InputProps={{ style: { fontFamily: 'monospace', fontSize: 13 } }}
+          />
+          <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+            <Button size="small" variant="outlined" onClick={handleValidate} disabled={busy}>
+              Validate
+            </Button>
+            <Button size="small" variant="contained" onClick={handleImport} disabled={busy}>
+              Import
+            </Button>
+          </Box>
+          {status && (
+            <Alert severity={status.ok ? 'success' : 'error'} sx={{ mt: 2 }}>
+              {status.msg}
+            </Alert>
+          )}
+        </Box>
+      )}
+    </Paper>
+  );
+}
 
 // groupByCategory buckets rules under their category, preserving the order in
 // which each category first appears so the page layout stays stable between
@@ -54,23 +141,15 @@ export default function RulesPage() {
   const [rules, setRules] = React.useState<Rule[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
+  const loadRules = React.useCallback(() => {
     if (!cluster) return;
 
-    let cancelled = false;
-
     listRulesForCluster(cluster)
-      .then(result => {
-        if (!cancelled) setRules(result);
-      })
-      .catch(e => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-      });
-
-    return () => {
-      cancelled = true;
-    };
+      .then(setRules)
+      .catch(e => setError(e instanceof Error ? e.message : String(e)));
   }, [cluster]);
+
+  React.useEffect(loadRules, [loadRules]);
 
   function handleToggle(rule: Rule, nextEnabled: boolean) {
     if (!cluster) return;
@@ -111,6 +190,8 @@ export default function RulesPage() {
           {error}
         </Alert>
       )}
+
+      <CustomRuleImport onImported={loadRules} />
 
       {!error && !rules && (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>

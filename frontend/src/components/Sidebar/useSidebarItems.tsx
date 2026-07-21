@@ -208,6 +208,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             name: 'clusterDoctorAuditLog',
             label: t('Audit Log'),
           },
+          {
+            name: 'clusterDoctorSettings',
+            label: t('Settings'),
+          },
         ],
       },
       {

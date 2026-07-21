@@ -17,6 +17,7 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
@@ -54,6 +55,7 @@ export default function HistoryPage() {
   const routerHistory = useHistory();
   const [scans, setScans] = React.useState<ScanSummary[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [selected, setSelected] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     if (!cluster) return;
@@ -73,13 +75,43 @@ export default function HistoryPage() {
     };
   }, [cluster]);
 
+  // Toggle a scan into the compare selection, capped at two.
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 2) return [prev[1], id];
+      return [...prev, id];
+    });
+  }
+
+  // Compare the two selected scans: the newer (higher startedAt) is "current",
+  // the older is "previous", so the diff reads new-since-previous.
+  function compareSelected() {
+    if (selected.length !== 2 || !scans) return;
+
+    const picked = scans.filter(s => selected.includes(s.id));
+    const [current, previous] = [...picked].sort((a, b) => b.startedAt - a.startedAt);
+
+    routerHistory.push(
+      createRouteURL('clusterDoctorDiff', { scanId: current.id, prevId: previous.id })
+    );
+  }
+
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Scan History
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+        <Typography variant="h4">Scan History</Typography>
+        <Button
+          size="small"
+          variant="contained"
+          disabled={selected.length !== 2}
+          onClick={compareSelected}
+        >
+          Compare selected ({selected.length}/2)
+        </Button>
+      </Box>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Past Cluster Doctor scans for <strong>{cluster}</strong>.
+        Past Cluster Doctor scans for <strong>{cluster}</strong>. Select two scans to compare.
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -99,6 +131,7 @@ export default function HistoryPage() {
           <Table size="small">
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox" />
                 <TableCell>Started</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="right">Critical</TableCell>
@@ -111,7 +144,14 @@ export default function HistoryPage() {
             </TableHead>
             <TableBody>
               {scans.map(scan => (
-                <TableRow key={scan.id} hover>
+                <TableRow key={scan.id} hover selected={selected.includes(scan.id)}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selected.includes(scan.id)}
+                      onChange={() => toggleSelect(scan.id)}
+                      disabled={selected.length >= 2 && !selected.includes(scan.id)}
+                    />
+                  </TableCell>
                   <TableCell>{formatTimestamp(scan.startedAt)}</TableCell>
                   <TableCell>
                     <StatusChip status={scan.status} />

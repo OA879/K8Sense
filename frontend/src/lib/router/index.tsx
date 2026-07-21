@@ -125,6 +125,7 @@ import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
+import CDSettingsPage from '../../pages/cluster-doctor/SettingsPage';
 import ScanDiffPage from '../../pages/cluster-doctor/ScanDiffPage';
 import ScanPage from '../../pages/cluster-doctor/ScanPage';
 import { useCluster } from '..//k8s';
@@ -283,6 +284,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <ScanDiffPage />,
+  },
+  clusterDoctorSettings: {
+    path: '/cluster-doctor/settings',
+    name: 'K8sense Settings',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <CDSettingsPage />,
   },
   storageClasses: {
     path: '/storage/classes',

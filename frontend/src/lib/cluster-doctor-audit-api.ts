@@ -18,7 +18,8 @@
  * Typed client for K8sense's Cluster Doctor audit log (/cluster-doctor/audit-log).
  * Reuses the shared apiFetch helper from cluster-doctor-api.
  */
-import { apiFetch } from './cluster-doctor-api';
+import { apiFetch, apiUrl } from './cluster-doctor-api';
+import { getHeadlampAPIHeaders } from '../helpers/getHeadlampAPIHeaders';
 
 export interface AuditEntry {
   id: string;
@@ -37,4 +38,25 @@ export interface AuditEntry {
 /** Lists Guided Fix audit entries for a cluster, most recent first. */
 export function listAuditLog(cluster: string): Promise<AuditEntry[]> {
   return apiFetch(`/audit-log?cluster=${encodeURIComponent(cluster)}`);
+}
+
+/** Downloads the full audit log for a cluster as a CSV file. */
+export async function downloadAuditCSV(cluster: string): Promise<void> {
+  const response = await fetch(apiUrl(`/audit-log/export?cluster=${encodeURIComponent(cluster)}`), {
+    headers: { ...getHeadlampAPIHeaders() },
+  });
+
+  if (!response.ok) {
+    throw new Error(`audit export failed: ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `k8sense-audit-${cluster}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
 }
