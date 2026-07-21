@@ -48,5 +48,26 @@
 }
 
 body {
-  font-family: 'Overpass', sans-serif;
+  font-family: 'Inter Variable', 'Inter', sans-serif;
+}
+
+code,
+pre,
+kbd,
+.xterm,
+.monaco-editor {
+  font-family: 'JetBrains Mono Variable', 'JetBrains Mono', monospace;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
 }

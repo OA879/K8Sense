@@ -1,3 +1,13 @@
+K8sense is built on Headlamp (https://github.com/kubernetes-sigs/headlamp),
+copyright The Kubernetes Authors, licensed under the Apache License, Version 2.0.
+A copy of the License is available at http://www.apache.org/licenses/LICENSE-2.0.
+K8sense's Cluster Doctor engine, rule library, branding, and additional features
+are proprietary and not derived from Headlamp. The remainder of this NOTICE file
+is retained unmodified from the upstream Headlamp project as required by its
+CNCF donation terms.
+
+---
+
 When donating the Headlamp project to the CNCF, not all contributors were reached
 to sign the CNCF CLA prior to donation. As such, according to the CNCF rules to donate a repository,
 we must add a NOTICE referencing section 7 of the CLA with a list of developers who could not be reached.

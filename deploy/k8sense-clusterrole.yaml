@@ -1,0 +1,78 @@
+# K8sense read-only ClusterRole — required for Cluster Doctor scanning on
+# all tiers. Submit this to your change management process before install;
+# K8sense's diagnostics work fully with only these permissions. If any
+# resource here returns 403, that check is marked SKIPPED and the scan
+# continues (see the Error Handling Matrix in K8SENSE_CONTEXT.md).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8sense-scanner
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - pods
+      - pods/log
+      - namespaces
+      - events
+      - services
+      - endpoints
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - limitranges
+      - configmaps
+      - serviceaccounts
+      - secrets # list + get metadata only — K8sense never reads Secret .data values
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses", "volumeattachments"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "clusterroles", "rolebindings", "clusterrolebindings"]
+    verbs: ["get", "list"]
+  - apiGroups: ["policy"]
+    resources: ["poddisruptionbudgets"]
+    verbs: ["get", "list"]
+  - apiGroups: ["autoscaling"]
+    resources: ["horizontalpodautoscalers"]
+    verbs: ["get", "list"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["nodes", "pods"]
+    verbs: ["get", "list"] # optional — gracefully skipped if metrics-server isn't installed
+  - apiGroups: ["certificates.k8s.io"]
+    resources: ["certificatesigningrequests"]
+    verbs: ["get", "list"]
+  - nonResourceURLs: ["/healthz", "/readyz", "/livez"]
+    verbs: ["get"] # for control-plane health checks
+---
+# Additional verbs required only for Guided Fix (Pro tier). Apply this
+# ClusterRole (or merge its rules into k8sense-scanner) only if you intend to
+# use the "Apply Fix" button — the read-only role above already delivers
+# 100% of the Tier 1 remediation-guide value on its own.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: k8sense-guided-fix
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["delete"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/scale"]
+    verbs: ["patch", "update"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["patch"] # for uncordon — removes the NoSchedule taint
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["delete"]

@@ -1,6 +1,6 @@
 {
-  "short_name": "Headlamp",
-  "name": "Headlamp Kubernetes Dashboard",
+  "short_name": "K8sense",
+  "name": "K8sense Kubernetes Operations Platform",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#0F172A",
+  "background_color": "#0F172A"
 }

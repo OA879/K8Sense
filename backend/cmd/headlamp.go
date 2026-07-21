@@ -645,6 +645,8 @@ func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Han
 		r = baseRoute.PathPrefix(config.BaseURL).Subrouter()
 	}
 
+	setupClusterDoctor(r, config)
+
 	logger.Log(logger.LevelInfo, nil, nil, "*** Headlamp Server ***")
 	logger.Log(logger.LevelInfo, nil, nil, "  API Routers:")
 

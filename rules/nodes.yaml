@@ -1,0 +1,248 @@
+# NODE-* rules — see backend/pkg/clusterdoctor/checks/nodes.go for the
+# check_fn implementations.
+- id: NODE-001
+  name: Node Not Ready
+  severity: CRITICAL
+  category: nodes
+  check_fn: check_node_not_ready
+  description: >
+    One or more nodes are in NotReady state. Pods on the affected node are
+    evicted after 5 minutes and rescheduled elsewhere.
+  remediation: |
+    1. Identify the affected node:
+       kubectl get nodes
+    2. Describe the node to read its conditions:
+       kubectl describe node <node-name>
+    3. SSH to the node and inspect kubelet:
+       journalctl -xeu kubelet --no-pager | tail -100
+    4. Check for disk or memory pressure (see NODE-003 / NODE-004).
+    5. If the kubelet service is stopped, restart it:
+       systemctl restart kubelet
+    6. If the node is network-partitioned, check CNI pods in kube-system:
+       kubectl get pods -n kube-system | grep -E 'calico|weave|flannel|cilium'
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "Troubleshooting Clusters | Kubernetes — 'Example: debugging a down/unreachable node'"
+    - "https://kubernetes.io/docs/tasks/debug/debug-cluster/"
+
+- id: NODE-002
+  name: Node Unknown (no heartbeat)
+  severity: CRITICAL
+  category: nodes
+  check_fn: check_node_unknown
+  description: >
+    The node's Ready condition is Unknown, meaning the control plane has
+    stopped receiving kubelet heartbeats. This usually means the node is
+    unreachable or the kubelet process has died.
+  remediation: |
+    1. Check node status:
+       kubectl get nodes -o wide
+    2. Try to reach the node directly (ping / SSH).
+    3. If the node is reachable but kubelet isn't responding:
+       systemctl status kubelet
+       systemctl restart kubelet
+    4. If the node is unreachable, check the underlying infrastructure
+       (hypervisor, cloud console, power state).
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/debug/debug-cluster/monitor-node-health/"
+
+- id: NODE-003
+  name: MemoryPressure Condition True
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_memory_pressure
+  description: >
+    The node reports MemoryPressure, meaning available memory has fallen
+    below the eviction threshold. The kubelet will start evicting pods to
+    reclaim memory.
+  remediation: |
+    1. Check what's consuming memory on the node:
+       kubectl describe node <node-name>
+       kubectl top pod -A --sort-by=memory
+    2. Consider adding memory requests/limits to workloads (see POD-009).
+    3. If the node is undersized for its workload, resize it or rebalance
+       pods across nodes.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/out-of-resource/"
+
+- id: NODE-004
+  name: DiskPressure Condition True
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_disk_pressure
+  description: >
+    The node reports DiskPressure, meaning available disk space or inodes
+    have fallen below the eviction threshold.
+  remediation: |
+    1. Check disk usage on the node:
+       kubectl describe node <node-name>
+       df -h    # run on the node itself
+    2. Clean up unused images:
+       crictl rmi --prune
+    3. Check for runaway log files or emptyDir volumes filling the disk.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/out-of-resource/"
+
+- id: NODE-005
+  name: PIDPressure Condition True
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_pid_pressure
+  description: >
+    The node reports PIDPressure, meaning the number of running processes is
+    approaching the node's PID limit.
+  remediation: |
+    1. Identify processes/pods spawning excessive child processes:
+       kubectl describe node <node-name>
+    2. Check for fork-bombing containers or misbehaving init processes.
+    3. Consider raising the node's pid limit or moving workloads off it.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/policy/pid-limiting/"
+
+- id: NODE-006
+  name: NetworkUnavailable Condition True
+  severity: CRITICAL
+  category: nodes
+  check_fn: check_node_network_unavailable
+  description: >
+    The node reports NetworkUnavailable, meaning its network is not correctly
+    configured — usually a CNI problem on that node.
+  remediation: |
+    1. Check CNI pods on the affected node:
+       kubectl get pods -n kube-system -o wide | grep <node-name>
+    2. Check CNI pod logs for errors.
+    3. Restart the CNI daemonset pod on that node if it's crash-looping.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/cluster-administration/networking/"
+
+- id: NODE-007
+  name: Node Tainted NoSchedule/NoExecute Unexpectedly
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_unexpected_taint
+  description: >
+    The node carries a NoSchedule or NoExecute taint that isn't one of
+    Kubernetes' own well-known system taints, meaning something (an operator,
+    a script, an autoscaler) has manually cordoned it off from scheduling.
+  remediation: |
+    1. List the node's taints:
+       kubectl describe node <node-name> | grep Taints
+    2. If the taint was applied by mistake, remove it:
+       kubectl taint nodes <node-name> <taint-key>:<effect>-
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+- id: NODE-008
+  name: Node Cordoned
+  severity: INFO
+  category: nodes
+  check_fn: check_node_cordoned
+  description: >
+    The node is marked unschedulable (cordoned). No new pods will be
+    scheduled onto it, but existing pods keep running.
+  remediation: |
+    1. Confirm this is intentional (e.g. planned maintenance):
+       kubectl get nodes
+    2. If it should be back in rotation:
+       kubectl uncordon <node-name>
+  guided_fix:
+    action: uncordon_node
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/"
+
+- id: NODE-009
+  name: Node CPU Over-commit
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_cpu_overcommit
+  description: >
+    Total CPU *requests* from non-terminal pods on this node exceed 90% of
+    its allocatable CPU. New pods may fail to schedule here even though the
+    node looks "free" in raw usage terms.
+  remediation: |
+    1. See what's requesting the most CPU on the node:
+       kubectl describe node <node-name>
+    2. Right-size over-provisioned requests, or move workloads to another
+       node / add capacity.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+
+- id: NODE-010
+  name: Node Memory Over-commit
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_memory_overcommit
+  description: >
+    Total memory *requests* from non-terminal pods on this node exceed 90%
+    of its allocatable memory.
+  remediation: |
+    1. See what's requesting the most memory on the node:
+       kubectl describe node <node-name>
+    2. Right-size over-provisioned requests, or move workloads to another
+       node / add capacity.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+
+- id: NODE-011
+  name: Kubelet Version Skew From API Server
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_kubelet_version_skew
+  description: >
+    The node's kubelet version is more than 2 minor versions behind the API
+    server, outside Kubernetes' supported skew policy.
+  remediation: |
+    1. Compare versions:
+       kubectl version
+       kubectl get node <node-name> -o jsonpath='{.status.nodeInfo.kubeletVersion}'
+    2. Upgrade the node's kubelet to bring it within the supported skew.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/releases/version-skew-policy/"
+
+- id: NODE-012
+  name: Node Near Pod Capacity
+  severity: WARNING
+  category: nodes
+  check_fn: check_node_pod_capacity
+  description: >
+    The node is running more than 85% of the maximum pods it can host
+    (spec.podsPerCore / kubelet --max-pods). New pods may fail to schedule.
+  remediation: |
+    1. Check current vs. max pods:
+       kubectl describe node <node-name> | grep -A5 "Allocated resources"
+    2. Rebalance workloads across nodes or add capacity.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/setup/best-practices/cluster-large/"

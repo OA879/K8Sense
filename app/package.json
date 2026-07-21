@@ -1,10 +1,10 @@
 {
-  "name": "headlamp",
-  "version": "0.43.0",
-  "description": "Easy-to-use and extensible Kubernetes web UI",
+  "name": "k8sense",
+  "version": "0.1.0",
+  "description": "Kubernetes operations platform with built-in Cluster Doctor diagnostics",
   "main": "build/main.js",
-  "homepage": "https://github.com/kubernetes-sigs/headlamp/#readme",
-  "productName": "Headlamp",
+  "homepage": "https://k8sense.io",
+  "productName": "K8sense",
   "engines": {
     "npm": ">=11.0.0",
     "node": ">=22.0.0"

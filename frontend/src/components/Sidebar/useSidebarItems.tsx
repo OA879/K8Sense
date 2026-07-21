@@ -188,6 +188,11 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
       },
 
       {
+        name: 'clusterDoctorScan',
+        label: t('Cluster Doctor'),
+        icon: 'mdi:stethoscope',
+      },
+      {
         name: 'cluster',
         label: selectedClusters.length ? t('Clusters') : t('glossary|Cluster'),
         subtitle: clusterBadgesSubtitle,

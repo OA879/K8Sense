@@ -16,8 +16,8 @@
 
 import { AppTheme } from '../../lib/AppTheme';
 
-export const headlampClassicLightTheme: AppTheme = {
-  name: 'Headlamp Classic',
+export const classicLightTheme: AppTheme = {
+  name: 'Classic Light',
   primary: '#222',
   secondary: '#eaeaea',
   sidebar: {
@@ -40,57 +40,64 @@ export const headlampClassicLightTheme: AppTheme = {
 export const darkTheme: AppTheme = {
   name: 'Dark',
   base: 'dark',
-  primary: '#ffffff',
-  secondary: '#1b1a19',
+  primary: '#3B82F6',
+  secondary: '#1E293B',
   text: {
-    primary: '#faf9f8',
+    primary: '#F1F5F9',
+  },
+  link: {
+    color: '#60A5FA',
   },
   background: {
-    default: '#292827',
-    surface: '#313131',
-    muted: '#333333',
+    default: '#0F172A',
+    surface: '#1E293B',
+    muted: '#1E293B',
   },
   navbar: {
-    background: '#252423',
-    color: '#faf9f8',
+    background: '#0F172A',
+    color: '#F1F5F9',
   },
   sidebar: {
-    background: '#252423',
-    color: '#cdcdcd',
-    selectedBackground: '#f2e600',
-    selectedColor: '#f2e600',
-    actionBackground: '#1b1a19',
+    background: '#0F172A',
+    color: '#CBD5E1',
+    selectedBackground: '#3B82F6',
+    selectedColor: '#FFFFFF',
+    actionBackground: '#1E293B',
   },
   buttonTextTransform: 'none',
-  radius: 6,
+  radius: 8,
+  fontFamily: ['Inter Variable', 'Inter', 'sans-serif'],
 };
 
 export const lightTheme: AppTheme = {
   name: 'Light',
-  primary: '#414141',
-  secondary: '#eff2f5',
+  primary: '#0F172A',
+  secondary: '#F8FAFC',
   text: {
-    primary: '#44444f',
+    primary: '#0F172A',
   },
   link: {
-    color: '#0072c9',
+    color: '#3B82F6',
   },
   background: {
-    muted: '#f5f5f5',
+    default: '#FFFFFF',
+    surface: '#FFFFFF',
+    muted: '#F8FAFC',
   },
   sidebar: {
-    background: '#f0f0f0',
-    color: '#605e5c',
-    selectedBackground: '#f2e600',
-    selectedColor: '#292827',
-    actionBackground: '#414141',
+    background: '#0F172A',
+    color: '#CBD5E1',
+    selectedBackground: '#3B82F6',
+    selectedColor: '#FFFFFF',
+    actionBackground: '#1E293B',
   },
   navbar: {
-    background: '#f0f0f0',
-    color: '#292827',
+    background: '#F8FAFC',
+    color: '#0F172A',
   },
   buttonTextTransform: 'none',
-  radius: 6,
+  radius: 8,
+  fontFamily: ['Inter Variable', 'Inter', 'sans-serif'],
 };
 
 export const lightsOutTheme: AppTheme = {
@@ -158,7 +165,7 @@ export const monochromeLightTheme: AppTheme = {
 const defaultAppThemes = [
   lightTheme,
   darkTheme,
-  headlampClassicLightTheme,
+  classicLightTheme,
   lightsOutTheme,
   monochromeLightTheme,
 ];

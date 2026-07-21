@@ -121,6 +121,8 @@ import WorkloadDetails from '../../components/workload/Details';
 import WorkloadOverview from '../../components/workload/Overview';
 import { isElectron } from '../../helpers/isElectron';
 import LocaleSelect from '../../i18n/LocaleSelect/LocaleSelect';
+import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
+import ScanPage from '../../pages/cluster-doctor/ScanPage';
 import { useCluster } from '..//k8s';
 import DaemonSet from '../k8s/daemonSet';
 import Deployment from '../k8s/deployment';
@@ -235,6 +237,20 @@ const defaultRoutes: { [routeName: string]: Route } = {
     path: '/nodes/:name',
     sidebar: 'nodes',
     component: () => <NodeDetails />,
+  },
+  clusterDoctorScan: {
+    path: '/cluster-doctor/scan',
+    name: 'Cluster Doctor',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <ScanPage />,
+  },
+  clusterDoctorFindings: {
+    path: '/cluster-doctor/findings/:scanId',
+    name: 'Findings',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <FindingsPage />,
   },
   storageClasses: {
     path: '/storage/classes',

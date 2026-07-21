@@ -136,7 +136,7 @@ export function createHeadlampTray(options: HeadlampTrayOptions): boolean {
     return false;
   }
 
-  tray.setToolTip('Headlamp');
+  tray.setToolTip('K8sense');
   tray.setContextMenu(buildTrayMenu(options, [{ label: 'Loading...', enabled: false }]));
 
   trayUpdateTimeout = setTimeout(() => {

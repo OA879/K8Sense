@@ -1,0 +1,245 @@
+# POD-* rules — see backend/pkg/clusterdoctor/checks/pods.go for the
+# check_fn implementations.
+- id: POD-001
+  name: CrashLoopBackOff
+  severity: CRITICAL
+  category: pods
+  check_fn: check_crashloopbackoff
+  description: >
+    A container is stuck in CrashLoopBackOff — it starts, exits, and
+    Kubernetes keeps restarting it with an increasing backoff delay.
+  remediation: |
+    1. Check recent logs (and the previous crash's logs):
+       kubectl logs <pod-name> -n <namespace>
+       kubectl logs <pod-name> -n <namespace> --previous
+    2. Check the exit code and reason:
+       kubectl describe pod <pod-name> -n <namespace>
+    3. Common causes: bad image/entrypoint, missing config/secret, app
+       crashing on startup, failing liveness probe. Only the owning team can
+       tell which — this requires human judgment.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "Debug Pods | Kubernetes"
+    - "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+
+- id: POD-002
+  name: OOMKilled
+  severity: CRITICAL
+  category: pods
+  check_fn: check_oomkilled
+  description: >
+    A container was killed with exit code 137 (SIGKILL after exceeding its
+    memory limit).
+  remediation: |
+    1. Confirm OOMKilled:
+       kubectl describe pod <pod-name> -n <namespace>
+       (look for "Last State: Terminated, Reason: OOMKilled")
+    2. Raise the container's memory limit if it's genuinely under-sized,
+       or investigate a memory leak if usage grows unbounded over time.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/"
+
+- id: POD-003
+  name: Pending More Than 10 Minutes
+  severity: WARNING
+  category: pods
+  check_fn: check_pending_too_long
+  description: >
+    The pod has been Pending for over 10 minutes, meaning the scheduler
+    can't place it — usually insufficient resources, an unsatisfiable
+    node selector/affinity, or no matching PersistentVolume.
+  remediation: |
+    1. See why it isn't scheduling:
+       kubectl describe pod <pod-name> -n <namespace>
+       (check the Events section for "FailedScheduling")
+    2. Check node capacity, taints/tolerations, and node selectors/affinity.
+    3. If it's a storage issue, see STOR-001.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+
+- id: POD-004
+  name: Evicted Pods Still Present
+  severity: INFO
+  category: pods
+  check_fn: check_evicted_pods
+  description: >
+    Evicted pods remain in the namespace and consume namespace quota. They
+    serve no purpose once evicted and should be deleted.
+  remediation: |
+    kubectl delete pod <pod-name> -n <namespace>
+    Or delete all evicted pods in a namespace:
+    kubectl get pods -n <namespace> --field-selector=status.phase=Failed \
+      -o name | xargs kubectl delete -n <namespace>
+  guided_fix:
+    action: delete_pod
+    warning: ""
+  references: []
+
+- id: POD-005
+  name: ImagePullBackOff / ErrImagePull
+  severity: CRITICAL
+  category: pods
+  check_fn: check_image_pull_backoff
+  description: >
+    The container image could not be pulled — wrong image name/tag, missing
+    registry credentials, or the registry is unreachable.
+  remediation: |
+    1. Check the exact error:
+       kubectl describe pod <pod-name> -n <namespace>
+    2. Verify the image name/tag is correct and exists in the registry.
+    3. If it's a private registry, check imagePullSecrets on the pod/
+       ServiceAccount.
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
+
+- id: POD-006
+  name: Init Container Stuck
+  severity: WARNING
+  category: pods
+  check_fn: check_init_container_stuck
+  description: >
+    An init container has been running or waiting for over 10 minutes
+    without completing, blocking the pod's main containers from starting.
+  remediation: |
+    1. Check init container logs:
+       kubectl logs <pod-name> -n <namespace> -c <init-container-name>
+    2. Check its status/events:
+       kubectl describe pod <pod-name> -n <namespace>
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+
+- id: POD-008
+  name: Missing Resource Limits
+  severity: WARNING
+  category: pods
+  check_fn: check_missing_resource_limits
+  description: >
+    A container has no CPU/memory limits set. It can consume unbounded
+    resources and starve other workloads on the same node.
+  remediation: |
+    Add resources.limits to the container spec, e.g.:
+      resources:
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+
+- id: POD-009
+  name: Missing Resource Requests
+  severity: WARNING
+  category: pods
+  check_fn: check_missing_resource_requests
+  description: >
+    A container has no CPU/memory requests set, which prevents the
+    scheduler from making informed placement decisions and skews
+    NODE-009/NODE-010 over-commit calculations.
+  remediation: |
+    Add resources.requests to the container spec, e.g.:
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/"
+
+- id: POD-010
+  name: Pod Stuck Terminating
+  severity: WARNING
+  category: pods
+  check_fn: check_pod_stuck_terminating
+  description: >
+    The pod has had a deletionTimestamp set for over 10 minutes and still
+    hasn't terminated — usually a stuck finalizer or an unresponsive
+    container that isn't handling SIGTERM.
+  remediation: |
+    1. Check for finalizers:
+       kubectl get pod <pod-name> -n <namespace> -o json | jq '.metadata.finalizers'
+    2. If safe to do so, force delete:
+       kubectl delete pod <pod-name> -n <namespace> --force --grace-period=0
+       Warning: force delete may not resolve it if a finalizer is blocking
+       deletion — the finalizer's controller needs to run first.
+  guided_fix:
+    action: delete_pod
+    warning: "This pod may have finalizers blocking deletion. Force delete may not fully resolve the issue — the owning controller may need to run first."
+  references: []
+
+- id: POD-011
+  name: Pod Running As Root
+  severity: INFO
+  category: pods
+  check_fn: check_pod_running_as_root
+  description: >
+    No container in this pod explicitly opts out of running as UID 0
+    (root), either via runAsNonRoot or a non-zero runAsUser. This widens
+    the blast radius of a container compromise.
+  remediation: |
+    Set a non-root security context, e.g.:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+
+- id: POD-012
+  name: No Readiness Probe
+  severity: INFO
+  category: pods
+  check_fn: check_pod_no_readiness_probe
+  description: >
+    A container has no readiness probe, so Kubernetes can't tell when it's
+    actually ready to serve traffic — it will receive requests as soon as
+    the process starts, not when it's actually warmed up.
+  remediation: |
+    Add a readinessProbe to the container spec, e.g.:
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+  guided_fix:
+    action: ""
+    warning: ""
+  references:
+    - "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+
+- id: POD-013
+  name: Frequent Container Restarts
+  severity: WARNING
+  category: pods
+  check_fn: check_pod_frequent_restarts
+  description: >
+    A container has restarted more than 5 times since pod creation. Note:
+    this is a lifetime count, not yet windowed to "in the last hour" —
+    scan-history-based windowing is planned for a later phase.
+  remediation: |
+    1. Check restart history and reason:
+       kubectl describe pod <pod-name> -n <namespace>
+       kubectl logs <pod-name> -n <namespace> --previous
+    2. See POD-001 (CrashLoopBackOff) if it's currently in a restart loop.
+  guided_fix:
+    action: ""
+    warning: ""
+  references: []
