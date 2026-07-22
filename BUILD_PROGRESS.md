@@ -35,8 +35,8 @@ KUBECONFIG=$PWD/.dev/kubeconfig.yaml npm run start
 Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 
 > **Safety:** the dev backend is deliberately scoped to `.dev/kubeconfig.yaml`
-> (local kind cluster only) so it can never touch the real amb-nkp-prod /
-> wso2-test / finacle-prod clusters during development.
+> (local kind cluster only) so it can never touch any real production
+> clusters during development.
 
 ---
 
@@ -336,8 +336,8 @@ KUBECONFIG=$PWD/.dev/kubeconfig.yaml npm run start
 Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 
 > **Safety:** the dev backend is deliberately scoped to `.dev/kubeconfig.yaml`
-> (local kind cluster only) so it can never touch the real amb-nkp-prod /
-> wso2-test / finacle-prod clusters during development.
+> (local kind cluster only) so it can never touch any real production
+> clusters during development.
 
 ---
 
