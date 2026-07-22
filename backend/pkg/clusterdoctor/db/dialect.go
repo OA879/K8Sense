@@ -1,6 +1,8 @@
 package db
 
 import (
+	"context"
+	"database/sql"
 	"strings"
 	"sync"
 )
@@ -17,15 +19,13 @@ import (
 // rather than two divergent copies that can drift apart — which for an audit
 // log would be a correctness problem, not just a maintenance one.
 //
-// STATUS: this is groundwork, deliberately not yet wired into Open. SQLite is
-// currently the only supported backend, and web-mode deployments must run a
-// single replica (see deploy/k8sense-web.yaml). Completing the Postgres path
-// additionally requires porting the migration set — 005 in particular rebuilds
-// a table, which is the SQLite idiom for dropping a constraint and is not how
-// Postgres would express it. Shipping a partially-verified second persistence
-// path for an audit log would be worse than shipping none, so the remaining
-// work is tracked rather than half-done. The rebinding below is fully tested
-// so that port is a smaller, safer change when it happens.
+// Both backends are wired into Open (chosen by the connection string) and
+// exercised end-to-end: the full DB layer runs against a real Postgres in
+// db.TestPostgresBackendEndToEnd, and the existing SQLite suite guards the
+// default path. Migrations are dialect-specific (migrations/{sqlite,postgres})
+// so each backend gets correct column types — notably BIGINT for the
+// unix-second timestamp columns, which would overflow a 32-bit Postgres
+// INTEGER in 2038.
 type Dialect string
 
 const (
@@ -130,4 +130,28 @@ func storageSizeQuery() string {
 	}
 
 	return `(SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())`
+}
+
+// querier is satisfied by both *sql.DB and *sql.Tx, so the rebinding helpers
+// below work inside and outside a transaction without duplicated code.
+type querier interface {
+	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...any) *sql.Row
+}
+
+// exec / query / queryRow are the single choke point every statement in this
+// package flows through. They rebind `?` placeholders to the active dialect's
+// form, so query strings are written once and correct on both backends. For
+// SQLite rebind is a no-op, so these are transparent on the existing path.
+func exec(ctx context.Context, q querier, query string, args ...any) (sql.Result, error) {
+	return q.ExecContext(ctx, rebind(query), args...)
+}
+
+func query(ctx context.Context, q querier, query string, args ...any) (*sql.Rows, error) {
+	return q.QueryContext(ctx, rebind(query), args...)
+}
+
+func queryRow(ctx context.Context, q querier, query string, args ...any) *sql.Row {
+	return q.QueryRowContext(ctx, rebind(query), args...)
 }

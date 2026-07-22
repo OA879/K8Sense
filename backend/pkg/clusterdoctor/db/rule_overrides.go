@@ -17,7 +17,7 @@ func SetRuleOverride(ctx context.Context, database *sql.DB, clusterID, ruleID st
 		enabledInt = 1
 	}
 
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO rule_overrides (cluster_id, rule_id, enabled)
 		VALUES (?, ?, ?)
 		ON CONFLICT(cluster_id, rule_id) DO UPDATE SET enabled = excluded.enabled
@@ -38,7 +38,7 @@ func SetRuleSeverity(ctx context.Context, database *sql.DB, clusterID, ruleID, s
 		sev = severity
 	}
 
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO rule_overrides (cluster_id, rule_id, enabled, severity_override)
 		VALUES (?, ?, 1, ?)
 		ON CONFLICT(cluster_id, rule_id) DO UPDATE SET severity_override = excluded.severity_override
@@ -53,7 +53,7 @@ func SetRuleSeverity(ctx context.Context, database *sql.DB, clusterID, ruleID, s
 // GetSeverityOverrides returns ruleID -> overridden severity for clusterID
 // (only rows where a severity override is set).
 func GetSeverityOverrides(ctx context.Context, database *sql.DB, clusterID string) (map[string]string, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT rule_id, severity_override
 		FROM rule_overrides
 		WHERE cluster_id = ? AND severity_override IS NOT NULL AND severity_override != ''
@@ -81,7 +81,7 @@ func GetSeverityOverrides(ctx context.Context, database *sql.DB, clusterID strin
 // disabled (enabled = 0) for clusterID. Rules absent from the map are enabled,
 // which lets callers treat the default as "on" without reading every rule row.
 func GetDisabledRuleIDs(ctx context.Context, database *sql.DB, clusterID string) (map[string]bool, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT rule_id
 		FROM rule_overrides
 		WHERE cluster_id = ? AND enabled = 0

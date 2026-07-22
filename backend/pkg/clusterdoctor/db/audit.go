@@ -33,7 +33,7 @@ func WriteAudit(ctx context.Context, database *sql.DB, entry AuditEntry) error {
 		entry.ID = uuid.NewString()
 	}
 
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO audit_log (
 			id, actor, action, cluster_id, namespace, resource_kind,
 			resource_name, payload, result, error, performed_at
@@ -53,7 +53,7 @@ func WriteAudit(ctx context.Context, database *sql.DB, entry AuditEntry) error {
 
 // ListAudit returns audit entries for one cluster, most recent first.
 func ListAudit(ctx context.Context, database *sql.DB, clusterID string, limit int) ([]AuditEntry, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT id, actor, action, cluster_id,
 		       COALESCE(namespace, ''), COALESCE(resource_kind, ''),
 		       COALESCE(resource_name, ''), COALESCE(payload, ''),

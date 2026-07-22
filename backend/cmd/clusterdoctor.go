@@ -70,15 +70,24 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 		return
 	}
 
-	dbPath, err := cddb.DefaultPath()
-	if err != nil {
-		logger.Log(logger.LevelError, nil, err, "cluster-doctor: resolving database path, diagnostics engine disabled")
-		return
+	// K8SENSE_DB_DSN selects the Postgres backend for a multi-replica web
+	// deployment (postgres://…). When unset, the local SQLite file is used —
+	// the desktop default and the single-replica web default.
+	dbPath := os.Getenv("K8SENSE_DB_DSN")
+	if dbPath == "" {
+		p, err := cddb.DefaultPath()
+		if err != nil {
+			logger.Log(logger.LevelError, nil, err, "cluster-doctor: resolving database path, diagnostics engine disabled")
+			return
+		}
+
+		dbPath = p
 	}
 
 	database, err := cddb.Open(dbPath)
 	if err != nil {
-		logger.Log(logger.LevelError, map[string]string{"path": dbPath}, err,
+		// Never log the DSN itself — it may carry a Postgres password.
+		logger.Log(logger.LevelError, map[string]string{"backend": dbBackendLabel(dbPath)}, err,
 			"cluster-doctor: opening database, diagnostics engine disabled")
 
 		return
@@ -103,7 +112,22 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 		return ctxtProxy.ClientSetWithToken(token)
 	}
 
-	licencePath := filepath.Join(filepath.Dir(dbPath), "licence.k8sense-licence")
+	// Licence/branding/role config lives beside the SQLite database, but with a
+	// Postgres DSN there is no such directory — fall back to the app data dir.
+	// K8SENSE_CONFIG_DIR overrides either (useful for a read-only container
+	// with a mounted config volume).
+	configDir := os.Getenv("K8SENSE_CONFIG_DIR")
+	if configDir == "" {
+		if cddb.IsPostgresDSN(dbPath) {
+			if base, err := cddb.DefaultPath(); err == nil {
+				configDir = filepath.Dir(base)
+			}
+		} else {
+			configDir = filepath.Dir(dbPath)
+		}
+	}
+
+	licencePath := filepath.Join(configDir, "licence.k8sense-licence")
 	cdServer := cdapi.NewServer(database, rules, getClient, licencePath)
 
 	// Scheduled scans have no inbound request to derive a token from, so they
@@ -130,7 +154,7 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 
 	cdServer.RegisterRoutes(r)
 
-	logger.Log(logger.LevelInfo, map[string]string{"rulesLoaded": strconv.Itoa(len(rules)), "dbPath": dbPath}, nil,
+	logger.Log(logger.LevelInfo, map[string]string{"rulesLoaded": strconv.Itoa(len(rules)), "backend": dbBackendLabel(dbPath)}, nil,
 		"cluster-doctor: diagnostics engine ready")
 }
 
@@ -160,4 +184,14 @@ func loadCustomRules(database *sql.DB) ([]clusterdoctor.Rule, error) {
 	}
 
 	return rules, nil
+}
+
+// dbBackendLabel returns a log-safe label for the database backend without
+// exposing a Postgres DSN (which may contain a password).
+func dbBackendLabel(dsn string) string {
+	if cddb.IsPostgresDSN(dsn) {
+		return "postgres"
+	}
+
+	return "sqlite:" + dsn
 }

@@ -20,7 +20,7 @@ type CustomRule struct {
 
 // AddCustomRule inserts or replaces a custom rule.
 func AddCustomRule(ctx context.Context, database *sql.DB, id, name, yamlContent string) error {
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO custom_rules (id, name, yaml_content, enabled, imported_at)
 		VALUES (?, ?, ?, 1, ?)
 		ON CONFLICT(id) DO UPDATE SET name = excluded.name, yaml_content = excluded.yaml_content
@@ -34,7 +34,7 @@ func AddCustomRule(ctx context.Context, database *sql.DB, id, name, yamlContent 
 
 // ListCustomRules returns all imported custom rules.
 func ListCustomRules(ctx context.Context, database *sql.DB) ([]CustomRule, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT id, name, yaml_content, enabled, imported_at
 		FROM custom_rules ORDER BY imported_at DESC
 	`)
@@ -63,7 +63,7 @@ func ListCustomRules(ctx context.Context, database *sql.DB) ([]CustomRule, error
 
 // DeleteCustomRule removes a custom rule by id.
 func DeleteCustomRule(ctx context.Context, database *sql.DB, id string) error {
-	_, err := database.ExecContext(ctx, `DELETE FROM custom_rules WHERE id = ?`, id)
+	_, err := exec(ctx, database, `DELETE FROM custom_rules WHERE id = ?`, id)
 	if err != nil {
 		return fmt.Errorf("deleting custom rule: %w", err)
 	}

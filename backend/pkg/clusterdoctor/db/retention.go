@@ -19,7 +19,7 @@ func PruneScans(ctx context.Context, database *sql.DB, keepPerCluster int) (int,
 
 	// Find scan IDs to delete: everything beyond the newest keepPerCluster per
 	// cluster, ranked by started_at.
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT id FROM (
 			SELECT id,
 			       ROW_NUMBER() OVER (PARTITION BY cluster_id ORDER BY started_at DESC) AS rn
@@ -57,11 +57,11 @@ func PruneScans(ctx context.Context, database *sql.DB, keepPerCluster int) (int,
 	defer func() { _ = tx.Rollback() }()
 
 	for _, id := range ids {
-		if _, err := tx.ExecContext(ctx, `DELETE FROM findings WHERE scan_id = ?`, id); err != nil {
+		if _, err := exec(ctx, tx, `DELETE FROM findings WHERE scan_id = ?`, id); err != nil {
 			return 0, fmt.Errorf("deleting findings for scan %s: %w", id, err)
 		}
 
-		if _, err := tx.ExecContext(ctx, `DELETE FROM scans WHERE id = ?`, id); err != nil {
+		if _, err := exec(ctx, tx, `DELETE FROM scans WHERE id = ?`, id); err != nil {
 			return 0, fmt.Errorf("deleting scan %s: %w", id, err)
 		}
 	}
@@ -86,12 +86,12 @@ type StorageStats struct {
 func GetStorageStats(ctx context.Context, database *sql.DB) (StorageStats, error) {
 	var stats StorageStats
 
-	row := database.QueryRowContext(ctx, `
+	row := queryRow(ctx, database, `
 		SELECT
 			(SELECT COUNT(*) FROM scans),
 			(SELECT COUNT(*) FROM findings),
 			(SELECT COUNT(*) FROM audit_log),
-			(SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size())
+			`+storageSizeQuery()+`
 	`)
 	if err := row.Scan(&stats.ScanCount, &stats.FindingCount, &stats.AuditCount, &stats.DBSizeBytes); err != nil {
 		return StorageStats{}, fmt.Errorf("reading storage stats: %w", err)

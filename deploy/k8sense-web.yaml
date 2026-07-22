@@ -8,9 +8,13 @@
 #   kubectl apply -f deploy/k8sense-web.yaml
 #
 # IMPORTANT — read before running in production:
-#   * replicas is 1 and must stay 1 while the SQLite backend is in use. SQLite
-#     is a single-writer store; two replicas sharing one volume will corrupt it.
-#     Multi-replica HA needs the Postgres backend.
+#   * replicas is 1 while the SQLite backend is in use. SQLite is a
+#     single-writer store; two replicas sharing one volume will corrupt it.
+#     For multi-replica HA, set K8SENSE_DB_PATH aside and instead point
+#     K8SENSE_DB_DSN at Postgres (postgres://user:pass@host:5432/db?sslmode=...)
+#     — the backend is selected by the connection string — then raise replicas
+#     and drop the PVC. The Postgres path is verified in
+#     db.TestPostgresBackendEndToEnd.
 #   * The PVC below is what keeps scan history and the audit log across pod
 #     restarts. Without it both are destroyed on every restart, which would
 #     make the audit trail useless as a compliance record.

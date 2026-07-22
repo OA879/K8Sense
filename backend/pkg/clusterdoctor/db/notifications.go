@@ -34,7 +34,7 @@ func GetNotificationConfig(ctx context.Context, database *sql.DB, clusterID stri
 
 	var notify int
 
-	err := database.QueryRowContext(ctx, `
+	err := queryRow(ctx, database, `
 		SELECT COALESCE(slack_webhook, ''), COALESCE(teams_webhook, ''), notify_critical
 		FROM notification_config WHERE cluster_id = ?
 	`, clusterID).Scan(&slack, &teams, &notify)
@@ -61,7 +61,7 @@ func SetNotificationConfig(ctx context.Context, database *sql.DB, cfg Notificati
 		notify = 1
 	}
 
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO notification_config (cluster_id, slack_webhook, teams_webhook, notify_critical)
 		VALUES (?, ?, ?, ?)
 		ON CONFLICT(cluster_id) DO UPDATE SET
@@ -82,7 +82,7 @@ func GetSchedule(ctx context.Context, database *sql.DB, clusterID string) (ScanS
 
 	var enabled int
 
-	err := database.QueryRowContext(ctx, `
+	err := queryRow(ctx, database, `
 		SELECT enabled, interval_minutes, last_run_at
 		FROM scan_schedules WHERE cluster_id = ?
 	`, clusterID).Scan(&enabled, &sched.IntervalMinutes, &sched.LastRunAt)
@@ -111,7 +111,7 @@ func SetSchedule(ctx context.Context, database *sql.DB, sched ScanSchedule) erro
 		sched.IntervalMinutes = 5 // floor: don't let a typo hammer the API server
 	}
 
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO scan_schedules (cluster_id, enabled, interval_minutes, last_run_at)
 		VALUES (?, ?, ?, COALESCE((SELECT last_run_at FROM scan_schedules WHERE cluster_id = ?), 0))
 		ON CONFLICT(cluster_id) DO UPDATE SET
@@ -127,7 +127,7 @@ func SetSchedule(ctx context.Context, database *sql.DB, sched ScanSchedule) erro
 
 // DueSchedules returns every enabled schedule whose next run time has passed.
 func DueSchedules(ctx context.Context, database *sql.DB, now int64) ([]ScanSchedule, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT cluster_id, enabled, interval_minutes, last_run_at
 		FROM scan_schedules
 		WHERE enabled = 1 AND (last_run_at + interval_minutes * 60) <= ?
@@ -157,7 +157,7 @@ func DueSchedules(ctx context.Context, database *sql.DB, now int64) ([]ScanSched
 
 // MarkScheduleRun stamps a schedule's last_run_at.
 func MarkScheduleRun(ctx context.Context, database *sql.DB, clusterID string, at int64) error {
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO scan_schedules (cluster_id, enabled, interval_minutes, last_run_at)
 		VALUES (?, 1, 60, ?)
 		ON CONFLICT(cluster_id) DO UPDATE SET last_run_at = excluded.last_run_at

@@ -1,7 +1,13 @@
-// Package db is Cluster Doctor's SQLite persistence layer: scan history,
-// findings, audit log, and per-cluster preferences. It never needs external
-// infrastructure — the whole thing is one file on disk, opened with the
-// pure-Go modernc.org/sqlite driver so K8sense stays a single static binary.
+// Package db is Cluster Doctor's persistence layer: scan history, findings,
+// audit log, and per-cluster preferences.
+//
+// It supports two backends. SQLite is the default — one file on disk, opened
+// with the pure-Go modernc.org/sqlite driver so K8sense stays a single static
+// binary with no external infrastructure, which is what a desktop install and
+// a single-pod web deployment want. Postgres is available for hosted
+// deployments that need more than one replica: SQLite is a single-writer store
+// and cannot serve that safely. The backend is chosen by the connection
+// string (see Open).
 package db
 
 import (
@@ -12,19 +18,36 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"time"
 
+	_ "github.com/lib/pq"  // registers the "postgres" database/sql driver
 	_ "modernc.org/sqlite" // registers the "sqlite" database/sql driver
 )
 
-//go:embed migrations/*.sql
+//go:embed migrations/sqlite/*.sql migrations/postgres/*.sql
 var migrationsFS embed.FS
 
-// Open creates (if needed) the directory containing path, opens the SQLite
-// database there in WAL mode, and applies any migrations that haven't run
-// yet. path should come from DefaultPath() in normal operation; tests pass
-// their own temp-file path.
-func Open(path string) (*sql.DB, error) {
+// Open connects to the persistence backend named by dsn and applies any
+// pending migrations. A dsn beginning with "postgres://" or "postgresql://"
+// selects the Postgres backend; anything else is treated as a SQLite file path
+// (the desktop default, e.g. from DefaultPath()). Tests pass their own dsn.
+func Open(dsn string) (*sql.DB, error) {
+	if IsPostgresDSN(dsn) {
+		return openPostgres(dsn)
+	}
+
+	return openSQLite(dsn)
+}
+
+// IsPostgresDSN reports whether dsn selects the Postgres backend.
+func IsPostgresDSN(dsn string) bool {
+	return strings.HasPrefix(dsn, "postgres://") || strings.HasPrefix(dsn, "postgresql://")
+}
+
+func openSQLite(path string) (*sql.DB, error) {
+	setDialect(DialectSQLite)
+
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil { //nolint:mnd
 		return nil, fmt.Errorf("creating db directory: %w", err)
 	}
@@ -42,6 +65,25 @@ func Open(path string) (*sql.DB, error) {
 
 	if _, err := database.Exec(`PRAGMA foreign_keys=ON;`); err != nil {
 		return nil, fmt.Errorf("enabling foreign keys: %w", err)
+	}
+
+	if err := migrate(database); err != nil {
+		return nil, fmt.Errorf("running migrations: %w", err)
+	}
+
+	return database, nil
+}
+
+func openPostgres(dsn string) (*sql.DB, error) {
+	setDialect(DialectPostgres)
+
+	database, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("opening postgres: %w", err)
+	}
+
+	if err := database.Ping(); err != nil {
+		return nil, fmt.Errorf("connecting to postgres: %w", err)
 	}
 
 	if err := migrate(database); err != nil {
@@ -117,7 +159,15 @@ func migrate(database *sql.DB) error {
 		return fmt.Errorf("reading schema_version: %w", err)
 	}
 
-	entries, err := migrationsFS.ReadDir("migrations")
+	// Migrations are dialect-specific (the two dirs hold the same numbered
+	// sequence with per-backend type differences), selected by the active
+	// dialect so the schema_version numbers stay aligned across backends.
+	migrationsDir := "migrations/sqlite"
+	if CurrentDialect() == DialectPostgres {
+		migrationsDir = "migrations/postgres"
+	}
+
+	entries, err := migrationsFS.ReadDir(migrationsDir)
 	if err != nil {
 		return fmt.Errorf("reading embedded migrations: %w", err)
 	}
@@ -135,7 +185,7 @@ func migrate(database *sql.DB) error {
 			continue
 		}
 
-		sqlBytes, err := migrationsFS.ReadFile("migrations/" + entry.Name())
+		sqlBytes, err := migrationsFS.ReadFile(migrationsDir + "/" + entry.Name())
 		if err != nil {
 			return fmt.Errorf("reading migration %s: %w", entry.Name(), err)
 		}
@@ -152,7 +202,7 @@ func migrate(database *sql.DB) error {
 		}
 
 		if _, err := tx.Exec(
-			`INSERT INTO schema_version (version, applied_at) VALUES (?, ?);`,
+			rebind(`INSERT INTO schema_version (version, applied_at) VALUES (?, ?);`),
 			version, time.Now().UTC().Unix(),
 		); err != nil {
 			_ = tx.Rollback()

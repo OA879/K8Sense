@@ -50,7 +50,7 @@ func SaveScan(ctx context.Context, database *sql.DB, result *clusterdoctor.ScanR
 		completedAt = result.CompletedAt.Unix()
 	}
 
-	_, err = tx.ExecContext(ctx, `
+	_, err = exec(ctx, tx, `
 		INSERT INTO scans (
 			id, cluster_id, started_at, completed_at, status,
 			total_findings, critical_count, warning_count, info_count,
@@ -65,13 +65,15 @@ func SaveScan(ctx context.Context, database *sql.DB, result *clusterdoctor.ScanR
 		return fmt.Errorf("inserting scan: %w", err)
 	}
 
-	stmt, err := tx.PrepareContext(ctx, `
+	// Rebind for the active dialect: a prepared statement's placeholders are
+	// not routed through the exec helper, so they must be converted here too.
+	stmt, err := tx.PrepareContext(ctx, rebind(`
 		INSERT INTO findings (
 			id, scan_id, rule_id, rule_name, severity, category,
 			namespace, resource_kind, resource_name, description,
 			remediation, raw_object, detected_at
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`)
+	`))
 	if err != nil {
 		return fmt.Errorf("preparing findings insert: %w", err)
 	}
@@ -97,7 +99,7 @@ func SaveScan(ctx context.Context, database *sql.DB, result *clusterdoctor.ScanR
 
 // GetFindings returns every finding recorded for scanID, most severe first.
 func GetFindings(ctx context.Context, database *sql.DB, scanID string) ([]clusterdoctor.Finding, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT id, scan_id, rule_id, rule_name, severity, category,
 		       COALESCE(namespace, ''), resource_kind, resource_name, description,
 		       remediation, COALESCE(raw_object, ''), detected_at
@@ -141,7 +143,7 @@ func GetScan(ctx context.Context, database *sql.DB, scanID string) (ScanSummary,
 
 	var completedAt sql.NullInt64
 
-	err := database.QueryRowContext(ctx, `
+	err := queryRow(ctx, database, `
 		SELECT id, cluster_id, started_at, completed_at, status,
 		       total_findings, critical_count, warning_count, info_count,
 		       skipped_checks, COALESCE(error_message, '')
@@ -165,7 +167,7 @@ func GetScan(ctx context.Context, database *sql.DB, scanID string) (ScanSummary,
 
 // ListScans returns scan history for one cluster, most recent first.
 func ListScans(ctx context.Context, database *sql.DB, clusterID string, limit int) ([]ScanSummary, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT id, cluster_id, started_at, completed_at, status,
 		       total_findings, critical_count, warning_count, info_count,
 		       skipped_checks, COALESCE(error_message, '')

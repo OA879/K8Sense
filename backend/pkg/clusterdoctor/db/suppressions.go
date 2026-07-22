@@ -27,7 +27,7 @@ type Suppression struct {
 // conflict it refreshes the reason, actor and timestamp but leaves any
 // existing comment untouched.
 func AddSuppression(ctx context.Context, database *sql.DB, s Suppression) error {
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO suppressions (
 			cluster_id, rule_id, namespace, resource_kind, resource_name,
 			reason, suppressed_by, suppressed_at, comment
@@ -54,7 +54,7 @@ func RemoveSuppression(
 	database *sql.DB,
 	clusterID, ruleID, namespace, resourceKind, resourceName string,
 ) error {
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		DELETE FROM suppressions
 		WHERE cluster_id = ? AND rule_id = ? AND namespace = ?
 		      AND resource_kind = ? AND resource_name = ?
@@ -75,7 +75,7 @@ func SetComment(
 	database *sql.DB,
 	clusterID, ruleID, namespace, resourceKind, resourceName, comment string,
 ) error {
-	_, err := database.ExecContext(ctx, `
+	_, err := exec(ctx, database, `
 		INSERT INTO suppressions (
 			cluster_id, rule_id, namespace, resource_kind, resource_name,
 			reason, suppressed_by, suppressed_at, comment
@@ -98,7 +98,7 @@ func SetComment(
 // non-null; comment-only rows (reason NULL) are excluded. Keys are formatted
 // as ruleID|namespace|resourceKind|resourceName.
 func GetSuppressionKeys(ctx context.Context, database *sql.DB, clusterID string) (map[string]bool, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT rule_id, namespace, resource_kind, resource_name
 		FROM suppressions
 		WHERE cluster_id = ? AND reason IS NOT NULL
@@ -126,7 +126,7 @@ func GetSuppressionKeys(ctx context.Context, database *sql.DB, clusterID string)
 // GetComments returns a map of resource key -> comment for every row in a
 // cluster that carries a non-empty comment. Keys match GetSuppressionKeys.
 func GetComments(ctx context.Context, database *sql.DB, clusterID string) (map[string]string, error) {
-	rows, err := database.QueryContext(ctx, `
+	rows, err := query(ctx, database, `
 		SELECT rule_id, namespace, resource_kind, resource_name, comment
 		FROM suppressions
 		WHERE cluster_id = ? AND comment IS NOT NULL AND comment <> ''
