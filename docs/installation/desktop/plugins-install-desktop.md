@@ -4,14 +4,14 @@ sidebar_label: Plugins Installation
 sidebar_position: 4
 ---
 
-Headlamp Desktop app supports installing plugins via the Plugin Catalog.
+K8sense Desktop app supports installing plugins via the Plugin Catalog.
 
-There is also [documentation for using plugins Headlamp running in-cluster](../in-cluster/index.md#plugin-management).
+There is also [documentation for using plugins K8sense running in-cluster](../in-cluster/index.md#plugin-management).
 
 
 ## Plugin Catalog
 
-When you start the Headlamp app, you should see "Plugin Catalog" link in the sidebar.
+When you start the K8sense app, you should see "Plugin Catalog" link in the sidebar.
 
 You can use the interface to search through plugins and find the ones you want to install, update or remove.
 
@@ -42,7 +42,7 @@ Click on the individual plugin to remove or update it.
 
 ### Official, Verified, and CNCF labels
 
-Plugins in the Headlamp Plugin Catalog may display Official, Verified, or CNCF labels supplied by Artifact Hub to indicate publisher provenance, affiliation, or CNCF stewardship. These badges can help you assess a plugin's source and decide if you trust them or not. They are not a substitute, however, for reviewing the plugin's code, permissions, and maintenance history.
+Plugins in the K8sense Plugin Catalog may display Official, Verified, or CNCF labels supplied by Artifact Hub to indicate publisher provenance, affiliation, or CNCF stewardship. These badges can help you assess a plugin's source and decide if you trust them or not. They are not a substitute, however, for reviewing the plugin's code, permissions, and maintenance history.
 
 #### Official plugins
 
@@ -54,10 +54,10 @@ CNCF plugins are plugins stewarded or endorsed by the Cloud Native Computing Fou
 
 #### Verified plugins
 
-Verified plugins are packages on Artifact Hub whose publisher identity has been validated. They show a "Verified" badge in the Plugin Catalog inside Headlamp, making it easier to confirm the plugin's source. Verification attests to publisher identity, not to a security audit. Always review a plugin's source, permissions, and maintainership before installing.
+Verified plugins are packages on Artifact Hub whose publisher identity has been validated. They show a "Verified" badge in the Plugin Catalog inside K8sense, making it easier to confirm the plugin's source. Verification attests to publisher identity, not to a security audit. Always review a plugin's source, permissions, and maintainership before installing.
 
-## Headlamp developers, Manual Plugin Catalog Installation
+## K8sense developers, Manual Plugin Catalog Installation
 
-This is a note for those developing Headlamp, not people using the Headlamp Desktop app.
+This is a note for those developing K8sense, not people using the K8sense Desktop app.
 
-The Plugin Catalog is not installed by default when you are developing Headlamp. You will need to [manually install the Plugin Catalog](https://github.com/headlamp-k8s/plugins/tree/main/plugin-catalog#plugin-catalog).
+The Plugin Catalog is not installed by default when you are developing K8sense. You will need to [manually install the Plugin Catalog](https://github.com/k8sense-k8s/plugins/tree/main/plugin-catalog#plugin-catalog).

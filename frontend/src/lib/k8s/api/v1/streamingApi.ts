@@ -418,7 +418,7 @@ interface StreamParams {
  *
  * This is an async function because it may need to fetch the kubeconfig for the
  * cluster if the cluster is specified in the params. If kubeconfig is found, it
- * sends the X-HEADLAMP-USER-ID header with the user ID from the localStorage.
+ * sends the X-K8SENSE-USER-ID header with the user ID from the localStorage.
  * It is sent as a base64url encoded string in protocal format:
  * `base64url.headlamp.authorization.k8s.io.${userID}`.
  *

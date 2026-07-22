@@ -3,7 +3,7 @@ title: Contributing to Internationalization
 sidebar_label: Contributing
 ---
 
-Welcome! This guide will help you contribute translations to Headlamp.
+Welcome! This guide will help you contribute translations to K8sense.
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ Welcome! This guide will help you contribute translations to Headlamp.
 frontend/src/i18n/locales/
 ```
 
-This is the **single source of truth** for all translations. Do not edit translation files in other locations (like `plugins/headlamp-plugin/src/i18n/locales/`) as they are auto-generated during the build process.
+This is the **single source of truth** for all translations. Do not edit translation files in other locations (like `plugins/k8sense-plugin/src/i18n/locales/`) as they are auto-generated during the build process.
 
 ### Translation File Structure
 
@@ -128,7 +128,7 @@ We have only two main [i18next namespaces](https://www.i18next.com/principles/na
 
 We do have a third namespace that concerns only the desktop app related strings: **app**.
 
-In Headlamp, namespaces are separated by a `|` character. E.g. `t('glossary|Pod')`.
+In K8sense, namespaces are separated by a `|` character. E.g. `t('glossary|Pod')`.
 
 ## Context
 

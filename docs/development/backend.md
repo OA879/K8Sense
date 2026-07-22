@@ -3,7 +3,7 @@ title: Backend
 sidebar_position: 1
 ---
 
-Headlamp's backend is written in Go. It is in charge of redirecting
+K8sense's backend is written in Go. It is in charge of redirecting
 client requests to the right clusters and returning any available
 plugins for the client to use.
 
@@ -15,7 +15,7 @@ redirects the requests to the defined proxies.
 
 ## Building and running
 
-The backend (Headlamp's server) can be quickly built using:
+The backend (K8sense's server) can be quickly built using:
 
 ```bash
 npm run backend:build
@@ -29,10 +29,10 @@ npm run backend:start
 
 ## Logging configuration
 
-Headlamp’s backend supports configurable log levels to control verbosity.
+K8sense’s backend supports configurable log levels to control verbosity.
 
 Log level can be configured using either a flag or an environment variable:
-- the log level: `--log-level` or env var `HEADLAMP_CONFIG_LOG_LEVEL`
+- the log level: `--log-level` or env var `K8SENSE_CONFIG_LOG_LEVEL`
 
 Supported Values:
 - `debug`
@@ -40,15 +40,15 @@ Supported Values:
 - `warn` 
 - `error`
 
-> **Note:** Headlamp uses zerolog defaults.  
-> Zerolog’s default log level is `info`, and Headlamp follows this behavior.
+> **Note:** K8sense uses zerolog defaults.  
+> Zerolog’s default log level is `info`, and K8sense follows this behavior.
 
 ### Examples
 
 Run with warning level:
 
 ```bash
-./headlamp-server --log-level warn
+./k8sense-server --log-level warn
 ```
 
 ## Lint

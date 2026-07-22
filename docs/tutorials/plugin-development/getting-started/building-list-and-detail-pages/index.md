@@ -6,7 +6,7 @@ sidebar_position: 7
 
 # Building List & Detail Pages
 
-This tutorial shows you how to build list and detail pages that match Headlamp's core UI. We'll achieve this by using the Headlamp CommonComponents `ResourceListView` for powerful, feature-rich list pages and `DetailsGrid` for comprehensive detail views.
+This tutorial shows you how to build list and detail pages that match K8sense's core UI. We'll achieve this by using the K8sense CommonComponents `ResourceListView` for powerful, feature-rich list pages and `DetailsGrid` for comprehensive detail views.
 
 ---
 
@@ -28,7 +28,7 @@ This tutorial shows you how to build list and detail pages that match Headlamp's
 
 ## Introduction
 
-In [Tutorial 5](../working-with-kubernetes-data-advanced/), you created a custom `MyPod` class and built a simple Pods page using a basic Material UI table. While that works, Headlamp provides powerful components that give you professional list and detail views with minimal code:
+In [Tutorial 5](../working-with-kubernetes-data-advanced/), you created a custom `MyPod` class and built a simple Pods page using a basic Material UI table. While that works, K8sense provides powerful components that give you professional list and detail views with minimal code:
 
 | Component | Purpose | Features |
 |-----------|---------|----------|
@@ -54,8 +54,8 @@ By the end of this tutorial, you'll have:
 Before starting, ensure you have:
 
 - ✅ Completed [Tutorial 5: Advanced Kubernetes Interactions](../working-with-kubernetes-data-advanced/)
-- ✅ Your `hello-headlamp` plugin with the `MyPod` class from Tutorial 5
-- ✅ Headlamp running with a connected cluster
+- ✅ Your `hello-k8sense` plugin with the `MyPod` class from Tutorial 5
+- ✅ K8sense running with a connected cluster
 
 **Time to complete:** ~30 minutes
 
@@ -73,8 +73,8 @@ Open your `src/index.tsx` and update the `MyPodsPage` component:
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { ResourceListView } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { ResourceListView } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { MyPod } from './resources/pod';
 
 function MyPodsPage() {
@@ -168,7 +168,7 @@ Now that you've seen it in action, let's look at what `ResourceListView` gave yo
 
 ### Built-in column shortcuts
 
-`'name'`, `'namespace'`, `'age'`, and `'cluster'` can be passed as plain strings. They are fully configured columns (including `getValue`, `render`, and sorting) — and `'name'` renders a link to Headlamp's native detail page for that resource. You can always replace a shortcut with a full column object to override its behaviour.
+`'name'`, `'namespace'`, `'age'`, and `'cluster'` can be passed as plain strings. They are fully configured columns (including `getValue`, `render`, and sorting) — and `'name'` renders a link to K8sense's native detail page for that resource. You can always replace a shortcut with a full column object to override its behaviour.
 
 ```tsx
 // Sorting, labels, and links — all configured:
@@ -228,13 +228,13 @@ import { useParams } from 'react-router-dom';
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 import {
   DetailsGrid,
   SectionBox,
   SimpleTable,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Chip } from '@mui/material';
 import { MyPod } from './resources/pod';
 
@@ -368,7 +368,7 @@ Now that you've seen it working, here's what `DetailsGrid` handled automatically
 ### Basic Usage
 
 ```tsx
-import { DetailsGrid } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { DetailsGrid } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 
 <DetailsGrid
   resourceType={MyPod}
@@ -377,7 +377,7 @@ import { DetailsGrid } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
 />
 ```
 
-With just those three props you get the full standard detail layout — identical to what Headlamp shows for its own built-in resources.
+With just those three props you get the full standard detail layout — identical to what K8sense shows for its own built-in resources.
 
 ---
 
@@ -385,7 +385,7 @@ With just those three props you get the full standard detail layout — identica
 
 `DetailsGrid` already provides default actions for common operations — for example, Pods automatically get Edit and Evict buttons in the header. But you'll often want to add your own custom actions.
 
-The `actions` prop lets you place action buttons in the detail page header. Each action is rendered using `ActionButton`, a Headlamp CommonComponent that renders an icon button with a tooltip. It keeps your actions visually consistent with Headlamp's built-in actions.
+The `actions` prop lets you place action buttons in the detail page header. Each action is rendered using `ActionButton`, a K8sense CommonComponent that renders an icon button with a tooltip. It keeps your actions visually consistent with K8sense's built-in actions.
 
 ```tsx
 <ActionButton
@@ -407,14 +407,14 @@ import { useParams, useHistory } from 'react-router-dom';
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 import {
   DetailsGrid,
   SectionBox,
   SimpleTable,
   ActionButton,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Chip, Snackbar } from '@mui/material';
 import { MyPod } from './resources/pod';
 
@@ -653,7 +653,7 @@ actions={pod => {
 
 **Key Points:**
 - Actions are evaluated when the resource loads, so you can customize based on resource state
-- Use `ActionButton` for consistent styling with Headlamp's design system
+- Use `ActionButton` for consistent styling with K8sense's design system
 - Always provide user feedback (Snackbar, dialogs) for destructive actions
 - Consider navigating away after successful destructive operations
 
@@ -665,19 +665,19 @@ Now we need to make the list page link to the detail page. `ResourceListView` au
 
 ### Step 1: Update ResourceListView to Link to Details
 
-The built-in `'name'` column shortcut links to Headlamp's native detail page for a resource. Since we registered our own detail route at `/my-plugin/:namespace/pods/:name`, we need a custom name column that navigates there instead.
+The built-in `'name'` column shortcut links to K8sense's native detail page for a resource. Since we registered our own detail route at `/my-plugin/:namespace/pods/:name`, we need a custom name column that navigates there instead.
 
-> **URL structure note:** Plugin routes are registered *without* the `/c/<cluster>` prefix (e.g. `path: '/my-plugin/:namespace/pods/:name'`). Headlamp's router adds `/c/<cluster-name>` in the browser automatically. When you build `href` values or `backLink` strings yourself, you must include it — which is why `getCluster()` is needed.
+> **URL structure note:** Plugin routes are registered *without* the `/c/<cluster>` prefix (e.g. `path: '/my-plugin/:namespace/pods/:name'`). K8sense's router adds `/c/<cluster-name>` in the browser automatically. When you build `href` values or `backLink` strings yourself, you must include it — which is why `getCluster()` is needed.
 
-Replace only the `MyPodsPage` function in your `src/index.tsx` (keep `MyPodDetailPage` and all `registerRoute`/`registerSidebarEntry` calls). This version uses Headlamp's `Link` CommonComponent for navigation.
+Replace only the `MyPodsPage` function in your `src/index.tsx` (keep `MyPodDetailPage` and all `registerRoute`/`registerSidebarEntry` calls). This version uses K8sense's `Link` CommonComponent for navigation.
 
 ```tsx
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { ResourceListView, Link } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { ResourceListView, Link } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { MyPod } from './resources/pod';
 
 function MyPodsPage() {
@@ -815,8 +815,8 @@ import { useParams, useHistory } from 'react-router-dom';
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 import {
   ResourceListView,
   DetailsGrid,
@@ -824,7 +824,7 @@ import {
   SimpleTable,
   ActionButton,
   Link,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Chip, Snackbar } from '@mui/material';
 import { MyPod } from './resources/pod';
 
@@ -1084,7 +1084,7 @@ You've learned how to build professional list and detail pages:
 **Coming up in Tutorial 7: Extending Existing Resource Views**
 - Adding custom sections to built-in resource detail pages
 - Customizing existing list views
-- Integrating with Headlamp's default views
+- Integrating with K8sense's default views
 
 ---
 

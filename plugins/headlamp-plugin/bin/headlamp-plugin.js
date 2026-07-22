@@ -479,7 +479,7 @@ function injectEnvVars(config, extraKeys = ['NODE_ENV']) {
   Object.keys(process.env)
     .filter(
       key =>
-        key.startsWith('REACT_APP_') || key.startsWith('HEADLAMP_APP_') || extraKeys.includes(key)
+        key.startsWith('REACT_APP_') || key.startsWith('K8SENSE_APP_') || extraKeys.includes(key)
     )
     .forEach(key => {
       const value = JSON.stringify(process.env[key]);

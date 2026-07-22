@@ -1,9 +1,9 @@
 ---
-title: How to Set Up Headlamp in EKS with Cognito as the OIDC provider
-sidebar_label: "Tutorial: Headlamp on EKS with Cognito"
+title: How to Set Up K8sense in EKS with Cognito as the OIDC provider
+sidebar_label: "Tutorial: K8sense on EKS with Cognito"
 ---
 
-This tutorial is about configuring Headlamp 0.23.2 with:
+This tutorial is about configuring K8sense 0.23.2 with:
 
 1. [AWS Cognito](https://aws.amazon.com/cognito/) for [OpenID Connect (OIDC)](https://www.microsoft.com/en-us/security/business/security-101/what-is-openid-connect-oidc) authentication
 2. [AWS EKS](https://docs.aws.amazon.com/eks/latest/userguide/what-is-eks.html) Platform eks.6
@@ -35,8 +35,8 @@ We will start by creating a Cognito user pool. This tutorial uses the AWS portal
     - You can either use the hosted UI or create your own UI for the authentication workflows (We are using the Cognito hosted UI).
     - You can also configure the domain name for the hosted UI (Also remember this is the issuer URL as well, which we will later use to set up EKS with). We are using the Cognito domain for this tutorial, but you can choose your own custom domain as well.
     - You can also configure the callback URLs for the auth flow. For this tutorial, we are setting it to be
-      <http://localhost:8000/oidc-callback> as we will be running headlamp on this port. Or, you can choose your own callback host as well based on your needs. Make sure to append /oidc-callback to the host since this is where Headlamp expects the redirect from auth to occur.
-    - Client Secret - We want to generate a client secret as our Headlamp app needs it to start the auth dance, so select Generate a client secret client secret column.
+      <http://localhost:8000/oidc-callback> as we will be running k8sense on this port. Or, you can choose your own callback host as well based on your needs. Make sure to append /oidc-callback to the host since this is where K8sense expects the redirect from auth to occur.
+    - Client Secret - We want to generate a client secret as our K8sense app needs it to start the auth dance, so select Generate a client secret client secret column.
     - You can also configure the scopes and claims for the tokens. For this tutorial, make sure the openid, profile, and email scopes are selected; other scopes are optional.
 
 ![Part one of three of a long form Cognito uses for App Configuration](./cognito/integrate-your-app1.png)
@@ -79,7 +79,7 @@ After creating the EKS cluster, we need to configure the OIDC provider for the c
    2.4 The other fields can be filled as shown in the image below.
    ![Associate OIDC Identity provider](./cluster/associate_oidc_identity_provider.png)
 
-## Fetching EKS cluster locally to deploy Headlamp on it
+## Fetching EKS cluster locally to deploy K8sense on it
 
 Make Sure you have the AWS CLI installed and setup with the necessary permissions to interact with the EKS cluster.
 
@@ -94,7 +94,7 @@ aws eks --region <YOUR_REGION_HERE> update-kubeconfig --name <YOUR_CLUSTER_NAME_
 
 Where `<YOUR_REGION_HERE>` is the region where the EKS cluster is created and `<YOUR_CLUSTER_NAME_HERE>` is the name of the EKS cluster.
 
-## Deploying Headlamp on the EKS cluster
+## Deploying K8sense on the EKS cluster
 
 1. First make sure you have the [Helm package manager](https://helm.sh/) installed on your local machine. There is a [Helm installation guide](https://helm.sh/docs/intro/install/) if you need to install it.
 2. Your cluster should be running.
@@ -140,10 +140,10 @@ Replace `<YOUR-CLIENT-ID>`,`<YOUR-CLIENT-SECRET>`,`<YOUR_REGION_HERE`, `<USER_PO
 ---
 > **ℹ️ Additional Notes for Other OIDC Providers and Ingress Setups**
 >
-> If you're using an OIDC provider other than Cognito (such as JumpCloud, Auth0, or Okta), or if you're deploying Headlamp behind an ingress controller or load balancer (like AWS NLB or ALB), please review the following:
+> If you're using an OIDC provider other than Cognito (such as JumpCloud, Auth0, or Okta), or if you're deploying K8sense behind an ingress controller or load balancer (like AWS NLB or ALB), please review the following:
 >
 > **5.1. Redirect URI construction:**  
-> Headlamp automatically builds the `redirect_uri` using the `Host` and `X-Forwarded-Proto` headers. If the `X-Forwarded-Proto` header is missing, the URI may default to `http`, which can cause a mismatch with the URI registered in your identity provider.
+> K8sense automatically builds the `redirect_uri` using the `Host` and `X-Forwarded-Proto` headers. If the `X-Forwarded-Proto` header is missing, the URI may default to `http`, which can cause a mismatch with the URI registered in your identity provider.
 >
 > If you're using NGINX ingress, you can ensure the correct header is forwarded by adding:
 >
@@ -153,10 +153,10 @@ Replace `<YOUR-CLIENT-ID>`,`<YOUR-CLIENT-SECRET>`,`<YOUR_REGION_HERE`, `<USER_PO
 > ```
 >
 > **5.2. Registering the correct redirect URI:**  
-> In your identity provider, make sure to register the exact redirect URI that Headlamp will use. This is typically:
+> In your identity provider, make sure to register the exact redirect URI that K8sense will use. This is typically:
 >
 > ```
-> https://<your-headlamp-domain>/oidc-callback
+> https://<your-k8sense-domain>/oidc-callback
 > ```
 >
 > **5.3. EKS OIDC trust configuration:**  
@@ -165,26 +165,26 @@ Replace `<YOUR-CLIENT-ID>`,`<YOUR-CLIENT-SECRET>`,`<YOUR_REGION_HERE`, `<USER_PO
 
 ---
 
-6. Save the `values.yaml` file and Install Headlamp using helm with the following commands:
+6. Save the `values.yaml` file and Install K8sense using helm with the following commands:
 
 ```shell
-helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-helm install headlamp-oidc headlamp/headlamp -f values.yaml --namespace=headlamp --create-namespace
+helm repo add k8sense https://kubernetes-sigs.github.io/k8sense/
+helm install k8sense-oidc k8sense/k8sense -f values.yaml --namespace=k8sense --create-namespace
 ```
 
-<!-- ![Headlamp install](./headlamp-install.jpg) -->
+<!-- ![K8sense install](./k8sense-install.jpg) -->
 
-This will install Headlamp in the headlamp namespace with the OIDC configuration from the values.yaml file.
+This will install K8sense in the k8sense namespace with the OIDC configuration from the values.yaml file.
 
-7. After a successful installation, you can access Headlamp by port-forwarding to the pod:
+7. After a successful installation, you can access K8sense by port-forwarding to the pod:
 
 Make sure the portforwarding is done to a port that you also set as the callback URL in the Cognito user pool configuration. So in our case if the callback URL is <http://localhost:8000/oidc-callback> then we should port forward to 8000.
 
 ```shell
-kubectl port-forward svc/headlamp-oidc 8000:80 -n headlamp
+kubectl port-forward svc/k8sense-oidc 8000:80 -n k8sense
 ```
 
-8. Open your web browser and go to <http://localhost:8000>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using Headlamp.
-   ![Headlamp Login](./headlamp_auth_screen.png)
+8. Open your web browser and go to <http://localhost:8000>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using K8sense.
+   ![K8sense Login](./k8sense_auth_screen.png)
    ![Cognito Login](./cognito_auth.png)
-   ![Headlamp Dashboard](./headlamp_dashboard.png)
+   ![K8sense Dashboard](./k8sense_dashboard.png)

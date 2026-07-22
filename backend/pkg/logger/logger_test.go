@@ -87,7 +87,7 @@ func TestLog(t *testing.T) {
 	}
 }
 
-// Sets global log level from HEADLAMP_CONFIG_LOG_LEVEL.
+// Sets global log level from K8SENSE_CONFIG_LOG_LEVEL.
 func TestLogLevelsFromEnv(t *testing.T) {
 	orig := zerolog.GlobalLevel()
 
@@ -115,9 +115,9 @@ func TestLogLevelsFromEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("HEADLAMP_CONFIG_LOG_LEVEL", tt.envValue)
+			t.Setenv("K8SENSE_CONFIG_LOG_LEVEL", tt.envValue)
 
-			logger.Init(os.Getenv("HEADLAMP_CONFIG_LOG_LEVEL"))
+			logger.Init(os.Getenv("K8SENSE_CONFIG_LOG_LEVEL"))
 
 			if got := zerolog.GlobalLevel(); got != tt.expected {
 				t.Fatalf("expected %v, got %v", tt.expected, got)
@@ -134,9 +134,9 @@ func TestInvalidLevelDefaultsToInfo(t *testing.T) {
 		zerolog.SetGlobalLevel(orig)
 	})
 
-	t.Setenv("HEADLAMP_CONFIG_LOG_LEVEL", "not-a-level")
+	t.Setenv("K8SENSE_CONFIG_LOG_LEVEL", "not-a-level")
 
-	logger.Init(os.Getenv("HEADLAMP_CONFIG_LOG_LEVEL"))
+	logger.Init(os.Getenv("K8SENSE_CONFIG_LOG_LEVEL"))
 
 	if got := zerolog.GlobalLevel(); got != zerolog.InfoLevel {
 		t.Fatalf("expected fallback to info, got %v", got)
@@ -152,8 +152,8 @@ func TestEmptyOrMissingEnvDefaultsToInfo(t *testing.T) {
 	})
 
 	t.Run("empty", func(t *testing.T) {
-		t.Setenv("HEADLAMP_CONFIG_LOG_LEVEL", "")
-		logger.Init(os.Getenv("HEADLAMP_CONFIG_LOG_LEVEL"))
+		t.Setenv("K8SENSE_CONFIG_LOG_LEVEL", "")
+		logger.Init(os.Getenv("K8SENSE_CONFIG_LOG_LEVEL"))
 
 		if zerolog.GlobalLevel() != zerolog.InfoLevel {
 			t.Fatalf("expected info for empty env")
@@ -161,8 +161,8 @@ func TestEmptyOrMissingEnvDefaultsToInfo(t *testing.T) {
 	})
 
 	t.Run("missing", func(t *testing.T) {
-		require.NoError(t, os.Unsetenv("HEADLAMP_CONFIG_LOG_LEVEL"))
-		logger.Init(os.Getenv("HEADLAMP_CONFIG_LOG_LEVEL"))
+		require.NoError(t, os.Unsetenv("K8SENSE_CONFIG_LOG_LEVEL"))
+		logger.Init(os.Getenv("K8SENSE_CONFIG_LOG_LEVEL"))
 
 		if zerolog.GlobalLevel() != zerolog.InfoLevel {
 			t.Fatalf("expected info when env missing")

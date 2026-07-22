@@ -6,7 +6,7 @@ sidebar_position: 9
 
 # Adding Plugin Settings
 
-In [Tutorial 7](../extending-existing-resource-views/) we extended Headlamp's built-in Pods list and detail views by injecting a Container Images column, an Image Details action button, and a Container Resources section. Those extensions are always active — the user has no way to turn them on or off.
+In [Tutorial 7](../extending-existing-resource-views/) we extended K8sense's built-in Pods list and detail views by injecting a Container Images column, an Image Details action button, and a Container Resources section. Those extensions are always active — the user has no way to turn them on or off.
 
 In this tutorial we will make the **Image Details button** configurable. We'll add a plugin settings page where users can toggle the button on or off with a switch. This will cover:
 
@@ -36,7 +36,7 @@ In this tutorial we will make the **Image Details button** configurable. We'll a
 
 ## Introduction
 
-Headlamp has a built-in **Plugin Settings** page (accessible via **Settings → Plugins → your plugin name**). To add a settings UI for your plugin, you register a React component with `registerPluginSettings`. Headlamp renders your component on that page and your component reads and writes configuration through a `ConfigStore` instance.
+K8sense has a built-in **Plugin Settings** page (accessible via **Settings → Plugins → your plugin name**). To add a settings UI for your plugin, you register a React component with `registerPluginSettings`. K8sense renders your component on that page and your component reads and writes configuration through a `ConfigStore` instance.
 
 `ConfigStore` gives you three ways to interact with your plugin's config:
 
@@ -59,8 +59,8 @@ By the end of this tutorial your plugin will have:
 Before starting, ensure you have:
 
 - ✅ Completed [Tutorial 7: Extending Existing Resource Views](../extending-existing-resource-views/)
-- ✅ Your `hello-headlamp` plugin with the Image Details button from Tutorial 7
-- ✅ Headlamp running with a connected cluster
+- ✅ Your `hello-k8sense` plugin with the Image Details button from Tutorial 7
+- ✅ K8sense running with a connected cluster
 
 **Time to complete:** ~20 minutes
 
@@ -71,13 +71,13 @@ Before starting, ensure you have:
 The **Image Details button** is a React component registered via `registerDetailsViewHeaderAction`. Because it is a React component, it can call `store.useConfig()` to subscribe to config changes. When config is saved, the component re-renders automatically — the button appears or disappears immediately without any page navigation.
 
 ```
-User flips the toggle in Settings → Plugins → hello-headlamp
+User flips the toggle in Settings → Plugins → hello-k8sense
          │
          ▼
 settings.tsx calls onDataChange({ showImageDetails: true/false })
          │
          ▼
-User clicks Save → Headlamp persists the config via ConfigStore
+User clicks Save → K8sense persists the config via ConfigStore
          │
          ▼
 ImageDetailsAction re-renders via useConfig() → returns null or the button
@@ -94,13 +94,13 @@ Start by creating a dedicated file for your plugin's configuration. This keeps t
 Create the file `src/config.ts`:
 
 ```ts
-import { ConfigStore } from '@kinvolk/headlamp-plugin/lib';
+import { ConfigStore } from '@kinvolk/k8sense-plugin/lib';
 
 /**
- * Shape of the hello-headlamp plugin configuration.
+ * Shape of the hello-k8sense plugin configuration.
  * Add new settings here as the plugin grows.
  */
-export interface HelloHeadlampConfig {
+export interface HelloK8senseConfig {
   /** Whether to show the Image Details button on Pod detail pages. */
   showImageDetails: boolean;
 }
@@ -109,18 +109,18 @@ export interface HelloHeadlampConfig {
  * Default values applied the first time the plugin loads (before the user
  * visits the settings page).
  */
-export const DEFAULT_CONFIG: HelloHeadlampConfig = {
+export const DEFAULT_CONFIG: HelloK8senseConfig = {
   showImageDetails: true,
 };
 
 /**
- * Shared ConfigStore instance for the hello-headlamp plugin.
+ * Shared ConfigStore instance for the hello-k8sense plugin.
  * Import this from any file that needs to read or write plugin config.
  *
- * The key ('hello-headlamp') must match the plugin name passed to
+ * The key ('hello-k8sense') must match the plugin name passed to
  * registerPluginSettings.
  */
-export const store = new ConfigStore<HelloHeadlampConfig>('hello-headlamp');
+export const store = new ConfigStore<HelloK8senseConfig>('hello-k8sense');
 
 /**
  * Convenience helper — returns the current config, falling back to defaults
@@ -128,7 +128,7 @@ export const store = new ConfigStore<HelloHeadlampConfig>('hello-headlamp');
  *
  * Safe to call outside React (e.g. in processor functions).
  */
-export function getConfig(): HelloHeadlampConfig {
+export function getConfig(): HelloK8senseConfig {
   return { ...DEFAULT_CONFIG, ...store.get() };
 }
 ```
@@ -138,28 +138,28 @@ export function getConfig(): HelloHeadlampConfig {
 Both `settings.tsx` and `index.tsx` need the same `ConfigStore` instance. Putting it in its own file means:
 
 - There is exactly **one** store instance shared across the whole plugin
-- The config type (`HelloHeadlampConfig`) is defined in one place
+- The config type (`HelloK8senseConfig`) is defined in one place
 - The `getConfig()` helper applies defaults so callers never have to worry about `undefined` values on first load
 
 ---
 
 ## Step 2 — Build the Settings UI Component
 
-Now create the settings UI component. Headlamp injects the current saved config as `data` and a staging callback as `onDataChange`; the user confirms changes by clicking Save.
+Now create the settings UI component. K8sense injects the current saved config as `data` and a staging callback as `onDataChange`; the user confirms changes by clicking Save.
 
 Create the file `src/settings.tsx`:
 
 ```tsx
 import { FormControlLabel, Switch, Typography, Box } from '@mui/material';
-import { PluginSettingsDetailsProps } from '@kinvolk/headlamp-plugin/lib';
+import { PluginSettingsDetailsProps } from '@kinvolk/k8sense-plugin/lib';
 import { DEFAULT_CONFIG } from './config';
 
 /**
- * Settings component for the hello-headlamp plugin.
- * Rendered by Headlamp inside Settings → Plugins → hello-headlamp.
- * Headlamp injects `data` (current saved config) and `onDataChange` (staging callback).
+ * Settings component for the hello-k8sense plugin.
+ * Rendered by K8sense inside Settings → Plugins → hello-k8sense.
+ * K8sense injects `data` (current saved config) and `onDataChange` (staging callback).
  */
-export default function HelloHeadlampSettings({ data, onDataChange }: PluginSettingsDetailsProps) {
+export default function HelloK8senseSettings({ data, onDataChange }: PluginSettingsDetailsProps) {
   // Merge saved config with defaults so the toggle always has a defined value
   const config = { ...DEFAULT_CONFIG, ...data };
 
@@ -192,17 +192,17 @@ export default function HelloHeadlampSettings({ data, onDataChange }: PluginSett
 
 | | What it does |
 |------|-------------|
-| `data` prop | Current saved config injected by Headlamp — `undefined` until the user has saved at least once |
+| `data` prop | Current saved config injected by K8sense — `undefined` until the user has saved at least once |
 | `{ ...DEFAULT_CONFIG, ...data }` | Merges saved values with defaults so the toggle always has a defined value on first load |
-| `onDataChange?.({ ... })` | Stages the updated config; Headlamp persists it when the user clicks Save |
+| `onDataChange?.({ ... })` | Stages the updated config; K8sense persists it when the user clicks Save |
 
-![Screenshot of the hello-headlamp settings page showing the "Show Image Details button" toggle switch in the on position](./settings-page.png)
+![Screenshot of the hello-k8sense settings page showing the "Show Image Details button" toggle switch in the on position](./settings-page.png)
 
 ---
 
 ## Step 3 — Register the Settings Page
 
-Now wire the settings component into Headlamp. Open `src/index.tsx` and add the import and registration call:
+Now wire the settings component into K8sense. Open `src/index.tsx` and add the import and registration call:
 
 ```tsx
 import {
@@ -211,9 +211,9 @@ import {
   registerDetailsViewSectionsProcessor,
   DefaultDetailsViewSection,
   registerPluginSettings,        // ← add
-} from '@kinvolk/headlamp-plugin/lib';
+} from '@kinvolk/k8sense-plugin/lib';
 
-import HelloHeadlampSettings from './settings';  // ← add
+import HelloK8senseSettings from './settings';  // ← add
 ```
 
 Then add the registration at the bottom of the file:
@@ -221,7 +221,7 @@ Then add the registration at the bottom of the file:
 ```tsx
 // Register the settings page for this plugin.
 // The first argument must match the plugin name in package.json.
-registerPluginSettings('hello-headlamp', HelloHeadlampSettings, true);
+registerPluginSettings('hello-k8sense', HelloK8senseSettings, true);
 ```
 
 The third argument (`displaySaveButton`) controls how the component is rendered and who is responsible for saving:
@@ -229,18 +229,18 @@ The third argument (`displaySaveButton`) controls how the component is rendered 
 | Value | How component is rendered | Who saves |
 |-------|--------------------------|-----------|
 | `false` | `<Comp />` — no props injected | The plugin calls `store.set()` / `store.update()` directly |
-| `true` | `<Comp data={…} onDataChange={…} />` | Headlamp — shows a Save button and persists config when clicked |
+| `true` | `<Comp data={…} onDataChange={…} />` | K8sense — shows a Save button and persists config when clicked |
 
-Because our settings component uses `data`/`onDataChange` and we want Headlamp to show a Save button, we pass `true`.
+Because our settings component uses `data`/`onDataChange` and we want K8sense to show a Save button, we pass `true`.
 
 ### Test it
 
 1. Save both files
-2. In Headlamp, go to **Settings** (gear icon) → **Plugins**
-3. Find **hello-headlamp** in the list and click it
+2. In K8sense, go to **Settings** (gear icon) → **Plugins**
+3. Find **hello-k8sense** in the list and click it
 4. You should see your settings page with the toggle switch
 
-![Screenshot of the Headlamp Plugins settings list with hello-headlamp visible and a link to its settings](./plugins-list.png)
+![Screenshot of the K8sense Plugins settings list with hello-k8sense visible and a link to its settings](./plugins-list.png)
 
 ---
 
@@ -316,7 +316,7 @@ Because `useConfig()` is a reactive subscription, flipping the toggle in setting
 ### Test it
 
 1. Save the file
-2. Go to **Settings → Plugins → hello-headlamp**, flip the toggle off, and click **Save**
+2. Go to **Settings → Plugins → hello-k8sense**, flip the toggle off, and click **Save**
 3. Navigate to any Pod detail page — the **Image Details** button should no longer appear in the header
 4. Go back to settings, flip the toggle on, and click **Save**
 5. Switch back to the Pod detail page — the Image Details button reappears immediately, without a page refresh
@@ -332,7 +332,7 @@ Because `useConfig()` is a reactive subscription, flipping the toggle in setting
 `ConfigStore<T>` is a generic class. The type parameter `T` is the shape of your config object, which gives you type safety when reading and writing config values.
 
 ```ts
-import { ConfigStore } from '@kinvolk/headlamp-plugin/lib';
+import { ConfigStore } from '@kinvolk/k8sense-plugin/lib';
 
 interface MyConfig {
   featureEnabled: boolean;
@@ -342,7 +342,7 @@ interface MyConfig {
 const store = new ConfigStore<MyConfig>('my-plugin-name');
 ```
 
-The config key passed to the constructor must be **unique across all plugins**. Using your plugin's npm package name (e.g. `'hello-headlamp'`) is a safe convention.
+The config key passed to the constructor must be **unique across all plugins**. Using your plugin's npm package name (e.g. `'hello-k8sense'`) is a safe convention.
 
 ### Reading config
 
@@ -384,7 +384,7 @@ Config is persisted to the browser's **local storage**, so values survive page r
 
 ## Understanding registerPluginSettings
 
-`registerPluginSettings` tells Headlamp to render your settings component on the plugin's settings page:
+`registerPluginSettings` tells K8sense to render your settings component on the plugin's settings page:
 
 ```ts
 registerPluginSettings(pluginName, SettingsComponent, displaySaveButton);
@@ -393,14 +393,14 @@ registerPluginSettings(pluginName, SettingsComponent, displaySaveButton);
 | Argument | Type | Description |
 |----------|------|-------------|
 | `pluginName` | `string` | Must match the `name` field in the plugin's `package.json` |
-| `SettingsComponent` | `React.ComponentType` | The component Headlamp renders for settings |
-| `displaySaveButton` | `boolean` | `false` — component rendered without props, plugin saves itself; `true` — Headlamp injects `data`/`onDataChange` and shows a Save button |
+| `SettingsComponent` | `React.ComponentType` | The component K8sense renders for settings |
+| `displaySaveButton` | `boolean` | `false` — component rendered without props, plugin saves itself; `true` — K8sense injects `data`/`onDataChange` and shows a Save button |
 
 ### The `displaySaveButton` modes
 
 **`displaySaveButton: false` — plugin handles saving**
 
-Headlamp renders the component with no props: `<Comp />`. The plugin is responsible for reading config (via `store.useConfig()`) and writing it (via `store.set()` / `store.update()`). Suitable for auto-save patterns such as toggles.
+K8sense renders the component with no props: `<Comp />`. The plugin is responsible for reading config (via `store.useConfig()`) and writing it (via `store.set()` / `store.update()`). Suitable for auto-save patterns such as toggles.
 
 ```tsx
 import { store } from './config';
@@ -421,12 +421,12 @@ function Settings() {
 registerPluginSettings('my-plugin', Settings, false);
 ```
 
-**`displaySaveButton: true` — Headlamp handles saving (used in this tutorial)**
+**`displaySaveButton: true` — K8sense handles saving (used in this tutorial)**
 
-Headlamp renders the component as `<Comp data={…} onDataChange={…} />` and shows a Save button. The component reads from `data` and calls `onDataChange` to stage changes; Headlamp persists them when the user clicks Save. Suitable for forms where the user should confirm before saving.
+K8sense renders the component as `<Comp data={…} onDataChange={…} />` and shows a Save button. The component reads from `data` and calls `onDataChange` to stage changes; K8sense persists them when the user clicks Save. Suitable for forms where the user should confirm before saving.
 
 ```tsx
-import { PluginSettingsDetailsProps } from '@kinvolk/headlamp-plugin/lib';
+import { PluginSettingsDetailsProps } from '@kinvolk/k8sense-plugin/lib';
 
 function Settings({ data, onDataChange }: PluginSettingsDetailsProps) {
   return (
@@ -449,19 +449,19 @@ Below is the full set of files for this tutorial. The code in `src/index.tsx` sh
 ### src/config.ts *(new file)*
 
 ```ts
-import { ConfigStore } from '@kinvolk/headlamp-plugin/lib';
+import { ConfigStore } from '@kinvolk/k8sense-plugin/lib';
 
-export interface HelloHeadlampConfig {
+export interface HelloK8senseConfig {
   showImageDetails: boolean;
 }
 
-export const DEFAULT_CONFIG: HelloHeadlampConfig = {
+export const DEFAULT_CONFIG: HelloK8senseConfig = {
   showImageDetails: true,
 };
 
-export const store = new ConfigStore<HelloHeadlampConfig>('hello-headlamp');
+export const store = new ConfigStore<HelloK8senseConfig>('hello-k8sense');
 
-export function getConfig(): HelloHeadlampConfig {
+export function getConfig(): HelloK8senseConfig {
   return { ...DEFAULT_CONFIG, ...store.get() };
 }
 ```
@@ -470,10 +470,10 @@ export function getConfig(): HelloHeadlampConfig {
 
 ```tsx
 import { FormControlLabel, Switch, Typography, Box } from '@mui/material';
-import { PluginSettingsDetailsProps } from '@kinvolk/headlamp-plugin/lib';
+import { PluginSettingsDetailsProps } from '@kinvolk/k8sense-plugin/lib';
 import { DEFAULT_CONFIG } from './config';
 
-export default function HelloHeadlampSettings({ data, onDataChange }: PluginSettingsDetailsProps) {
+export default function HelloK8senseSettings({ data, onDataChange }: PluginSettingsDetailsProps) {
   const config = { ...DEFAULT_CONFIG, ...data };
 
   return (
@@ -506,9 +506,9 @@ export default function HelloHeadlampSettings({ data, onDataChange }: PluginSett
 Add these imports at the top:
 
 ```tsx
-import { registerPluginSettings } from '@kinvolk/headlamp-plugin/lib';
+import { registerPluginSettings } from '@kinvolk/k8sense-plugin/lib';
 import { store, DEFAULT_CONFIG } from './config';
-import HelloHeadlampSettings from './settings';
+import HelloK8senseSettings from './settings';
 ```
 
 Replace the `ImageDetailsAction` function from Tutorial 7 with:
@@ -566,7 +566,7 @@ function ImageDetailsAction({ item }: { item: any }) {
 
 // ... keep registerResourceTableColumnsProcessor, registerDetailsViewSectionsProcessor from Tutorial 7 ...
 
-registerPluginSettings('hello-headlamp', HelloHeadlampSettings, true);
+registerPluginSettings('hello-k8sense', HelloK8senseSettings, true);
 ```
 
 ---
@@ -577,7 +577,7 @@ registerPluginSettings('hello-headlamp', HelloHeadlampSettings, true);
 
 - Confirm the first argument to `registerPluginSettings` exactly matches the `name` field in `package.json`. The name is case-sensitive.
 - Make sure `registerPluginSettings` is called at module level (outside any component), so it runs when the plugin loads.
-- Reload the Headlamp page — newly registered settings sometimes require a full reload.
+- Reload the K8sense page — newly registered settings sometimes require a full reload.
 
 ### Toggle is always shown as "off" even after saving
 
@@ -620,7 +620,7 @@ You've learned how to make your plugin configurable:
 ### ConfigStore
 
 ```ts
-import { ConfigStore } from '@kinvolk/headlamp-plugin/lib';
+import { ConfigStore } from '@kinvolk/k8sense-plugin/lib';
 
 // Create a typed store — key must be unique (use your plugin package name)
 const store = new ConfigStore<MyConfig>('my-plugin');
@@ -640,19 +640,19 @@ const config = useConf();             // re-renders on change
 ### registerPluginSettings
 
 ```ts
-import { registerPluginSettings } from '@kinvolk/headlamp-plugin/lib';
+import { registerPluginSettings } from '@kinvolk/k8sense-plugin/lib';
 
 // Self-managed saving (auto-save pattern)
 registerPluginSettings('my-plugin', MySettingsComponent, false);
 
-// Headlamp-managed saving (explicit Save button)
+// K8sense-managed saving (explicit Save button)
 registerPluginSettings('my-plugin', MySettingsComponent, true);
 ```
 
 ### PluginSettingsDetailsProps (for displaySaveButton: true)
 
 ```tsx
-import { PluginSettingsDetailsProps } from '@kinvolk/headlamp-plugin/lib';
+import { PluginSettingsDetailsProps } from '@kinvolk/k8sense-plugin/lib';
 
 function MySettings({ data, onDataChange }: PluginSettingsDetailsProps) {
   return (
@@ -667,7 +667,7 @@ function MySettings({ data, onDataChange }: PluginSettingsDetailsProps) {
 ### Suggested src/config.ts structure
 
 ```ts
-import { ConfigStore } from '@kinvolk/headlamp-plugin/lib';
+import { ConfigStore } from '@kinvolk/k8sense-plugin/lib';
 
 export interface MyPluginConfig {
   featureEnabled: boolean;

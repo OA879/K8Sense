@@ -32,7 +32,7 @@ import { getExtraFiles } from './plugin-management';
 
 const TEST_DATA_BASE_DIR = path.join(os.tmpdir(), 'headlamp-test-data');
 const PLUGIN_DEST_BASE_DIR = path.join(os.tmpdir(), 'headlamp-test-plugins');
-const HEADLAMP_VERSION = '0.30.0';
+const K8SENSE_VERSION = '0.30.0';
 
 /**
  * Creates a unique test directory for a test
@@ -69,7 +69,7 @@ describe('PluginManager', () => {
       progress.push(update);
     };
 
-    await PluginManager.install(pluginURL, pluginDestDir, HEADLAMP_VERSION, progressCallback, null);
+    await PluginManager.install(pluginURL, pluginDestDir, K8SENSE_VERSION, progressCallback, null);
 
     // Verify the plugin was installed
     const pluginDir = path.join(pluginDestDir, 'headlamp_minikube');
@@ -132,7 +132,7 @@ describe('PluginManager', () => {
       progress.push(update);
     };
 
-    await PluginManager.install(pluginURL, pluginDestDir, HEADLAMP_VERSION, progressCallback, null);
+    await PluginManager.install(pluginURL, pluginDestDir, K8SENSE_VERSION, progressCallback, null);
 
     // Verify the plugin was installed
     const pluginDir = path.join(pluginDestDir, 'headlamp_minikube');
@@ -182,7 +182,7 @@ describe('PluginManager', () => {
     };
 
     // Install the plugin
-    await PluginManager.install(pluginURL, pluginDestDir, HEADLAMP_VERSION, progressCallback, null);
+    await PluginManager.install(pluginURL, pluginDestDir, K8SENSE_VERSION, progressCallback, null);
 
     // Verify the plugin was installed
     const pluginDir = path.join(pluginDestDir, 'headlamp_minikube');

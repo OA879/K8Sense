@@ -31,7 +31,7 @@ const reactAppEnvVars = Object.entries(process.env)
   );
 
 // Use environment variable for backend port, defaulting to 4466
-const backendPort = process.env.HEADLAMP_PORT || '4466';
+const backendPort = process.env.K8SENSE_PORT || '4466';
 const backendTarget = `http://localhost:${backendPort}`;
 
 export default defineConfig({

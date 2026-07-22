@@ -75,7 +75,7 @@ export async function startPortForward(
 
   // This means cluster is dynamically configured.
   if (kubeconfig !== null) {
-    headers.set('X-HEADLAMP-USER-ID', getUserIdFromLocalStorage());
+    headers.set('X-K8SENSE-USER-ID', getUserIdFromLocalStorage());
   }
   const request: PortForwardRequest = {
     namespace,
@@ -140,7 +140,7 @@ export async function stopOrDeletePortForward(
 
   // This means cluster is dynamically configured.
   if (kubeconfig !== null) {
-    headers.set('X-HEADLAMP-USER-ID', getUserIdFromLocalStorage());
+    headers.set('X-K8SENSE-USER-ID', getUserIdFromLocalStorage());
   }
 
   return clusterFetch(`/portforward`, {
@@ -173,7 +173,7 @@ export async function listPortForward(cluster: string): Promise<PortForward[]> {
 
   // This means cluster is dynamically configured.
   if (kubeconfig !== null) {
-    headers.set('X-HEADLAMP-USER-ID', getUserIdFromLocalStorage());
+    headers.set('X-K8SENSE-USER-ID', getUserIdFromLocalStorage());
   }
 
   return clusterFetch(`/portforward/list`, {

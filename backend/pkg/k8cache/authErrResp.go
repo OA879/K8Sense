@@ -107,7 +107,7 @@ func ReturnAuthErrorResponse(w http.ResponseWriter, r *http.Request, contextKey 
 // This helps to prevent requests to make actual call to clusterAPI.
 func WriteResponseToClient(response []byte, w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-HEADLAMP-CACHE", "true") // For debugging and testing purpose.
+	w.Header().Set("X-K8SENSE-CACHE", "true") // For debugging and testing purpose.
 	w.WriteHeader(http.StatusForbidden)
 
 	_, err := w.Write(response)

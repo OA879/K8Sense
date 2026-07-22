@@ -3,7 +3,7 @@ title: Development
 sidebar_position: 5
 ---
 
-This is a quickstart guide for building and running Headlamp for development.
+This is a quickstart guide for building and running K8sense for development.
 
 Please make sure you read the [Contribution Guidelines](../contributing.md) as well
 before starting to contribute to the project.
@@ -27,7 +27,7 @@ npm run install:all
 
 ## Build the code
 
-Headlamp is composed of a `backend` and a `frontend`.
+K8sense is composed of a `backend` and a `frontend`.
 
 You can build both the `backend` and `frontend` by running:
 
@@ -71,7 +71,7 @@ npm run frontend:start
 
 Backend log verbosity can be controlled using either a flag or an environment variable.
 - `--log-level`
-- `HEADLAMP_CONFIG_LOG_LEVEL`
+- `K8SENSE_CONFIG_LOG_LEVEL`
 
 Supported Values: `debug`, `info`, `warn`, `error` (default: `info`) 
 
@@ -171,7 +171,7 @@ which runs everything including the `backend`, `frontend` and `app` in parallel.
 
 ### Running the app on Ubuntu WSL
 
-Headlamp on WSL requires some packages installed (maybe it requires more) to run the app.
+K8sense on WSL requires some packages installed (maybe it requires more) to run the app.
 
 Note: `libgconf-2-4` was removed starting with Ubuntu 24.04 and newer
 releases. If you are on an older release where it is still available you can
@@ -189,7 +189,7 @@ sudo apt-get install firefox libgstreamer-plugins-bad1.0-0 libegl1 libnotify4 li
 
 ## Build a container image
 
-The following command builds a container image for Headlamp from the current
+The following command builds a container image for K8sense from the current
 source. It will run the `frontend` from a `backend`'s static server, and
 options can be appended to the main command as arguments.
 
@@ -215,31 +215,31 @@ If you have other requirements, please get in touch.
 
 ### Running the container image
 
-With docker you can run the Headlamp image(`ghcr.io/headlamp-k8s/headlamp:latest`).
+With docker you can run the K8sense image(`ghcr.io/k8sense-k8s/k8sense:latest`).
 Note, the mount arguments add folders that are referenced in the ~/.kube
 folders - you may need to add other folders if your config refers
 to more folders.
 
 ```bash
-docker run --network="host" -p 127.0.0.1:4466:4466/tcp --mount type=bind,source="/home/rene/.minikube",target=$HOME/.minikube --mount type=bind,source="$HOME/.kube",target=/root/.kube ghcr.io/headlamp-k8s/headlamp:latest /headlamp/headlamp-server -html-static-dir /headlamp/frontend -plugins-dir=/headlamp/plugins
+docker run --network="host" -p 127.0.0.1:4466:4466/tcp --mount type=bind,source="/home/rene/.minikube",target=$HOME/.minikube --mount type=bind,source="$HOME/.kube",target=/root/.kube ghcr.io/k8sense-k8s/k8sense:latest /k8sense/k8sense-server -html-static-dir /k8sense/frontend -plugins-dir=/k8sense/plugins
 ```
 
-If you want to make a new container image called `headlamp-k8s/headlamp:development`
+If you want to make a new container image called `k8sense-k8s/k8sense:development`
 you can run it like this:
 
 ```bash
 $ DOCKER_IMAGE_VERSION=development npm run image:build
 ...
-Successfully tagged headlamp-k8s/headlamp:development
+Successfully tagged k8sense-k8s/k8sense:development
 
-$ docker run --network="host" -p 127.0.0.1:4466:4466/tcp --mount type=bind,source="/home/rene/.minikube",target=$HOME/.minikube --mount type=bind,source="$HOME/.kube",target=/root/.kube headlamp-k8s/headlamp:development /headlamp/headlamp-server -html-static-dir /headlamp/frontend -plugins-dir=/headlamp/plugins
+$ docker run --network="host" -p 127.0.0.1:4466:4466/tcp --mount type=bind,source="/home/rene/.minikube",target=$HOME/.minikube --mount type=bind,source="$HOME/.kube",target=/root/.kube k8sense-k8s/k8sense:development /k8sense/k8sense-server -html-static-dir /k8sense/frontend -plugins-dir=/k8sense/plugins
 ```
 
 Then go to <https://localhost:4466> in your browser.
 
 ### Minikube "in-cluster"
 
-These instructions are for if you want to run Headlamp "in-cluster",
+These instructions are for if you want to run K8sense "in-cluster",
 and test it locally on minikube with a local container image.
 
 We assume you've already set up minikube
@@ -259,7 +259,7 @@ DOCKER_IMAGE_VERSION=development npm run image:build
 #### Create a deployment yaml
 
 ```bash
-kubectl create deployment headlamp -n kube-system --image=headlamp-k8s/headlamp:development -o yaml --dry-run=client -- /headlamp/headlamp-server -html-static-dir /headlamp/frontend -in-cluster -watch-plugins-changes false -plugins-dir=/headlamp/plugins > minikube-headlamp.yaml
+kubectl create deployment k8sense -n kube-system --image=k8sense-k8s/k8sense:development -o yaml --dry-run=client -- /k8sense/k8sense-server -html-static-dir /k8sense/frontend -in-cluster -watch-plugins-changes false -plugins-dir=/k8sense/plugins > minikube-k8sense.yaml
 ```
 
 To use the local container image we change the `imagePullPolicy` to Never.
@@ -271,30 +271,30 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: headlamp
-  name: headlamp
+    app: k8sense
+  name: k8sense
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: headlamp
+      app: k8sense
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: headlamp
+        app: k8sense
     spec:
       containers:
         - command:
-            - /headlamp/headlamp-server
+            - /k8sense/k8sense-server
             - -html-static-dir
-            - /headlamp/frontend
+            - /k8sense/frontend
             - -in-cluster
-            - -plugins-dir=/headlamp/plugins
-          image: headlamp-k8s/headlamp:development
-          name: headlamp
+            - -plugins-dir=/k8sense/plugins
+          image: k8sense-k8s/k8sense:development
+          name: k8sense
           imagePullPolicy: Never
           resources: {}
 status: {}
@@ -303,20 +303,20 @@ status: {}
 Now we create the deployment.
 
 ```bash
-kubectl apply -f minikube-headlamp.yaml
+kubectl apply -f minikube-k8sense.yaml
 ```
 
 Then we expose the deployment, and get a URL where we can see it.
 
 ```
-$ kubectl expose deployment headlamp -n kube-system --type=NodePort --port=4466
-service/headlamp exposed
+$ kubectl expose deployment k8sense -n kube-system --type=NodePort --port=4466
+service/k8sense exposed
 
-$ kubectl get service headlamp -n kube-system
+$ kubectl get service k8sense -n kube-system
 NAME       TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-headlamp   NodePort   10.99.144.210   <none>        4466:30712/TCP   6m57s
+k8sense   NodePort   10.99.144.210   <none>        4466:30712/TCP   6m57s
 
-$ minikube service headlamp -n kube-system --url
+$ minikube service k8sense -n kube-system --url
 http://192.168.49.2:30342
 ```
 
@@ -324,29 +324,29 @@ Go to the URL printed by minikube in your browser, and get your token to login.
 
 ### Shipping plugins in the Docker image
 
-The Headlamp server has an option (`-plugins-dir`) for indicating where to find any plugins.
-Thus, a deployment of Headlamp using the Docker image can mount a plugins folder
+The K8sense server has an option (`-plugins-dir`) for indicating where to find any plugins.
+Thus, a deployment of K8sense using the Docker image can mount a plugins folder
 and point to it by using the mentioned option.
 
 An alternative is to build an image that ships some plugins in it. For that,
-just create a ".plugins" folder in the Headlamp project directory, as the Dockerfile
+just create a ".plugins" folder in the K8sense project directory, as the Dockerfile
 will include it and point to it by default.
 
 ## Special Build Options
 
-Here are some options that can be used when building Headlamp to change its default behavior.
+Here are some options that can be used when building K8sense to change its default behavior.
 
 ### Update Checks
 
-In the **desktop app**, by default, Headlamp will check for new versions from its GitHub page and warn the user about it.
+In the **desktop app**, by default, K8sense will check for new versions from its GitHub page and warn the user about it.
 It will also show the release notes after updating to a new version.
 
 This behavior can be turned off by adding the following to a `.env` file in the `app/` folder:
 
 ```bash
-HEADLAMP_CHECK_FOR_UPDATES=false
+K8SENSE_CHECK_FOR_UPDATES=false
 ```
 
-## Build Headlamp Base (Headlamp without any plugins)
+## Build K8sense Base (K8sense without any plugins)
 
-For building Headlamp Base (Headlamp without plugins), simply remove the `app/app-build-manifest.json` and run the build commands in the sections above.
+For building K8sense Base (K8sense without plugins), simply remove the `app/app-build-manifest.json` and run the build commands in the sections above.

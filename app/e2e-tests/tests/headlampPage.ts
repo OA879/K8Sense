@@ -28,13 +28,13 @@ export class HeadlampPage {
     }
 
     // Go to the authentication page
-    const url = process.env.HEADLAMP_TEST_URL;
+    const url = process.env.K8SENSE_TEST_URL;
     await this.page.goto(url || '/');
     await this.page.waitForSelector('h1:has-text("Authentication")');
 
     // Check to see if already authenticated
     if (await this.page.isVisible('button:has-text("Authenticate")')) {
-      const token = process.env.HEADLAMP_TOKEN || '';
+      const token = process.env.K8SENSE_TOKEN || '';
       this.hasToken(token);
 
       // Fill in the token

@@ -2,15 +2,15 @@
 
 REPO_ROOT=$(git rev-parse --show-toplevel)
 PLUGINS_TO_UPDATE=$1
-HEADLAMP_PLUGIN="@kinvolk/headlamp-plugin"
+K8SENSE_PLUGIN="@kinvolk/headlamp-plugin"
 
 if [ -z "$PLUGINS_TO_UPDATE" ]; then
   PLUGINS_TO_UPDATE=$(ls $REPO_ROOT/plugins/examples)
 fi
 
 # Get the latest version of @kinvolk/headlamp-plugin
-LATEST_VERSION=$(npm view $HEADLAMP_PLUGIN version)
-echo "Latest version of $HEADLAMP_PLUGIN is $LATEST_VERSION"
+LATEST_VERSION=$(npm view $K8SENSE_PLUGIN version)
+echo "Latest version of $K8SENSE_PLUGIN is $LATEST_VERSION"
 
 # Check if tree is dirty
 if ! git diff --quiet; then
@@ -37,26 +37,26 @@ for plugin in $PLUGINS_TO_UPDATE; do
   fi
 
   # Update @kinvolk/headlamp-plugin
-  if grep -q "$HEADLAMP_PLUGIN" package.json; then
-    echo "Updating $HEADLAMP_PLUGIN in $plugin"
+  if grep -q "$K8SENSE_PLUGIN" package.json; then
+    echo "Updating $K8SENSE_PLUGIN in $plugin"
 
     # Get the current version to check if update is needed
-    CURRENT_VERSION=$(grep -o "\"$HEADLAMP_PLUGIN\": \"[^\"]*\"" package.json | cut -d'"' -f4)
+    CURRENT_VERSION=$(grep -o "\"$K8SENSE_PLUGIN\": \"[^\"]*\"" package.json | cut -d'"' -f4)
     echo "Current version: $CURRENT_VERSION, updating to: $LATEST_VERSION"
 
     # Use a more robust sed pattern that accounts for potential spacing variations
-    sed -i -E "s|(\"$HEADLAMP_PLUGIN\"[[:space:]]*:[[:space:]]*\")[^\"]*(\")|\\1^$LATEST_VERSION\\2|" package.json
+    sed -i -E "s|(\"$K8SENSE_PLUGIN\"[[:space:]]*:[[:space:]]*\")[^\"]*(\")|\\1^$LATEST_VERSION\\2|" package.json
 
     if ! git diff --quiet; then
       npm ci
       git add -u .
-      git commit -s -m "plugins/examples/$plugin: Update $HEADLAMP_PLUGIN to version $LATEST_VERSION"
-      echo "Updated $HEADLAMP_PLUGIN to version $LATEST_VERSION in $plugin"
+      git commit -s -m "plugins/examples/$plugin: Update $K8SENSE_PLUGIN to version $LATEST_VERSION"
+      echo "Updated $K8SENSE_PLUGIN to version $LATEST_VERSION in $plugin"
     else
-      echo "Already using latest version of $HEADLAMP_PLUGIN"
+      echo "Already using latest version of $K8SENSE_PLUGIN"
     fi
   else
-    echo "$HEADLAMP_PLUGIN not found in $plugin"
+    echo "$K8SENSE_PLUGIN not found in $plugin"
   fi
 
   popd > /dev/null

@@ -1,11 +1,11 @@
 ---
-title: MCP Support in Headlamp
+title: MCP Support in K8sense
 sidebar_position: 8
 ---
 
-# MCP Support in Headlamp
+# MCP Support in K8sense
 
-Headlamp MCP support makes Kubernetes easier to understand by bringing specialized expertise directly into the UI. MCPs surface insights next to workloads and applications instead of in separate tools or terminals. Teams gain clarity without losing context. By keeping expertise close to the resources it explains, MCP support helps teams troubleshoot faster and make better decisions in their day-to-day Kubernetes work.
+K8sense MCP support makes Kubernetes easier to understand by bringing specialized expertise directly into the UI. MCPs surface insights next to workloads and applications instead of in separate tools or terminals. Teams gain clarity without losing context. By keeping expertise close to the resources it explains, MCP support helps teams troubleshoot faster and make better decisions in their day-to-day Kubernetes work.
 
 ## What Is MCP
 
@@ -15,17 +15,17 @@ MCP uses a client-server model. An AI application acts as the host and connects 
 
 MCP servers can provide tools that perform actions, resources that supply data, and prompts that guide interactions. The host can list available capabilities and call them using structured inputs. Results are returned in a structured form.
 
-## Why Use MCPs in Headlamp
+## Why Use MCPs in K8sense
 
 Kubernetes teams often switch between dashboards, terminals, and scripts to understand what is happening. Each switch breaks focus and slows action.
 
-With MCPs in Headlamp, expertise shows up where Kubernetes work already happens. Insight appears alongside pods, namespaces, and applications. Results stay tied to the resources on screen instead of being shown somewhere else.
+With MCPs in K8sense, expertise shows up where Kubernetes work already happens. Insight appears alongside pods, namespaces, and applications. Results stay tied to the resources on screen instead of being shown somewhere else.
 
 This reduces context switching and makes investigations faster. It also makes answers easier to trust, since the insight is grounded in the same Kubernetes context you are viewing.
 
 ## Requirements
 
-- Headlamp Desktop — MCP server support is currently available only in the Headlamp desktop application.
+- K8sense Desktop — MCP server support is currently available only in the K8sense desktop application.
 - The AI Assistant plugin enabled and at least one AI provider configured.
 - Access to an MCP server that can run locally.
 
@@ -33,23 +33,23 @@ This reduces context switching and makes investigations faster. It also makes an
 
 ### Enable MCP Servers
 
-1. Open **Settings** in Headlamp.
+1. Open **Settings** in K8sense.
 2. Go to **AI Assistant**.
 3. Find the **MCP Servers** section.
 4. Turn MCP servers on.
 
 ### Configuring MCP Servers
 
-When adding a server you provide a name, a command, optional arguments, and any required environment variables. After you save, Headlamp starts the server and discovers the tools it provides.
+When adding a server you provide a name, a command, optional arguments, and any required environment variables. After you save, K8sense starts the server and discovers the tools it provides.
 
 Navigate to the AI Assistant settings to add and manage MCP servers. Each server is configured with:
 
 - **Name** — A unique identifier for the server.
 - **Command** — The executable to run (e.g., `flux-operator-mcp`).
-- **Args** — Command-line arguments (e.g., `serve --kube-context HEADLAMP_CURRENT_CLUSTER`).
+- **Args** — Command-line arguments (e.g., `serve --kube-context K8SENSE_CURRENT_CLUSTER`).
 - **Environment Variables** — Optional env vars required by the server (e.g., `KUBECONFIG`).
 
-Note: `HEADLAMP_CURRENT_CLUSTER` is a Headlamp-specific placeholder, not a shell environment variable. When starting an MCP server, Headlamp replaces this placeholder with the name of the currently selected cluster before running the command, so you should only reference it in the **Args** field where command-line arguments are defined.
+Note: `K8SENSE_CURRENT_CLUSTER` is a K8sense-specific placeholder, not a shell environment variable. When starting an MCP server, K8sense replaces this placeholder with the name of the currently selected cluster before running the command, so you should only reference it in the **Args** field where command-line arguments are defined.
 
 You can configure servers using the form-based UI or by editing the JSON configuration directly.
 
@@ -67,9 +67,9 @@ Each of the servers below runs as a local command, which is what the desktop app
 
 - **Name** — `flux`
 - **Command** — `flux-operator-mcp`
-- **Args** — `serve --kube-context HEADLAMP_CURRENT_CLUSTER`
+- **Args** — `serve --kube-context K8SENSE_CURRENT_CLUSTER`
 
-As noted above, `HEADLAMP_CURRENT_CLUSTER` is not something you set yourself. Headlamp replaces it with the name of the selected cluster when it starts the server.
+As noted above, `K8SENSE_CURRENT_CLUSTER` is not something you set yourself. K8sense replaces it with the name of the selected cluster when it starts the server.
 
 [K8sGPT](https://github.com/k8sgpt-ai/k8sgpt) analyzes cluster issues and returns AI-assisted explanations. The `serve --mcp` command runs its MCP server over stdio, which needs no environment variables or extra configuration.
 
@@ -88,7 +88,7 @@ Each project keeps its own install steps and flags up to date, so check its page
 
 ## Managing MCP Tools
 
-Once a server is connected, Headlamp lists the tools it exposes.
+Once a server is connected, K8sense lists the tools it exposes.
 
 - Enable or disable individual tools per server.
 - View tool descriptions and input schemas.
@@ -111,7 +111,7 @@ The assistant selects the right tool and presents results next to the Kubernetes
 
 ## Limitations
 
-- MCP server support is currently available only in Headlamp Desktop.
+- MCP server support is currently available only in K8sense Desktop.
 - MCP servers must be available as local commands, since the desktop app runs them as local processes.
 - Available tools depend on the servers you connect.
 
@@ -119,4 +119,4 @@ The assistant selects the right tool and presents results next to the Kubernetes
 
 MCP support brings expert knowledge directly into the Kubernetes UI. Insight stays close to workloads and applications so teams can understand issues faster and act without switching tools.
 
-Open Headlamp Desktop, enable MCP support, connect a server, and start using expertise where Kubernetes work already happens.
+Open K8sense Desktop, enable MCP support, connect a server, and start using expertise where Kubernetes work already happens.

@@ -4,10 +4,10 @@ sidebar_label: Contributing
 sidebar_position: 4
 ---
 
-This section has information on how to contribute to Headlamp. It assumes you have cloned
+This section has information on how to contribute to K8sense. It assumes you have cloned
 this repository (or your own Github fork).
 Any contributions to the project are accepted under the terms of the project's
-license ([Apache 2.0](https://github.com/kubernetes-sigs/headlamp/blob/main/LICENSE)).
+license ([Apache 2.0](https://github.com/kubernetes-sigs/k8sense/blob/main/LICENSE)).
 
 ## Code of Conduct
 
@@ -15,7 +15,7 @@ Please refer to the [Kubernetes Community Code of Conduct](https://kubernetes.io
 
 ## Development practices
 
-The Headlamp project follows the [Kinvolk Contribution Guidelines](https://github.com/kinvolk/contribution),
+The K8sense project follows the [Kinvolk Contribution Guidelines](https://github.com/kinvolk/contribution),
 which promotes good and consistent contribution practices across Kinvolk's
 projects. Before starting to contribute, and in addition to this section, please
 read those guidelines.
@@ -24,11 +24,11 @@ read those guidelines.
 
 We hold a monthly call to discuss the project, the roadmap, and the community.
 
-You can find Headlamp's Community Call event in its [CNCF calendar](https://zoom-lfx.platform.linuxfoundation.org/meetings/headlamp?view=month).
+You can find K8sense's Community Call event in its [CNCF calendar](https://zoom-lfx.platform.linuxfoundation.org/meetings/k8sense?view=month).
 
 ## Filing an issue or feature request
 
-Please use the [project's issue tracker](https://github.com/kubernetes-sigs/headlamp/issues) for filing any bugs you find or features
+Please use the [project's issue tracker](https://github.com/kubernetes-sigs/k8sense/issues) for filing any bugs you find or features
 you think are useful.
 
 ### Guidelines for Submitting an Issue
@@ -39,12 +39,12 @@ When submitting an issue, follow these guidelines to help maintainers address it
 
 - Use the issue tracker to see if your issue already exists. If it does, consider adding your input to the existing issue instead of opening a new one.
 - If the issue doesn't exist, please create a new issue using one of the templates available:
-  - [For bug related issues](https://github.com/kubernetes-sigs/headlamp/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=)
-  - [For feature requests](https://github.com/kubernetes-sigs/headlamp/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=)
+  - [For bug related issues](https://github.com/kubernetes-sigs/k8sense/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=)
+  - [For feature requests](https://github.com/kubernetes-sigs/k8sense/issues/new?assignees=&labels=enhancement&projects=&template=feature_request.md&title=)
 
 ### Security issues
 
-For filing security issues that are sensitive and should not be public, please see our [SECURITY.md](https://github.com/kubernetes-sigs/headlamp/blob/main/SECURITY.md).
+For filing security issues that are sensitive and should not be public, please see our [SECURITY.md](https://github.com/kubernetes-sigs/k8sense/blob/main/SECURITY.md).
 
 ## Submitting a Pull Request (PR)
 
@@ -172,11 +172,11 @@ the CI checks are passing for your PR.
 
 If you have a complex contribution in mind (meaning changes in the architecture
 or a lot of LOC changed), it is advisable to first file a GitHub issue and
-discuss the implementation with the project's maintainers via [#headlamp](https://kubernetes.slack.com/messages/headlamp) Slack channel.
+discuss the implementation with the project's maintainers via [#k8sense](https://kubernetes.slack.com/messages/k8sense) Slack channel.
 
 ## Translations
 
-If you want to contribute to the internationalization of Headlamp, please refer to the
+If you want to contribute to the internationalization of K8sense, please refer to the
 dedicated [i18n docs](./development/i18n).
 
 ## Commit guidelines

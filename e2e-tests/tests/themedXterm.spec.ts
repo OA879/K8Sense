@@ -62,7 +62,7 @@ async function seedTheme(page: Page, themeName: ThemeName) {
  */
 async function openFirstPodDetails(page: Page): Promise<{ podName: string }> {
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   const content = await page.content();
   if (!content.includes('Pods') || !content.includes('href="/c/test/pods')) {
@@ -155,7 +155,7 @@ async function openXtermRoute(page: Page, route: XtermRoute): Promise<Locator> {
  */
 async function openNodeShell(page: Page): Promise<Locator> {
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   const content = await page.content();
   if (!content.includes('href="/c/test/nodes')) {

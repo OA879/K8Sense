@@ -182,7 +182,7 @@ jobs:
         export TEST_SERVER="https://$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}'):6443"
         kubectl create serviceaccount headlamp-admin --namespace kube-system
         kubectl create clusterrolebinding headlamp-admin --serviceaccount=kube-system:headlamp-admin --clusterrole=cluster-admin
-        echo "HEADLAMP_TEST_TOKEN=$(kubectl create token headlamp-admin --duration 24h -n kube-system)" >> $GITHUB_ENV
+        echo "K8SENSE_TEST_TOKEN=$(kubectl create token headlamp-admin --duration 24h -n kube-system)" >> $GITHUB_ENV
 
         # Use Cluster 2 context
         kubectl config use-context test2
@@ -190,7 +190,7 @@ jobs:
         export TEST2_SERVER="https://$(kubectl get nodes -o=jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}'):6443"
         kubectl create serviceaccount headlamp-admin --namespace kube-system
         kubectl create clusterrolebinding headlamp-admin --serviceaccount=kube-system:headlamp-admin --clusterrole=cluster-admin
-        echo "HEADLAMP_TEST2_TOKEN=$(kubectl create token headlamp-admin --duration 24h -n kube-system)" >> $GITHUB_ENV
+        echo "K8SENSE_TEST2_TOKEN=$(kubectl create token headlamp-admin --duration 24h -n kube-system)" >> $GITHUB_ENV
 
         envsubst < e2e-tests/kubernetes-headlamp-ci.yaml | kubectl --context=test apply -f -
     - name: Run e2e tests
@@ -209,8 +209,8 @@ jobs:
         echo $SERVICE_URL
         curl -L $SERVICE_URL | grep -q "Headlamp: Kubernetes Web UI"        
         echo "--------------------------------Export Tokens Received From Previous Step--------------------------------"
-        export HEADLAMP_TEST_TOKEN=${HEADLAMP_TEST_TOKEN}
-        export HEADLAMP_TEST2_TOKEN=${HEADLAMP_TEST2_TOKEN}
+        export K8SENSE_TEST_TOKEN=${K8SENSE_TEST_TOKEN}
+        export K8SENSE_TEST2_TOKEN=${K8SENSE_TEST2_TOKEN}
         echo "---------------------------------Certificate handling---------------------------------"
         export KUBECONFIG=$HOME/.kube/config
         ca_data=$(yq e '.clusters[0].cluster."certificate-authority-data"' $KUBECONFIG | base64 --decode)
@@ -230,7 +230,7 @@ jobs:
         cd e2e-tests
         npm ci
         npx playwright install --with-deps
-        HEADLAMP_TEST_URL=$SERVICE_URL npx playwright test
+        K8SENSE_TEST_URL=$SERVICE_URL npx playwright test
         exit_code=$?
         if [ $exit_code -ne 0 ]; then
           echo "Playwright tests failed with exit code $exit_code"
@@ -272,14 +272,14 @@ jobs:
           exit 1
         fi
 
-        export HEADLAMP_TEST_URL="http://localhost:8080"
-        echo "In-cluster Headlamp URL: $HEADLAMP_TEST_URL"
+        export K8SENSE_TEST_URL="http://localhost:8080"
+        echo "In-cluster Headlamp URL: $K8SENSE_TEST_URL"
 
         # Get service account token for API checks
         echo "Getting service account token for in-cluster test..."
-        export HEADLAMP_SA_TOKEN=$(kubectl create token headlamp --duration=1h -n kube-system)
+        export K8SENSE_SA_TOKEN=$(kubectl create token headlamp --duration=1h -n kube-system)
 
-        if [ -z "$HEADLAMP_SA_TOKEN" ]; then
+        if [ -z "$K8SENSE_SA_TOKEN" ]; then
           echo "❌ Failed to get service account token for in-cluster test"
           kill $PORT_FORWARD_PID 2>/dev/null || true
           exit 1

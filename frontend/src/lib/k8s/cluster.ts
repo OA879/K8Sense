@@ -28,7 +28,7 @@ export {
 export { type KubeMetadata } from './KubeMetadata';
 export { type Workload } from './Workload';
 
-export const HEADLAMP_ALLOWED_NAMESPACES = 'headlamp.allowed-namespaces';
+export const K8SENSE_ALLOWED_NAMESPACES = 'headlamp.allowed-namespaces';
 
 /**
  * Gives an optionally configured list of allowed namespaces.

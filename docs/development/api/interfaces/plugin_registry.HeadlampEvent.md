@@ -1,20 +1,20 @@
-[API](../API.md) / [plugin/registry](../modules/plugin_registry.md) / HeadlampEvent
+[API](../API.md) / [plugin/registry](../modules/plugin_registry.md) / K8senseEvent
 
-# Interface: HeadlampEvent<EventType\>
+# Interface: K8senseEvent<EventType\>
 
-[plugin/registry](../modules/plugin_registry.md).HeadlampEvent
+[plugin/registry](../modules/plugin_registry.md).K8senseEvent
 
-Represents a Headlamp event. It can be one of the default events or a custom event.
+Represents a K8sense event. It can be one of the default events or a custom event.
 
 ## Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `EventType` | `HeadlampEventType` \| `string` |
+| `EventType` | `K8senseEventType` \| `string` |
 
 ## Hierarchy
 
-- **`HeadlampEvent`**
+- **`K8senseEvent`**
 
   ↳ [`DeleteResourceEvent`](plugin_registry.DeleteResourceEvent.md)
 
@@ -26,7 +26,7 @@ Represents a Headlamp event. It can be one of the default events or a custom eve
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:69](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L69)
+[redux/k8senseEventSlice.ts:69](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L69)
 
 ___
 
@@ -36,4 +36,4 @@ ___
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:68](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L68)
+[redux/k8senseEventSlice.ts:68](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L68)

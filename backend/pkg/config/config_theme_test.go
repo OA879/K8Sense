@@ -69,12 +69,12 @@ func TestParseThemeConfiguration_ForceWithDefaults(t *testing.T) {
 }
 
 func TestParseThemeConfiguration_FromEnv(t *testing.T) {
-	require.NoError(t, os.Setenv("HEADLAMP_CONFIG_DEFAULT_LIGHT_THEME", "env-light"))
-	require.NoError(t, os.Setenv("HEADLAMP_CONFIG_DEFAULT_DARK_THEME", "env-dark"))
+	require.NoError(t, os.Setenv("K8SENSE_CONFIG_DEFAULT_LIGHT_THEME", "env-light"))
+	require.NoError(t, os.Setenv("K8SENSE_CONFIG_DEFAULT_DARK_THEME", "env-dark"))
 
 	defer func() {
-		require.NoError(t, os.Unsetenv("HEADLAMP_CONFIG_DEFAULT_LIGHT_THEME"))
-		require.NoError(t, os.Unsetenv("HEADLAMP_CONFIG_DEFAULT_DARK_THEME"))
+		require.NoError(t, os.Unsetenv("K8SENSE_CONFIG_DEFAULT_LIGHT_THEME"))
+		require.NoError(t, os.Unsetenv("K8SENSE_CONFIG_DEFAULT_DARK_THEME"))
 	}()
 
 	conf, err := config.Parse([]string{"go run ./cmd"})
@@ -86,9 +86,9 @@ func TestParseThemeConfiguration_FromEnv(t *testing.T) {
 }
 
 func TestParseThemeConfiguration_ForceFromEnv(t *testing.T) {
-	require.NoError(t, os.Setenv("HEADLAMP_CONFIG_FORCE_THEME", "env-forced"))
+	require.NoError(t, os.Setenv("K8SENSE_CONFIG_FORCE_THEME", "env-forced"))
 
-	defer func() { require.NoError(t, os.Unsetenv("HEADLAMP_CONFIG_FORCE_THEME")) }()
+	defer func() { require.NoError(t, os.Unsetenv("K8SENSE_CONFIG_FORCE_THEME")) }()
 
 	conf, err := config.Parse([]string{"go run ./cmd"})
 	require.NoError(t, err)
@@ -98,9 +98,9 @@ func TestParseThemeConfiguration_ForceFromEnv(t *testing.T) {
 }
 
 func TestParseThemeConfiguration_ArgsOverrideEnv(t *testing.T) {
-	require.NoError(t, os.Setenv("HEADLAMP_CONFIG_DEFAULT_LIGHT_THEME", "env-theme"))
+	require.NoError(t, os.Setenv("K8SENSE_CONFIG_DEFAULT_LIGHT_THEME", "env-theme"))
 
-	defer func() { require.NoError(t, os.Unsetenv("HEADLAMP_CONFIG_DEFAULT_LIGHT_THEME")) }()
+	defer func() { require.NoError(t, os.Unsetenv("K8SENSE_CONFIG_DEFAULT_LIGHT_THEME")) }()
 
 	conf, err := config.Parse([]string{"go run ./cmd", "--default-light-theme=arg-theme"})
 	require.NoError(t, err)

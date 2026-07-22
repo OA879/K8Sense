@@ -6,9 +6,9 @@ sidebar_position: 12
 
 # Releasing & Publishing Your Plugin
 
-In [Tutorial 10](../adding-custom-map-nodes/) we added custom map nodes to Headlamp's Map view. You now have a fully-featured `hello-headlamp` plugin with a sidebar, pages, Kubernetes data integration, list and detail views, settings, a custom theme, and map nodes.
+In [Tutorial 10](../adding-custom-map-nodes/) we added custom map nodes to K8sense's Map view. You now have a fully-featured `hello-k8sense` plugin with a sidebar, pages, Kubernetes data integration, list and detail views, settings, a custom theme, and map nodes.
 
-This tutorial covers the final step of the plugin lifecycle: **getting your plugin ready for release and making it discoverable** by other Headlamp users via [Artifact Hub](https://artifacthub.io).
+This tutorial covers the final step of the plugin lifecycle: **getting your plugin ready for release and making it discoverable** by other K8sense users via [Artifact Hub](https://artifacthub.io).
 
 ---
 
@@ -24,7 +24,7 @@ This tutorial covers the final step of the plugin lifecycle: **getting your plug
 8. [Building for Production](#building-for-production)
 9. [Packaging the Plugin](#packaging-the-plugin)
 10. [Creating a GitHub Release](#creating-a-github-release)
-11. [How Headlamp Uses Artifact Hub](#how-headlamp-uses-artifact-hub)
+11. [How K8sense Uses Artifact Hub](#how-k8sense-uses-artifact-hub)
 12. [Adding the Artifact Hub Repository File](#adding-the-artifact-hub-repository-file)
 13. [Adding the Artifact Hub Package File](#adding-the-artifact-hub-package-file)
 14. [Pushing to GitHub](#pushing-to-github)
@@ -55,22 +55,22 @@ We will walk through each check in the sections below.
 
 ## Your Plugin's Built-in npm Scripts
 
-When you created `hello-headlamp` with `npx @kinvolk/headlamp-plugin create hello-headlamp`, the template generated a `package.json` with a set of scripts that wrap the `headlamp-plugin` CLI:
+When you created `hello-k8sense` with `npx @kinvolk/k8sense-plugin create hello-k8sense`, the template generated a `package.json` with a set of scripts that wrap the `k8sense-plugin` CLI:
 
 ```json
 {
   "scripts": {
-    "start":          "headlamp-plugin start",
-    "build":          "headlamp-plugin build",
-    "format":         "headlamp-plugin format",
-    "lint":           "headlamp-plugin lint",
-    "lint-fix":       "headlamp-plugin lint --fix",
-    "package":        "headlamp-plugin package",
-    "tsc":            "headlamp-plugin tsc",
-    "storybook":      "headlamp-plugin storybook",
-    "storybook-build":"headlamp-plugin storybook-build",
-    "test":           "headlamp-plugin test",
-    "i18n":           "headlamp-plugin i18n"
+    "start":          "k8sense-plugin start",
+    "build":          "k8sense-plugin build",
+    "format":         "k8sense-plugin format",
+    "lint":           "k8sense-plugin lint",
+    "lint-fix":       "k8sense-plugin lint --fix",
+    "package":        "k8sense-plugin package",
+    "tsc":            "k8sense-plugin tsc",
+    "storybook":      "k8sense-plugin storybook",
+    "storybook-build":"k8sense-plugin storybook-build",
+    "test":           "k8sense-plugin test",
+    "i18n":           "k8sense-plugin i18n"
   }
 }
 ```
@@ -84,7 +84,7 @@ Here is what each script does:
 | `format` | Runs [Prettier](https://prettier.io/) to auto-format all source files |
 | `lint` | Runs [ESLint](https://eslint.org/) and reports any code-quality issues |
 | `lint-fix` | Runs ESLint and automatically fixes everything it can |
-| `package` | Bundles `dist/` into a `.tar.gz` tarball in the Headlamp-accepted format |
+| `package` | Bundles `dist/` into a `.tar.gz` tarball in the K8sense-accepted format |
 | `tsc` | Runs the TypeScript compiler in check-only mode to find type errors |
 | `storybook` | Starts a Storybook development server for building component stories |
 | `storybook-build` | Builds a static Storybook site |
@@ -97,17 +97,17 @@ The four scripts you will run every time before a release are: **`format`**, **`
 
 ## Formatting Your Code
 
-Headlamp plugins use [Prettier](https://prettier.io/) for code formatting, configured via the `@headlamp-k8s/eslint-config` shared config. Running the formatter first prevents the linter from reporting style-only errors.
+K8sense plugins use [Prettier](https://prettier.io/) for code formatting, configured via the `@k8sense-k8s/eslint-config` shared config. Running the formatter first prevents the linter from reporting style-only errors.
 
 ```bash
-cd hello-headlamp
+cd hello-k8sense
 npm run format
 ```
 
 Expected output when everything is clean:
 
 ```
-hello-headlamp/src/index.tsx 52ms
+hello-k8sense/src/index.tsx 52ms
 ```
 
 Prettier lists each file it processes. If a file needed changes, Prettier rewrites it in place — you will see a slightly longer time on the first run.
@@ -126,7 +126,7 @@ Linting runs [ESLint](https://eslint.org/) across your source files and checks f
 - Missing React key props in lists
 - Accessibility issues (`jsx-a11y` plugin)
 - TypeScript-specific code-quality rules
-- Any patterns disallowed by Headlamp's shared ESLint config
+- Any patterns disallowed by K8sense's shared ESLint config
 
 ```bash
 npm run lint
@@ -142,8 +142,8 @@ A clean run looks like this:
 
 ```
 
-> hello-headlamp@0.1.0 lint
-> headlamp-plugin lint
+> hello-k8sense@0.1.0 lint
+> k8sense-plugin lint
 
 ```
 
@@ -218,20 +218,20 @@ Open `package.json` and update the `version` field:
 
 ```json
 {
-  "name": "hello-headlamp",
+  "name": "hello-k8sense",
   "version": "1.0.0",
-  "description": "A Headlamp plugin tutorial series — sidebar, data, settings, themes, and map nodes.",
+  "description": "A K8sense plugin tutorial series — sidebar, data, settings, themes, and map nodes.",
   ...
 }
 ```
 
-The version you set here determines the name of the tarball produced by `npm run package` (`hello-headlamp-1.0.0.tar.gz`) and must match the version you put in `artifacthub-pkg.yml` later.
+The version you set here determines the name of the tarball produced by `npm run package` (`hello-k8sense-1.0.0.tar.gz`) and must match the version you put in `artifacthub-pkg.yml` later.
 
 ---
 
 ## Building for Production
 
-The `build` command compiles your TypeScript source and bundles it into `dist/main.js` — the single JavaScript file that Headlamp loads:
+The `build` command compiles your TypeScript source and bundles it into `dist/main.js` — the single JavaScript file that K8sense loads:
 
 ```bash
 npm run build
@@ -240,13 +240,13 @@ npm run build
 You will see Vite output similar to this:
 
 ```
-> hello-headlamp@1.0.0 build
-> headlamp-plugin build
+> hello-k8sense@1.0.0 build
+> k8sense-plugin build
 
-Building "." for production with plugin name: hello-headlamp...
+Building "." for production with plugin name: hello-k8sense...
 Injecting env var: NODE_ENV = "production"
 vite v6.4.1 building for production...
-🎯 Plugin name detected: 'hello-headlamp'
+🎯 Plugin name detected: 'hello-k8sense'
 ✓ 4 modules transformed.
 dist/main.js  11.90 kB │ gzip: 4.23 kB
 ✓ built in 135ms
@@ -254,7 +254,7 @@ Successfully copied extra dist files
 Finished building "." for production.
 ```
 
-The key file produced is `dist/main.js`. This is what Headlamp actually loads at runtime.
+The key file produced is `dist/main.js`. This is what K8sense actually loads at runtime.
 
 :::note
 `npm run start` (the development watcher) also writes to `dist/main.js`, but that build is not minified or optimised. Always use `npm run build` for releases.
@@ -264,7 +264,7 @@ The key file produced is `dist/main.js`. This is what Headlamp actually loads at
 
 ## Packaging the Plugin
 
-The `package` command takes the `dist/` directory and creates a `.tar.gz` tarball in the specific format Headlamp expects for installation:
+The `package` command takes the `dist/` directory and creates a `.tar.gz` tarball in the specific format K8sense expects for installation:
 
 ```bash
 npm run package
@@ -273,12 +273,12 @@ npm run package
 The output tells you exactly what was created and — crucially — the **SHA256 checksum** you will need for Artifact Hub:
 
 ```
-Created tarball: "hello-headlamp-1.0.0.tar.gz"
+Created tarball: "hello-k8sense-1.0.0.tar.gz"
 Tarball checksum (SHA256): a3b4c5d6e7f8...
 ```
 
 :::important
-**Save the checksum.** You will need it in `artifacthub-pkg.yml`. If you lose it you can recompute it with `sha256sum hello-headlamp-1.0.0.tar.gz` on Linux/macOS or `Get-FileHash` on Windows.
+**Save the checksum.** You will need it in `artifacthub-pkg.yml`. If you lose it you can recompute it with `sha256sum hello-k8sense-1.0.0.tar.gz` on Linux/macOS or `Get-FileHash` on Windows.
 :::
 
 ### What's inside the tarball?
@@ -286,7 +286,7 @@ Tarball checksum (SHA256): a3b4c5d6e7f8...
 The tarball always contains at minimum:
 
 ```
-hello-headlamp/
+hello-k8sense/
 ├── main.js          ← compiled plugin bundle
 └── package.json     ← plugin metadata (name, version, description)
 ```
@@ -294,7 +294,7 @@ hello-headlamp/
 If your plugin uses internationalisation, `npm run package` automatically includes the translations too:
 
 ```
-hello-headlamp/
+hello-k8sense/
 ├── main.js
 ├── package.json
 └── locales/         ← i18n translation files (only if a locales/ folder exists)
@@ -303,11 +303,11 @@ hello-headlamp/
     └── ...
 ```
 
-You can also declare additional files to bundle via the `headlamp.extraDist` field in your `package.json`:
+You can also declare additional files to bundle via the `k8sense.extraDist` field in your `package.json`:
 
 ```json
 {
-  "headlamp": {
+  "k8sense": {
     "extraDist": {
       "assets/logo.png": "src/assets/logo.png"
     }
@@ -315,24 +315,24 @@ You can also declare additional files to bundle via the `headlamp.extraDist` fie
 }
 ```
 
-This copies `src/assets/logo.png` into the tarball as `hello-headlamp/assets/logo.png`.
+This copies `src/assets/logo.png` into the tarball as `hello-k8sense/assets/logo.png`.
 
 ---
 
 ## Creating a GitHub Release
 
-Headlamp only allows plugins to be downloaded from **GitHub, GitLab, or Bitbucket** for security reasons. A GitHub Release is the standard way to host the tarball so that Artifact Hub can reference it.
+K8sense only allows plugins to be downloaded from **GitHub, GitLab, or Bitbucket** for security reasons. A GitHub Release is the standard way to host the tarball so that Artifact Hub can reference it.
 
 ### Push your code
 
 If you have not already pushed your plugin to GitHub, do so now:
 
 ```bash
-# Inside hello-headlamp/
+# Inside hello-k8sense/
 git init                            # if not already a git repo
 git add .
 git commit -m "chore: release v1.0.0"
-git remote add origin https://github.com/YOUR_USERNAME/hello-headlamp.git
+git remote add origin https://github.com/YOUR_USERNAME/hello-k8sense.git
 git push -u origin main
 ```
 
@@ -352,22 +352,22 @@ git push origin v1.0.0
 3. In "Choose a tag", select the `v1.0.0` tag you just pushed.
 4. Set the release title to `v1.0.0`.
 5. Add a description of what changed.
-6. Under **Assets**, click **Attach binaries** and upload `hello-headlamp-1.0.0.tar.gz`.
+6. Under **Assets**, click **Attach binaries** and upload `hello-k8sense-1.0.0.tar.gz`.
 7. Click **Publish release**.
 
 After publishing, click on the `.tar.gz` asset and copy the download URL. It will look like:
 
 ```
-https://github.com/YOUR_USERNAME/hello-headlamp/releases/download/v1.0.0/hello-headlamp-1.0.0.tar.gz
+https://github.com/YOUR_USERNAME/hello-k8sense/releases/download/v1.0.0/hello-k8sense-1.0.0.tar.gz
 ```
 
 You will use this URL in the `artifacthub-pkg.yml` file below.
 
 ---
 
-## How Headlamp Uses Artifact Hub
+## How K8sense Uses Artifact Hub
 
-[Artifact Hub](https://artifacthub.io) is an open-source hub for cloud-native packages. Headlamp's **Plugin Catalog** (the built-in plugin manager in the Headlamp desktop app) reads plugin metadata directly from Artifact Hub to build its list of available plugins.
+[Artifact Hub](https://artifacthub.io) is an open-source hub for cloud-native packages. K8sense's **Plugin Catalog** (the built-in plugin manager in the K8sense desktop app) reads plugin metadata directly from Artifact Hub to build its list of available plugins.
 
 The flow looks like this:
 
@@ -383,13 +383,13 @@ Artifact Hub (artifacthub.io)
     │  scans and indexes your plugin
     │
     ▼
-Headlamp Plugin Catalog
+K8sense Plugin Catalog
     │
     │  reads plugin list from Artifact Hub API
     │  downloads tarball from GitHub release
     │
     ▼
-User's Headlamp installation
+User's K8sense installation
 ```
 
 There are **two YAML files** you need to add to your repository:
@@ -423,21 +423,21 @@ Create `artifacthub-pkg.yml` in the **root of your plugin folder** (next to `pac
 
 ```yaml
 version: 1.0.0
-name: hello-headlamp
-displayName: Hello Headlamp
+name: hello-k8sense
+displayName: Hello K8sense
 createdAt: "2025-01-20T00:00:00Z"
 description: >
-  A complete Headlamp plugin tutorial: sidebar navigation, Kubernetes data,
+  A complete K8sense plugin tutorial: sidebar navigation, Kubernetes data,
   list and detail views, plugin settings, custom themes, and map visualization.
 annotations:
-  headlamp/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-headlamp/releases/download/v1.0.0/hello-headlamp-1.0.0.tar.gz"
-  headlamp/plugin/archive-checksum: "SHA256:a3b4c5d6e7f8..."
-  headlamp/plugin/version-compat: ">=0.22"
-  headlamp/plugin/distro-compat: "in-cluster,web,docker-desktop,desktop"
+  k8sense/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-k8sense/releases/download/v1.0.0/hello-k8sense-1.0.0.tar.gz"
+  k8sense/plugin/archive-checksum: "SHA256:a3b4c5d6e7f8..."
+  k8sense/plugin/version-compat: ">=0.22"
+  k8sense/plugin/distro-compat: "in-cluster,web,docker-desktop,desktop"
 ```
 
 :::tip Real-world example
-The [KEDA plugin's `artifacthub-pkg.yml`](https://github.com/headlamp-k8s/plugins/blob/main/keda/artifacthub-pkg.yml) is a good reference for a production-ready file.
+The [KEDA plugin's `artifacthub-pkg.yml`](https://github.com/k8sense-k8s/plugins/blob/main/keda/artifacthub-pkg.yml) is a good reference for a production-ready file.
 :::
 
 ### Field reference
@@ -453,23 +453,23 @@ The [KEDA plugin's `artifacthub-pkg.yml`](https://github.com/headlamp-k8s/plugin
 
 ### Annotations reference
 
-The Headlamp-specific metadata goes in the `annotations` block:
+The K8sense-specific metadata goes in the `annotations` block:
 
 | Annotation | Required | Description |
 |------------|----------|-------------|
-| `headlamp/plugin/archive-url` | Yes | Direct download URL of the `.tar.gz` tarball on GitHub (or GitLab/Bitbucket) |
-| `headlamp/plugin/archive-checksum` | Yes | SHA256 checksum of the tarball, prefixed with `SHA256:` (uppercase) — output by `npm run package` |
-| `headlamp/plugin/version-compat` | No | Minimum Headlamp version required, as a semver range (e.g. `>=0.22`) |
-| `headlamp/plugin/distro-compat` | No | Comma-separated list of Headlamp distributions the plugin works with |
+| `k8sense/plugin/archive-url` | Yes | Direct download URL of the `.tar.gz` tarball on GitHub (or GitLab/Bitbucket) |
+| `k8sense/plugin/archive-checksum` | Yes | SHA256 checksum of the tarball, prefixed with `SHA256:` (uppercase) — output by `npm run package` |
+| `k8sense/plugin/version-compat` | No | Minimum K8sense version required, as a semver range (e.g. `>=0.22`) |
+| `k8sense/plugin/distro-compat` | No | Comma-separated list of K8sense distributions the plugin works with |
 
 ### `distro-compat` values
 
 | Value | Description |
 |-------|-------------|
-| `in-cluster` | Headlamp running inside a Kubernetes cluster (e.g. via Helm) |
-| `web` | Headlamp accessed via browser without a desktop wrapper |
-| `docker-desktop` | Headlamp Docker Desktop extension |
-| `desktop` | Headlamp desktop application (Windows, macOS, Linux) |
+| `in-cluster` | K8sense running inside a Kubernetes cluster (e.g. via Helm) |
+| `web` | K8sense accessed via browser without a desktop wrapper |
+| `docker-desktop` | K8sense Docker Desktop extension |
+| `desktop` | K8sense desktop application (Windows, macOS, Linux) |
 | `linux` | Desktop app on Linux only |
 | `windows` | Desktop app on Windows only |
 | `mac` | Desktop app on macOS only |
@@ -478,7 +478,7 @@ If your plugin works everywhere, use `in-cluster,web,docker-desktop,desktop`. If
 
 ### `version-compat` guidance
 
-Check the Headlamp release notes for the version that introduced any API you use. If you are unsure, `>=0.22` is a safe starting point for plugins built with the APIs covered in this tutorial series.
+Check the K8sense release notes for the version that introduced any API you use. If you are unsure, `>=0.22` is a safe starting point for plugins built with the APIs covered in this tutorial series.
 
 ---
 
@@ -488,7 +488,7 @@ Add both files to your repository, commit, and push:
 
 ```bash
 # From the repository root
-git add artifacthub-repo.yml hello-headlamp/artifacthub-pkg.yml
+git add artifacthub-repo.yml hello-k8sense/artifacthub-pkg.yml
 git commit -m "chore: add Artifact Hub metadata"
 git push origin main
 ```
@@ -509,22 +509,22 @@ git push origin main
 2. Open your **Control Panel** (top-right user menu → Control Panel).
 3. Click the **Add** button in the Repositories section.
 4. Fill in the form:
-   - **Kind:** Headlamp plugin
-   - **Name:** A name for the repository entry (e.g. `hello-headlamp`)
+   - **Kind:** K8sense plugin
+   - **Name:** A name for the repository entry (e.g. `hello-k8sense`)
    - **Display name:** Human-readable name
-   - **URL:** Your GitHub repository URL (e.g. `https://github.com/YOUR_USERNAME/hello-headlamp`)
+   - **URL:** Your GitHub repository URL (e.g. `https://github.com/YOUR_USERNAME/hello-k8sense`)
 5. Click **Add**.
 
-Artifact Hub will scan your repository within a few minutes. If it finds a valid `artifacthub-repo.yml` and `artifacthub-pkg.yml`, your plugin will be listed under the **Headlamp** category.
+Artifact Hub will scan your repository within a few minutes. If it finds a valid `artifacthub-repo.yml` and `artifacthub-pkg.yml`, your plugin will be listed under the **K8sense** category.
 
 :::info
-**Official vs community plugins:** By default, Headlamp's Plugin Catalog only shows plugins that are marked as official in Artifact Hub or are on Headlamp's allow-list. Community plugins are still on Artifact Hub and fully installable — users simply need to enable **"Show all plugins"** in Plugin Catalog settings. This is a safety measure, not a quality bar.
+**Official vs community plugins:** By default, K8sense's Plugin Catalog only shows plugins that are marked as official in Artifact Hub or are on K8sense's allow-list. Community plugins are still on Artifact Hub and fully installable — users simply need to enable **"Show all plugins"** in Plugin Catalog settings. This is a safety measure, not a quality bar.
 :::
 
 Once indexed, your plugin's Artifact Hub URL will look like:
 
 ```
-https://artifacthub.io/packages/headlamp/YOUR_REPO/hello-headlamp
+https://artifacthub.io/packages/k8sense/YOUR_REPO/hello-k8sense
 ```
 
 ---
@@ -583,8 +583,8 @@ Update three fields:
 version: 1.0.1                 # ← new version
 createdAt: "2025-03-01T00:00:00Z"  # ← today's date
 annotations:
-  headlamp/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-headlamp/releases/download/v1.0.1/hello-headlamp-1.0.1.tar.gz"
-  headlamp/plugin/archive-checksum: "SHA256:<new-checksum>"  # ← from npm run package output
+  k8sense/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-k8sense/releases/download/v1.0.1/hello-k8sense-1.0.1.tar.gz"
+  k8sense/plugin/archive-checksum: "SHA256:<new-checksum>"  # ← from npm run package output
 ```
 
 ### Commit and push
@@ -601,7 +601,7 @@ Artifact Hub will automatically pick up the new `artifacthub-pkg.yml` on its nex
 
 ## What's Next
 
-Congratulations — you have completed the entire **Getting Started** tutorial series! Your `hello-headlamp` plugin now:
+Congratulations — you have completed the entire **Getting Started** tutorial series! Your `hello-k8sense` plugin now:
 
 - ✅ Adds a button to the app bar
 - ✅ Has a sidebar entry and custom pages
@@ -631,7 +631,7 @@ npm run test        # run Jest unit tests
 
 ```bash
 npm run build       # compile TypeScript → dist/main.js
-npm run package     # bundle dist/ → hello-headlamp-X.Y.Z.tar.gz + print checksum
+npm run package     # bundle dist/ → hello-k8sense-X.Y.Z.tar.gz + print checksum
 ```
 
 ### `artifacthub-repo.yml` (repository root)
@@ -646,23 +646,23 @@ owners:
 
 ```yaml
 version: 1.0.0
-name: hello-headlamp
-displayName: Hello Headlamp
+name: hello-k8sense
+displayName: Hello K8sense
 createdAt: "2025-01-20T00:00:00Z"
-description: My Headlamp plugin description.
-logoURL: https://raw.githubusercontent.com/YOUR_USERNAME/hello-headlamp/main/logo.png
+description: My K8sense plugin description.
+logoURL: https://raw.githubusercontent.com/YOUR_USERNAME/hello-k8sense/main/logo.png
 annotations:
-  headlamp/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-headlamp/releases/download/v1.0.0/hello-headlamp-1.0.0.tar.gz"
-  headlamp/plugin/archive-checksum: "SHA256:<checksum from npm run package>"
-  headlamp/plugin/version-compat: ">=0.22"
-  headlamp/plugin/distro-compat: "in-cluster,web,docker-desktop,desktop"
+  k8sense/plugin/archive-url: "https://github.com/YOUR_USERNAME/hello-k8sense/releases/download/v1.0.0/hello-k8sense-1.0.0.tar.gz"
+  k8sense/plugin/archive-checksum: "SHA256:<checksum from npm run package>"
+  k8sense/plugin/version-compat: ">=0.22"
+  k8sense/plugin/distro-compat: "in-cluster,web,docker-desktop,desktop"
 ```
 
 ### Useful links
 
-- [Artifact Hub — Headlamp annotations reference](https://artifacthub.io/docs/topics/annotations/headlamp/)
-- [Artifact Hub — Headlamp plugin repository format](https://artifacthub.io/docs/topics/repositories/headlamp-plugins)
-- [KEDA plugin `artifacthub-pkg.yml`](https://github.com/headlamp-k8s/plugins/blob/main/keda/artifacthub-pkg.yml) — real-world example
-- [Headlamp Plugin Catalog README](https://github.com/headlamp-k8s/plugins/tree/main/plugin-catalog#readme)
-- [Existing Headlamp plugins on Artifact Hub](https://artifacthub.io/packages/search?kind=21)
-- [Plugin publishing guide](https://headlamp.dev/docs/latest/development/plugins/publishing/)
+- [Artifact Hub — K8sense annotations reference](https://artifacthub.io/docs/topics/annotations/k8sense/)
+- [Artifact Hub — K8sense plugin repository format](https://artifacthub.io/docs/topics/repositories/k8sense-plugins)
+- [KEDA plugin `artifacthub-pkg.yml`](https://github.com/k8sense-k8s/plugins/blob/main/keda/artifacthub-pkg.yml) — real-world example
+- [K8sense Plugin Catalog README](https://github.com/k8sense-k8s/plugins/tree/main/plugin-catalog#readme)
+- [Existing K8sense plugins on Artifact Hub](https://artifacthub.io/packages/search?kind=21)
+- [Plugin publishing guide](https://k8sense.dev/docs/latest/development/plugins/publishing/)

@@ -47,7 +47,7 @@ var logFunc LogFunc = log
 var logFuncMutex sync.RWMutex
 
 // Init configures the global zerolog log level from environment variables.
-// The HEADLAMP_CONFIG_LOG_LEVEL environment variable controls the global log level.
+// The K8SENSE_CONFIG_LOG_LEVEL environment variable controls the global log level.
 func Init(loglevel string) {
 	logLevel := strings.ToLower(strings.TrimSpace(loglevel))
 
@@ -62,7 +62,7 @@ func Init(loglevel string) {
 	if err != nil {
 		zlog.Warn().
 			Str("value", logLevel).
-			Msg("Invalid HEADLAMP_CONFIG_LOG_LEVEL, defaulting to info")
+			Msg("Invalid K8SENSE_CONFIG_LOG_LEVEL, defaulting to info")
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
 		return
@@ -72,7 +72,7 @@ func Init(loglevel string) {
 	zerolog.SetGlobalLevel(level)
 	zlog.Info().
 		Str("level", level.String()).
-		Msg("Log level set from HEADLAMP_CONFIG_LOG_LEVEL")
+		Msg("Log level set from K8SENSE_CONFIG_LOG_LEVEL")
 }
 
 // Log logs the message, source file, and line number at the specified level.

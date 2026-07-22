@@ -22,7 +22,7 @@ import { HeadlampPage } from './headlampPage';
 
 test('prometheus plugin is bundled', async ({ page }) => {
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   // Query the plugins endpoint to verify Prometheus is bundled.
   // The Docker image includes it as a static plugin (container/build-manifest.json).
@@ -43,7 +43,7 @@ test('prometheus plugin is bundled', async ({ page }) => {
 
 test('prometheus plugin has settings', async ({ page }) => {
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   // Navigate to Settings > Plugins and verify the Prometheus plugin appears in the table.
   await headlampPage.navigateTopage('/settings/plugins', /Plugins/);

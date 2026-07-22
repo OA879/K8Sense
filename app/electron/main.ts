@@ -74,13 +74,13 @@ if (process.platform === 'linux') {
 }
 
 let isRunningScript = false;
-if (process.env.HEADLAMP_RUN_SCRIPT) {
+if (process.env.K8SENSE_RUN_SCRIPT) {
   isRunningScript = true;
   runScript();
 }
 
-// Enabled by default, set HEADLAMP_MCP_ENABLE=false to disable MCP features
-const ENABLE_MCP = process.env.HEADLAMP_MCP_ENABLE !== 'false';
+// Enabled by default, set K8SENSE_MCP_ENABLE=false to disable MCP features
+const ENABLE_MCP = process.env.K8SENSE_MCP_ENABLE !== 'false';
 
 dotenv.config({ path: path.join(process.resourcesPath, '.env') });
 
@@ -172,10 +172,10 @@ const isHeadlessMode = args.headless === true;
 let disableGPU = args['disable-gpu'] === true;
 const defaultPort = args.port || 4466;
 let actualPort = defaultPort; // Will be updated when backend starts
-const MAX_PORT_ATTEMPTS = Math.abs(Number(process.env.HEADLAMP_MAX_PORT_ATTEMPTS) || 100); // Maximum number of ports to try
+const MAX_PORT_ATTEMPTS = Math.abs(Number(process.env.K8SENSE_MAX_PORT_ATTEMPTS) || 100); // Maximum number of ports to try
 
 const useExternalServer = process.env.EXTERNAL_SERVER || false;
-const shouldCheckForUpdates = process.env.HEADLAMP_CHECK_FOR_UPDATES !== 'false';
+const shouldCheckForUpdates = process.env.K8SENSE_CHECK_FOR_UPDATES !== 'false';
 
 // make it global so that it doesn't get garbage collected
 let mainWindow: BrowserWindow | null;
@@ -802,16 +802,16 @@ async function startServer(flags: string[] = []): Promise<ChildProcessWithoutNul
   const bundledPlugins = path.join(process.resourcesPath, '.plugins');
 
   // Enable the Helm and dynamic cluster endpoints
-  process.env.HEADLAMP_CONFIG_ENABLE_HELM = 'true';
-  process.env.HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS = 'true';
+  process.env.K8SENSE_CONFIG_ENABLE_HELM = 'true';
+  process.env.K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS = 'true';
 
   // Always allow kubeconfig changes (remove, rename clusters) when running
   // as the app — both in regular Electron mode and headless browser mode share
   // the same single-user security context.
-  process.env.HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES = 'true';
+  process.env.K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES = 'true';
 
   // Pass a token to the backend that can be used for auth on some routes
-  process.env.HEADLAMP_BACKEND_TOKEN = backendToken;
+  process.env.K8SENSE_BACKEND_TOKEN = backendToken;
 
   // Set the bundled plugins in addition to the user's plugins.
   try {
@@ -819,7 +819,7 @@ async function startServer(flags: string[] = []): Promise<ChildProcessWithoutNul
     if (stat.isDirectory()) {
       const entries = await fsPromises.readdir(bundledPlugins);
       if (entries.length !== 0) {
-        process.env.HEADLAMP_STATIC_PLUGINS_DIR = bundledPlugins;
+        process.env.K8SENSE_STATIC_PLUGINS_DIR = bundledPlugins;
       }
     }
   } catch (err) {
@@ -1388,8 +1388,8 @@ function startElectron() {
   ipcMain.setMaxListeners(20);
 
   let appVersion: string;
-  if (isDev && process.env.HEADLAMP_APP_VERSION) {
-    appVersion = process.env.HEADLAMP_APP_VERSION;
+  if (isDev && process.env.K8SENSE_APP_VERSION) {
+    appVersion = process.env.K8SENSE_APP_VERSION;
     console.debug(`Overridding app version to ${appVersion}`);
   } else {
     appVersion = app.getVersion();

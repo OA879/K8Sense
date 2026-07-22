@@ -149,7 +149,7 @@ export async function clusterRequest(
     const kubeconfig = await findKubeconfigByClusterName(cluster);
     if (kubeconfig !== null) {
       opts.headers['KUBECONFIG'] = kubeconfig;
-      opts.headers['X-HEADLAMP-USER-ID'] = userID;
+      opts.headers['X-K8SENSE-USER-ID'] = userID;
     }
 
     fullPath = combinePath(`/${CLUSTERS_PREFIX}/${cluster}`, path);

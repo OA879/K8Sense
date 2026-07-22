@@ -26,7 +26,7 @@ test('multi tab create delete pod', async ({ browser }) => {
   const instance1 = await browser.newContext();
   const page1 = await instance1.newPage();
   const window1 = new HeadlampPage(page1);
-  await window1.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await window1.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   const page2 = await instance1.newPage();
   const window2 = new HeadlampPage(page2);
@@ -54,7 +54,7 @@ test('multi tab create delete pod', async ({ browser }) => {
 
 test('react-hotkey for logs search', async ({ page }) => {
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   await headlampPage.navigateTopage('/c/test/pods', /Pods/);
 

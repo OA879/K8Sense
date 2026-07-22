@@ -292,8 +292,8 @@ func recordExplicitFlags(f *flag.FlagSet) map[string]bool {
 
 // loadConfigFromEnv loads config values from environment variables into koanf.
 func loadConfigFromEnv(k *koanf.Koanf) error {
-	err := k.Load(env.Provider("HEADLAMP_CONFIG_", ".", func(s string) string {
-		return strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "HEADLAMP_CONFIG_")), "_", "-")
+	err := k.Load(env.Provider("K8SENSE_CONFIG_", ".", func(s string) string {
+		return strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(s, "K8SENSE_CONFIG_")), "_", "-")
 	}), nil)
 	if err != nil {
 		logger.Log(logger.LevelError, nil, err, "loading config from env")
@@ -399,10 +399,10 @@ func setMeDefaults(config *Config) {
 }
 
 // Parse Loads the config from flags and env.
-// env vars should start with HEADLAMP_CONFIG_ and use _ as separator
+// env vars should start with K8SENSE_CONFIG_ and use _ as separator
 // If a value is set both in flags and env then flag takes priority.
 // eg:
-// export HEADLAMP_CONFIG_PORT=2344
+// export K8SENSE_CONFIG_PORT=2344
 // go run ./cmd --port=3456
 // the value of port will be 3456.
 
@@ -429,7 +429,7 @@ func Parse(args []string) (*Config, error) {
 	explicitFlags := recordExplicitFlags(f)
 
 	// 4. Load config from environment variables.
-	_, watchPluginsChangesEnvSet := os.LookupEnv("HEADLAMP_CONFIG_WATCH_PLUGINS_CHANGES")
+	_, watchPluginsChangesEnvSet := os.LookupEnv("K8SENSE_CONFIG_WATCH_PLUGINS_CHANGES")
 
 	if err := loadConfigFromEnv(k); err != nil {
 		return nil, err

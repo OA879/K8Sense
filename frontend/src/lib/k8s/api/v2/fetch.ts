@@ -85,7 +85,7 @@ export async function clusterFetch(url: string | URL, init: RequestInit & { clus
   if (kubeconfig !== null) {
     const userID = getUserIdFromLocalStorage();
     init.headers.set('KUBECONFIG', kubeconfig);
-    init.headers.set('X-HEADLAMP-USER-ID', userID);
+    init.headers.set('X-K8SENSE-USER-ID', userID);
   }
 
   const urlParts = init.cluster ? ['clusters', init.cluster, url] : [url];

@@ -6,7 +6,7 @@ sidebar_position: 8
 
 # Extending Existing Resource Views
 
-In [Tutorial 6](../building-list-and-detail-pages/) we covered how to build entirely new list and detail pages for custom resources. In this tutorial we will cover how to extend and customise **existing** pages and views that are already built into Headlamp, without replacing them. This is one of the most powerful patterns in Headlamp plugin development: you can enrich Headlamp's built-in Pod, Deployment, Node, and other resource views with your own columns, actions, and sections by registering processors that Headlamp calls when it renders those views.
+In [Tutorial 6](../building-list-and-detail-pages/) we covered how to build entirely new list and detail pages for custom resources. In this tutorial we will cover how to extend and customise **existing** pages and views that are already built into K8sense, without replacing them. This is one of the most powerful patterns in K8sense plugin development: you can enrich K8sense's built-in Pod, Deployment, Node, and other resource views with your own columns, actions, and sections by registering processors that K8sense calls when it renders those views.
 
 ---
 
@@ -28,7 +28,7 @@ In [Tutorial 6](../building-list-and-detail-pages/) we covered how to build enti
 
 ## Introduction
 
-In previous tutorials you always built things from scratch — new routes, new pages, new components. The three APIs covered in this tutorial work differently: instead of creating a new page, they **inject** your content into existing pages that Headlamp already renders.
+In previous tutorials you always built things from scratch — new routes, new pages, new components. The three APIs covered in this tutorial work differently: instead of creating a new page, they **inject** your content into existing pages that K8sense already renders.
 
 | API | What it does |
 |-----|-------------|
@@ -36,13 +36,13 @@ In previous tutorials you always built things from scratch — new routes, new p
 | `registerDetailsViewHeaderAction` | Add action buttons to any resource detail page header |
 | `registerDetailsViewSectionsProcessor` | Add, remove, or reorder sections in any resource detail page |
 
-All three follow the same mental model: you register a **processor function** (or component) once at module load time, and Headlamp calls it automatically every time it renders the relevant UI. This means your additions appear in Headlamp's own built-in views, not just in pages your plugin owns.
+All three follow the same mental model: you register a **processor function** (or component) once at module load time, and K8sense calls it automatically every time it renders the relevant UI. This means your additions appear in K8sense's own built-in views, not just in pages your plugin owns.
 
 ### What You'll Build
 
 By the end of this tutorial you'll have extended the built-in Pods views with:
 
-- A **Container Images** column in Headlamp's Pods list page
+- A **Container Images** column in K8sense's Pods list page
 - An **Image Details** button in every Pod detail header that opens a popup showing each container's image and pull policy
 - A **Container Resources** section in every Pod detail page showing CPU and memory requests/limits
 
@@ -51,8 +51,8 @@ By the end of this tutorial you'll have extended the built-in Pods views with:
 Before starting, ensure you have:
 
 - ✅ Completed [Tutorial 6: Building List & Detail Pages](../building-list-and-detail-pages/)
-- ✅ Your `hello-headlamp` plugin open and running
-- ✅ Headlamp running with a connected cluster
+- ✅ Your `hello-k8sense` plugin open and running
+- ✅ K8sense running with a connected cluster
 
 **Time to complete:** ~25 minutes
 
@@ -60,7 +60,7 @@ Before starting, ensure you have:
 
 ## Adding a Column to the Pods List
 
-Headlamp's built-in Pods list already has columns like Name, Namespace, Restarts, Age etc. We'll add a **Container Images** column to it using `registerResourceTableColumnsProcessor`.
+K8sense's built-in Pods list already has columns like Name, Namespace, Restarts, Age etc. We'll add a **Container Images** column to it using `registerResourceTableColumnsProcessor`.
 
 ### Step 1: Import the API and Pod Type
 
@@ -69,9 +69,9 @@ Open `src/index.tsx` and add the following imports at the top of the file (along
 ```tsx
 import {
   registerResourceTableColumnsProcessor,
-} from '@kinvolk/headlamp-plugin/lib';
-import { ResourceTableColumn } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import Pod from '@kinvolk/headlamp-plugin/lib/K8s/pod';
+} from '@kinvolk/k8sense-plugin/lib';
+import { ResourceTableColumn } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
+import Pod from '@kinvolk/k8sense-plugin/lib/K8s/pod';
 ```
 
 ### Step 2: Register the Column Processor
@@ -81,15 +81,15 @@ Add this code **outside** any React component, at the module level (for example,
 ```tsx
 registerResourceTableColumnsProcessor(function addContainerImagesColumn({ id, columns }) {
   // Only modify the built-in Pods list table.
-  // The table ID follows the convention: headlamp-<plural-resource-name>
-  if (id !== 'headlamp-pods') {
+  // The table ID follows the convention: k8sense-<plural-resource-name>
+  if (id !== 'k8sense-pods') {
     return columns;
   }
 
   const podColumns = columns as ResourceTableColumn<Pod>[];
 
   podColumns.push({
-    id: 'hello-headlamp-container-images',
+    id: 'hello-k8sense-container-images',
     label: 'Container Images',
     // getValue is used for sorting and filtering — return a plain string
     getValue: (pod: Pod) =>
@@ -103,40 +103,40 @@ registerResourceTableColumnsProcessor(function addContainerImagesColumn({ id, co
 ### Step 3: Test It
 
 1. Save the file
-2. Navigate to **Workloads** → **Pods** in the Headlamp sidebar
+2. Navigate to **Workloads** → **Pods** in the K8sense sidebar
 3. You should see a new **Container Images** column on the right side of the table
 
 ![Screenshot of the Pods list view with the custom Container Images column added, highlighted in a red box on the right side of the table](./pods-list-column.png)
 
-> **Important:** This column appears in Headlamp's **own** built-in Pods page — not the custom `MyPodsPage` you built in Tutorial 6. You are injecting into Headlamp's view.
+> **Important:** This column appears in K8sense's **own** built-in Pods page — not the custom `MyPodsPage` you built in Tutorial 6. You are injecting into K8sense's view.
 
 
 ---
 
 ## Understanding registerResourceTableColumnsProcessor
 
-The processor function you pass to `registerResourceTableColumnsProcessor` is called every time Headlamp renders any resource table. It receives an object with:
+The processor function you pass to `registerResourceTableColumnsProcessor` is called every time K8sense renders any resource table. It receives an object with:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `id` | `string` | Unique table identifier, e.g. `'headlamp-pods'` |
+| `id` | `string` | Unique table identifier, e.g. `'k8sense-pods'` |
 | `columns` | `ResourceTableColumn[]` | The current column array — mutate it or return a new one |
 
 And it must **return** the (modified) columns array.
 
 ### Finding table IDs
 
-Table IDs follow the convention `headlamp-<plural-resource-name>`:
+Table IDs follow the convention `k8sense-<plural-resource-name>`:
 
 | Resource | Table ID |
 |----------|----------|
-| Pods | `headlamp-pods` |
-| Deployments | `headlamp-deployments` |
-| Nodes | `headlamp-nodes` |
-| Namespaces | `headlamp-namespaces` |
-| Services | `headlamp-services` |
+| Pods | `k8sense-pods` |
+| Deployments | `k8sense-deployments` |
+| Nodes | `k8sense-nodes` |
+| Namespaces | `k8sense-namespaces` |
+| Services | `k8sense-services` |
 
-For tables that don't directly represent a resource list (like the events table on the cluster overview), the ID will reflect the section's role (e.g. `headlamp-cluster.overview.events`). During development, you can `console.log(id)` inside your processor to discover the exact ID of any table.
+For tables that don't directly represent a resource list (like the events table on the cluster overview), the ID will reflect the section's role (e.g. `k8sense-cluster.overview.events`). During development, you can `console.log(id)` inside your processor to discover the exact ID of any table.
 
 ### Column definition
 
@@ -159,7 +159,7 @@ The column above shows images as a plain comma-separated string. You can enrich 
 import { Tooltip, Typography } from '@mui/material';
 
 podColumns.push({
-  id: 'hello-headlamp-container-images',
+  id: 'hello-k8sense-container-images',
   label: 'Container Images',
   getValue: (pod: Pod) =>
     pod.spec.containers.map(c => c.image).join(', '),
@@ -185,7 +185,7 @@ const ageIndex = columns.findIndex(
   col => col === 'age' || (typeof col === 'object' && col !== null && 'id' in col && col.id === 'age')
 );
 const containerImagesColumn: ResourceTableColumn<Pod> = {
-  id: 'hello-headlamp-container-images',
+  id: 'hello-k8sense-container-images',
   label: 'Container Images',
   getValue: (pod: Pod) => pod.spec.containers.map(c => c.image).join(', '),
   render: (pod: Pod) => {
@@ -224,8 +224,8 @@ Add these to your imports:
 import {
   registerResourceTableColumnsProcessor,
   registerDetailsViewHeaderAction,
-} from '@kinvolk/headlamp-plugin/lib';
-import { ActionButton, SimpleTable } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { ActionButton, SimpleTable } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import {
   Dialog,
   DialogTitle,
@@ -308,7 +308,7 @@ registerDetailsViewHeaderAction(ImageDetailsAction);
 
 ## Understanding registerDetailsViewHeaderAction
 
-`registerDetailsViewHeaderAction` accepts a **React component function**. Headlamp calls this component for every detail page it renders, passing the current resource as the `item` prop.
+`registerDetailsViewHeaderAction` accepts a **React component function**. K8sense calls this component for every detail page it renders, passing the current resource as the `item` prop.
 
 ```tsx
 function MyAction({ item }: { item: any }) {
@@ -325,7 +325,7 @@ registerDetailsViewHeaderAction(MyAction);
 ### Key points
 
 - The component is rendered for **every** detail view across the entire app, so always check `item.kind` (or any other condition) and return `null` when it shouldn't appear.
-- Use `ActionButton` from `@kinvolk/headlamp-plugin/lib/CommonComponents` for consistent styling with Headlamp's existing action buttons.
+- Use `ActionButton` from `@kinvolk/k8sense-plugin/lib/CommonComponents` for consistent styling with K8sense's existing action buttons.
 - Because the component is a regular React component, you can use `useState`, `useEffect`, and any other hooks inside it — which is how the popup pattern above works.
 - You can register multiple header actions; they all appear side by side in the header.
 
@@ -335,7 +335,7 @@ If you want to reference or replace your action later (e.g. via `registerDetails
 
 ```tsx
 registerDetailsViewHeaderAction({
-  id: 'hello-headlamp-image-details',
+  id: 'hello-k8sense-image-details',
   action: ImageDetailsAction,
 });
 ```
@@ -344,7 +344,7 @@ registerDetailsViewHeaderAction({
 
 ## Adding a Custom Section to the Pod Detail View
 
-Now let's add a **Container Resources** section to the Pod detail page. This section will show each container's CPU and memory requests and limits — information that is not shown by default in Headlamp's Pod detail view.
+Now let's add a **Container Resources** section to the Pod detail page. This section will show each container's CPU and memory requests and limits — information that is not shown by default in K8sense's Pod detail view.
 
 ### Step 1: Import the Section APIs
 
@@ -355,8 +355,8 @@ import {
   registerResourceTableColumnsProcessor,
   registerDetailsViewHeaderAction,
   registerDetailsViewSectionsProcessor,
-} from '@kinvolk/headlamp-plugin/lib';
-import { SectionBox, SimpleTable } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { SectionBox, SimpleTable } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 ```
 
 ### Step 2: Register the Sections Processor
@@ -371,7 +371,7 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
   }
 
   // Guard against being called multiple times — avoid duplicate sections
-  const sectionId = 'hello-headlamp-container-resources';
+  const sectionId = 'hello-k8sense-container-resources';
   if (sections.some(s => typeof s === 'object' && s !== null && 'id' in s && s.id === sectionId)) {
     return sections;
   }
@@ -409,15 +409,15 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
     ),
   };
 
-  // Insert our section right after the headlamp.pod-containers section
+  // Insert our section right after the k8sense.pod-containers section
   const hasId = (s: (typeof sections)[number]): s is { id: string } =>
     typeof s === 'object' && s !== null && 'id' in s;
   const podContainersIdx = sections.findIndex(
-    s => hasId(s) && s.id === 'headlamp.pod-containers'
+    s => hasId(s) && s.id === 'k8sense.pod-containers'
   );
 
   if (podContainersIdx === -1) {
-    // headlamp.pod-containers not found — append to the end as a fallback
+    // k8sense.pod-containers not found — append to the end as a fallback
     return [...sections, newSection];
   }
 
@@ -439,7 +439,7 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
 
 ## Understanding registerDetailsViewSectionsProcessor
 
-The processor function you pass to `registerDetailsViewSectionsProcessor` is called every time Headlamp renders a detail page. It receives:
+The processor function you pass to `registerDetailsViewSectionsProcessor` is called every time K8sense renders a detail page. It receives:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -459,7 +459,7 @@ Each entry in the `sections` array is an object with an `id` and `section` (a Re
 }
 ```
 
-Headlamp's own built-in sections use IDs from `DefaultDetailsViewSection`:
+K8sense's own built-in sections use IDs from `DefaultDetailsViewSection`:
 
 | Constant | What it is |
 |----------|------------|
@@ -467,7 +467,7 @@ Headlamp's own built-in sections use IDs from `DefaultDetailsViewSection`:
 | `DefaultDetailsViewSection.EVENTS` | The Kubernetes events table |
 | `DefaultDetailsViewSection.BACK_LINK` | The back navigation link |
 
-You can use these constants to precisely position your sections relative to Headlamp's built-in ones.
+You can use these constants to precisely position your sections relative to K8sense's built-in ones.
 
 ### Positioning strategies
 
@@ -482,7 +482,7 @@ return [...sections, newSection];
 ```tsx
 const hasId = (s: (typeof sections)[number]): s is { id: string } =>
   typeof s === 'object' && s !== null && 'id' in s;
-const idx = sections.findIndex(s => hasId(s) && s.id === 'headlamp.pod-containers');
+const idx = sections.findIndex(s => hasId(s) && s.id === 'k8sense.pod-containers');
 if (idx === -1) {
   return [...sections, newSection]; // section not found — append as fallback
 }
@@ -507,7 +507,7 @@ return [...sections, newSection];
 
 ### Idempotency guard
 
-Headlamp may call your processor multiple times as the component re-renders. Always check whether your section is already present before adding it, to avoid duplicates:
+K8sense may call your processor multiple times as the component re-renders. Always check whether your section is already present before adding it, to avoid duplicates:
 
 ```tsx
 const alreadyAdded = sections.some(
@@ -529,14 +529,14 @@ import {
   registerDetailsViewHeaderAction,
   registerDetailsViewSectionsProcessor,
   DefaultDetailsViewSection,
-} from '@kinvolk/headlamp-plugin/lib';
+} from '@kinvolk/k8sense-plugin/lib';
 import {
   ActionButton,
   ResourceTableColumn,
   SectionBox,
   SimpleTable,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import Pod from '@kinvolk/headlamp-plugin/lib/K8s/pod';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
+import Pod from '@kinvolk/k8sense-plugin/lib/K8s/pod';
 import {
   Button,
   Dialog,
@@ -550,14 +550,14 @@ import {
 // ─── 1. Add Container Images column to the built-in Pods list ────────────────
 
 registerResourceTableColumnsProcessor(function addContainerImagesColumn({ id, columns }) {
-  if (id !== 'headlamp-pods') {
+  if (id !== 'k8sense-pods') {
     return columns;
   }
 
   const podColumns = columns as ResourceTableColumn<Pod>[];
 
   podColumns.push({
-    id: 'hello-headlamp-container-images',
+    id: 'hello-k8sense-container-images',
     label: 'Container Images',
     getValue: (pod: Pod) => pod.spec.containers.map(c => c.image).join(', '),
     render: (pod: Pod) => {
@@ -630,7 +630,7 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
     return sections;
   }
 
-  const sectionId = 'hello-headlamp-container-resources';
+  const sectionId = 'hello-k8sense-container-resources';
   if (sections.some(s => typeof s === 'object' && s !== null && 'id' in s && s.id === sectionId)) {
     return sections;
   }
@@ -670,7 +670,7 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
   const hasId = (s: (typeof sections)[number]): s is { id: string } =>
     typeof s === 'object' && s !== null && 'id' in s;
   const podContainersIdx = sections.findIndex(
-    s => hasId(s) && s.id === 'headlamp.pod-containers'
+    s => hasId(s) && s.id === 'k8sense.pod-containers'
   );
 
   if (podContainersIdx === -1) {
@@ -689,8 +689,8 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
 
 ### Column not appearing in the Pods list
 
-- Check that you are navigating to **Workloads** → **Pods** (Headlamp's built-in page), not the custom `MyPodsPage` from Tutorial 6.
-- `console.log(id)` inside your processor and check the browser DevTools console to confirm the table ID is `'headlamp-pods'`.
+- Check that you are navigating to **Workloads** → **Pods** (K8sense's built-in page), not the custom `MyPodsPage` from Tutorial 6.
+- `console.log(id)` inside your processor and check the browser DevTools console to confirm the table ID is `'k8sense-pods'`.
 - Make sure the processor call is at module level (outside any component or function), so it runs when the plugin loads.
 
 ### Action button not appearing on Pod detail pages
@@ -702,14 +702,14 @@ registerDetailsViewSectionsProcessor(function addContainerResourcesSection(resou
 ### Section not appearing or appearing multiple times
 
 - Check the idempotency guard: the `sections.some(...)` check must match the exact `id` string you use when constructing `newSection`.
-- If `headlamp.pod-containers` is not found (`podContainersIdx === -1`), the section falls back to appending at the end — `console.log(sections.map(s => s?.id))` inside your processor to inspect the current section IDs and confirm the expected anchor section is present.
+- If `k8sense.pod-containers` is not found (`podContainersIdx === -1`), the section falls back to appending at the end — `console.log(sections.map(s => s?.id))` inside your processor to inspect the current section IDs and confirm the expected anchor section is present.
 - `console.log(sections)` inside your processor to inspect the full sections array.
 
 ---
 
 ## What's Next
 
-You've learned how to extend Headlamp's built-in views without replacing them:
+You've learned how to extend K8sense's built-in views without replacing them:
 
 - ✅ Using `registerResourceTableColumnsProcessor` to add columns to existing resource tables
 - ✅ Using `registerDetailsViewHeaderAction` to add action buttons to existing detail pages
@@ -727,10 +727,10 @@ You've learned how to extend Headlamp's built-in views without replacing them:
 ### registerResourceTableColumnsProcessor
 
 ```tsx
-import { registerResourceTableColumnsProcessor } from '@kinvolk/headlamp-plugin/lib';
+import { registerResourceTableColumnsProcessor } from '@kinvolk/k8sense-plugin/lib';
 
 registerResourceTableColumnsProcessor(function myProcessor({ id, columns }) {
-  if (id !== 'headlamp-pods') return columns;   // target a specific table
+  if (id !== 'k8sense-pods') return columns;   // target a specific table
 
   columns.push({
     id: 'my-plugin-column-id',      // prefix with plugin name to avoid clashes
@@ -743,13 +743,13 @@ registerResourceTableColumnsProcessor(function myProcessor({ id, columns }) {
 });
 ```
 
-**Common table IDs:** `headlamp-pods`, `headlamp-deployments`, `headlamp-nodes`, `headlamp-namespaces`, `headlamp-services`
+**Common table IDs:** `k8sense-pods`, `k8sense-deployments`, `k8sense-nodes`, `k8sense-namespaces`, `k8sense-services`
 
 ### registerDetailsViewHeaderAction
 
 ```tsx
-import { registerDetailsViewHeaderAction } from '@kinvolk/headlamp-plugin/lib';
-import { ActionButton } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { registerDetailsViewHeaderAction } from '@kinvolk/k8sense-plugin/lib';
+import { ActionButton } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 
 function MyAction({ item }: { item: any }) {
   if (!item || item.kind !== 'Pod') return null; // filter by resource kind
@@ -775,8 +775,8 @@ registerDetailsViewHeaderAction({ id: 'my-plugin-action', action: MyAction });
 import {
   registerDetailsViewSectionsProcessor,
   DefaultDetailsViewSection,
-} from '@kinvolk/headlamp-plugin/lib';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 
 registerDetailsViewSectionsProcessor(function myProcessor(resource, sections) {
   if (!resource || resource.kind !== 'Pod') return sections;  // filter by kind

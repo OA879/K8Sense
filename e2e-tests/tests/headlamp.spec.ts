@@ -28,7 +28,7 @@ test.beforeEach(async ({ page }) => {
   securityPage = new SecurityPage(page);
   servicesPage = new ServicesPage(page);
 
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 });
 
 // --- Plugins tests start --- //

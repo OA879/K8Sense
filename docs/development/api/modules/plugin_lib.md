@@ -4,7 +4,7 @@
 
 ## Classes
 
-- [Headlamp](../classes/plugin_lib.Headlamp.md)
+- [K8sense](../classes/plugin_lib.K8sense.md)
 - [Plugin](../classes/plugin_lib.Plugin.md)
 
 ## Interfaces

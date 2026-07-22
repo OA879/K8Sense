@@ -1,9 +1,9 @@
 ---
-title: How to Set Up Headlamp in minikube with Dex OIDC Authentication
+title: How to Set Up K8sense in minikube with Dex OIDC Authentication
 sidebar_label: "Tutorial: OIDC with Dex"
 ---
 
-In this tutorial, we'll walk through the process of configuring Headlamp within a Minikube cluster while utilizing Dex for OIDC (OpenID Connect) authentication. This tutorial is based on Dex version 2.38.0, Minikube version v1.31.2, and Headlamp version 0.22.0.
+In this tutorial, we'll walk through the process of configuring K8sense within a Minikube cluster while utilizing Dex for OIDC (OpenID Connect) authentication. This tutorial is based on Dex version 2.38.0, Minikube version v1.31.2, and K8sense version 0.22.0.
 
 ## Configuring Dex
 
@@ -145,11 +145,11 @@ kubectl get ns
 
 Upon running this command, a new browser window will open, prompting you to log in. Once you've completed the login process, you can close the window. You should see the namespaces in your cluster.
 
-# Setting up Headlamp with Dex OIDC Authentication
+# Setting up K8sense with Dex OIDC Authentication
 
-To configure Headlamp, you can use the Headlamp Helm chart. Follow these steps to set it up with OIDC(OpenID Connect) authentication:
+To configure K8sense, you can use the K8sense Helm chart. Follow these steps to set it up with OIDC(OpenID Connect) authentication:
 
-1. Before setting up Headlamp add `http://localhost:4466/oidc-callback` to the `redirectURIs`
+1. Before setting up K8sense add `http://localhost:4466/oidc-callback` to the `redirectURIs`
    in the Dex configuration.
 
 2. Create a `values.yaml` file and add the following OIDC configuration to it:
@@ -165,32 +165,32 @@ config:
 
 Replace `<YOUR-CLIENT-ID>`,`<YOUR-CLIENT-SECRET>`,`<YOUR-DEX-URL>` with your specific OIDC configuration details.
 
-3. Save the `values.yaml` file and Install Headlamp using helm with the following commands:
+3. Save the `values.yaml` file and Install K8sense using helm with the following commands:
 
 ```shell
-helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-helm install headlamp-oidc headlamp/headlamp -f values.yaml --namespace=headlamp --create-namespace
+helm repo add k8sense https://kubernetes-sigs.github.io/k8sense/
+helm install k8sense-oidc k8sense/k8sense -f values.yaml --namespace=k8sense --create-namespace
 ```
 
-![Headlamp install](./headlamp-install.jpg)
+![K8sense install](./k8sense-install.jpg)
 
-This will install Headlamp in the headlamp namespace with the OIDC configuration from the values.yaml file.
+This will install K8sense in the k8sense namespace with the OIDC configuration from the values.yaml file.
 
-4. After a successful installation, you can access Headlamp by port-forwarding to the pod:
+4. After a successful installation, you can access K8sense by port-forwarding to the pod:
 
 ```shell
-kubectl port-forward svc/headlamp-oidc 4466:80 -n headlamp
+kubectl port-forward svc/k8sense-oidc 4466:80 -n k8sense
 ```
 
-5. Open your web browser and go to <http://localhost:4466>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using Headlamp.
+5. Open your web browser and go to <http://localhost:4466>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using K8sense.
 
-![Headlamp access](./headlamp-access1.jpg)
-![Headlamp access](./headlamp-access2.jpg)
-![Headlamp access](./headlamp-access3.jpg)
-![Headlamp access](./headlamp-access4.jpg)
+![K8sense access](./k8sense-access1.jpg)
+![K8sense access](./k8sense-access2.jpg)
+![K8sense access](./k8sense-access3.jpg)
+![K8sense access](./k8sense-access4.jpg)
 
 ## Conclusion
 
-In this tutorial, we've set up Headlamp within a Kubernetes cluster and integrated it with OIDC (OpenID Connect) authentication provided by Dex. By following the steps outlined in this guide, you've successfully configured Headlamp to enhance your Kubernetes cluster management.
+In this tutorial, we've set up K8sense within a Kubernetes cluster and integrated it with OIDC (OpenID Connect) authentication provided by Dex. By following the steps outlined in this guide, you've successfully configured K8sense to enhance your Kubernetes cluster management.
 
-This setup allows you to enjoy Headlamp's user-friendly interface and advanced features. You can also be assured of secure and streamlined authentication through Dex. With the power of OIDC, you can easily and safely access and manage your Kubernetes resources.
+This setup allows you to enjoy K8sense's user-friendly interface and advanced features. You can also be assured of secure and streamlined authentication through Dex. With the power of OIDC, you can easily and safely access and manage your Kubernetes resources.

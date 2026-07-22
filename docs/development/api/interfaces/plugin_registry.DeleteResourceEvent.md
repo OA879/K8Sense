@@ -8,7 +8,7 @@ Event fired when a resource is to be deleted.
 
 ## Hierarchy
 
-- [`HeadlampEvent`](plugin_registry.HeadlampEvent.md)<`HeadlampEventType.DELETE_RESOURCE`\>
+- [`K8senseEvent`](plugin_registry.K8senseEvent.md)<`K8senseEventType.DELETE_RESOURCE`\>
 
   ↳ **`DeleteResourceEvent`**
 
@@ -27,11 +27,11 @@ Event fired when a resource is to be deleted.
 
 #### Overrides
 
-[HeadlampEvent](plugin_registry.HeadlampEvent.md).[data](plugin_registry.HeadlampEvent.md#data)
+[K8senseEvent](plugin_registry.K8senseEvent.md).[data](plugin_registry.K8senseEvent.md#data)
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:85](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L85)
+[redux/k8senseEventSlice.ts:85](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L85)
 
 ___
 
@@ -41,8 +41,8 @@ ___
 
 #### Inherited from
 
-[HeadlampEvent](plugin_registry.HeadlampEvent.md).[type](plugin_registry.HeadlampEvent.md#type)
+[K8senseEvent](plugin_registry.K8senseEvent.md).[type](plugin_registry.K8senseEvent.md#type)
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:68](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L68)
+[redux/k8senseEventSlice.ts:68](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L68)

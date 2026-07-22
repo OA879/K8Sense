@@ -6,13 +6,13 @@ title: Cluster Inventory development
 
 :::warning Experimental alpha feature
 
-Headlamp Cluster Inventory support is alpha/experimental and disabled by
+K8sense Cluster Inventory support is alpha/experimental and disabled by
 default. The upstream Cluster Inventory API is currently `v1alpha1` and the
-Headlamp integration uses the `v0.1.x` API, so fields and behavior may change.
+K8sense integration uses the `v0.1.x` API, so fields and behavior may change.
 
 :::
 
-Headlamp can discover additional clusters from Cluster Inventory API
+K8sense can discover additional clusters from Cluster Inventory API
 `ClusterProfile` resources when started with Cluster Inventory enabled. The
 backend uses `sigs.k8s.io/cluster-inventory-api v0.1.0`, the `pkg/access`
 provider configuration package, and `ClusterProfile.status.accessProviders`.
@@ -27,7 +27,7 @@ the upstream access configuration shape with a top-level `providers` array:
       "name": "static-token-spoke-a",
       "execConfig": {
         "apiVersion": "client.authentication.k8s.io/v1",
-        "command": "/tmp/headlamp-ci/static-token-exec.sh",
+        "command": "/tmp/k8sense-ci/static-token-exec.sh",
         "provideClusterInfo": true
       }
     }
@@ -40,12 +40,12 @@ Start the backend explicitly while testing:
 ```bash
 npm run backend:build
 KUBECONFIG="$WORK/hub.kubeconfig" \
-HEADLAMP_BACKEND_TOKEN=headlamp \
-HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
-./backend/headlamp-server -dev -listen-addr=localhost \
+K8SENSE_BACKEND_TOKEN=k8sense \
+K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
+./backend/k8sense-server -dev -listen-addr=localhost \
   --enable-cluster-inventory \
   --cluster-inventory-provider-file "$WORK/provider-config.json" \
-  --cluster-inventory-label-selector='!headlamp.dev/ignore' \
+  --cluster-inventory-label-selector='!k8sense.dev/ignore' \
   --cluster-inventory-root-reconcile-interval=10s \
   --cluster-inventory-no-crd-cache-ttl=30s
 ```
@@ -78,7 +78,7 @@ metadata:
   name: spoke-a
 spec:
   clusterManager:
-    name: headlamp-local-e2e
+    name: k8sense-local-e2e
 EOF
 
 kubectl --context kind-ci-hub -n inventory-e2e patch clusterprofiles spoke-a \
@@ -103,21 +103,21 @@ kubectl --context kind-ci-hub -n inventory-e2e patch clusterprofiles spoke-a \
   }')"
 ```
 
-To hide a `ClusterProfile` from Headlamp, add the ignore label. The default
-Helm chart selector is `!headlamp.dev/ignore`, so profiles with that label are
-not watched or converted into Headlamp contexts:
+To hide a `ClusterProfile` from K8sense, add the ignore label. The default
+Helm chart selector is `!k8sense.dev/ignore`, so profiles with that label are
+not watched or converted into K8sense contexts:
 
 ```bash
 kubectl --context kind-ci-hub -n inventory-e2e label clusterprofile spoke-a \
-  headlamp.dev/ignore=true
+  k8sense.dev/ignore=true
 ```
 
 Run the focused web E2E only after the local topology is running:
 
 ```bash
 cd e2e-tests
-HEADLAMP_CLUSTER_INVENTORY_E2E=true \
-HEADLAMP_TEST_URL=http://localhost:3000 \
+K8SENSE_CLUSTER_INVENTORY_E2E=true \
+K8SENSE_TEST_URL=http://localhost:3000 \
 npx playwright test -g "Cluster Inventory"
 ```
 

@@ -627,7 +627,7 @@ function ResourceTableContent<RowItem extends KubeObject>(props: ResourceTablePr
   }, [actionsProcessed]);
 
   const wrappedEnableRowSelection = useMemo(() => {
-    if (import.meta.env.REACT_APP_HEADLAMP_ENABLE_ROW_SELECTION === 'false') {
+    if (import.meta.env.REACT_APP_K8SENSE_ENABLE_ROW_SELECTION === 'false') {
       return false;
     }
     return enableRowSelection;

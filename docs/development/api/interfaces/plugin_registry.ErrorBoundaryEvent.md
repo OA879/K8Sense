@@ -16,7 +16,7 @@ The error that was thrown.
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:78](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L78)
+[redux/k8senseEventSlice.ts:78](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L78)
 
 ___
 
@@ -26,4 +26,4 @@ ___
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:76](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L76)
+[redux/k8senseEventSlice.ts:76](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L76)

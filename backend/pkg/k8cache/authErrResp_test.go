@@ -135,6 +135,6 @@ func TestWriteResponseToClient(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, http.StatusForbidden, recorder.Code)
-	assert.Equal(t, "true", recorder.Header().Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "true", recorder.Header().Get("X-K8SENSE-CACHE"))
 	assert.Equal(t, responseBody, recorder.Body.Bytes())
 }

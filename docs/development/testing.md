@@ -3,9 +3,9 @@ title: Testing
 sidebar_position: 3
 ---
 
-## Load testing Headlamp
+## Load testing K8sense
 
-Can Headlamp work well with busy clusters?
+Can K8sense work well with busy clusters?
 
 Limits we want to test for to begin with:
 
@@ -17,12 +17,12 @@ Limits we want to test for to begin with:
 Steps:
 
 - Create load in a cluster
-- Run Headlamp and see if it works well compared to low load
+- Run K8sense and see if it works well compared to low load
   - performance profiles
   - CPU/memory usage
   - feel
 
-### Kwok for low resource usage load testing of Headlamp
+### Kwok for low resource usage load testing of K8sense
 
 > [KWOK](https://github.com/kubernetes-sigs/kwok) is a toolkit that enables setting up a cluster of thousands of Nodes in seconds. All Nodes are simulated to behave like real ones, which creates a pretty low resource footprint that you can easily play around with on your machine.
 

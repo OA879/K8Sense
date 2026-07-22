@@ -186,7 +186,7 @@ const serverProcess = spawn(
     shell: true,
     env: {
       ...process.env,
-      HEADLAMP_CHECK_FOR_UPDATES: 'false',
+      K8SENSE_CHECK_FOR_UPDATES: 'false',
     },
   }
 );

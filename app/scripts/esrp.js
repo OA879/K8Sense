@@ -13,7 +13,7 @@ const fs = require('fs');
 
 const SIGN_JSON_TEMPLATE = {
   Version: '1.0.0',
-  DriEmail: [`${process.env.HEADLAMP_WINDOWS_SIGN_EMAIL}`],
+  DriEmail: [`${process.env.K8SENSE_WINDOWS_SIGN_EMAIL}`],
   GroupId: null,
   CorrelationVector: null,
   SignBatches: [],
@@ -31,15 +31,15 @@ const POLICY_JSON = {
 const AUTH_JSON = {
   Version: '1.0.0',
   AuthenticationType: 'AAD_CERT',
-  ClientId: `${process.env.HEADLAMP_WINDOWS_CLIENT_ID}`,
+  ClientId: `${process.env.K8SENSE_WINDOWS_CLIENT_ID}`,
   AuthCert: {
-    SubjectName: `CN=${process.env.HEADLAMP_WINDOWS_CLIENT_ID}.microsoft.com`,
+    SubjectName: `CN=${process.env.K8SENSE_WINDOWS_CLIENT_ID}.microsoft.com`,
     StoreLocation: 'LocalMachine',
     StoreName: 'My',
     SendX5c: 'true',
   },
   RequestSigningCert: {
-    SubjectName: `CN=${process.env.HEADLAMP_WINDOWS_CLIENT_ID}`,
+    SubjectName: `CN=${process.env.K8SENSE_WINDOWS_CLIENT_ID}`,
     StoreLocation: 'LocalMachine',
     StoreName: 'My',
   },

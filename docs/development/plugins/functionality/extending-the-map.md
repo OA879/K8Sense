@@ -9,7 +9,7 @@ Map view displays cluster resource on a graph. Plugins can extend this graph by 
 
 **Node** represents a Kubernetes resource. **Edges** connect different **nodes**, for example ReplicaSet connects to Pods it owns.
 
-Node and edge IDs should be stable and unique. When multiple selected sources return the same node or edge ID, Headlamp renders the first graph element for that ID.
+Node and edge IDs should be stable and unique. When multiple selected sources return the same node or edge ID, K8sense renders the first graph element for that ID.
 
 <figure>
 
@@ -40,14 +40,14 @@ const mySource = {
   // you can provide an icon
   icon: (
     <img
-      src="https://headlamp.dev/img/favicon.png"
+      src="https://k8sense.dev/img/favicon.png"
       alt="My Source logo"
       style={{ width: "100%", height: "100%" }}
     />
   ),
   /**
    * useData is a hook that will be called to load nodes and edges for your source
-   * You can use hooks here that Headlamp provides to load Kubernetes resources
+   * You can use hooks here that K8sense provides to load Kubernetes resources
    * this hook should return an object with nodes and edges or `null` if it's loading
    * it's important that return object is not recreated every time, so useMemo is required
    */
@@ -92,7 +92,7 @@ const mySource = {
 ```
 
 When `status` is provided, the node participates in the map's warning/error badge and the
-"Status: Error or Warning" filter. If `status` is omitted, Headlamp falls back to its default
+"Status: Error or Warning" filter. If `status` is omitted, K8sense falls back to its default
 status detection for Kubernetes objects.
 
 Then to register it call `registerMapSource`
@@ -126,7 +126,7 @@ Note: This is different from the Source icon. One Source may contain multiple di
 ```tsx
 registerKindIcon("MyCustomResource", {
   // icon is a JSX element
-  icon: <img src="https://headlamp.dev/img/favicon.png" />,
+  icon: <img src="https://k8sense.dev/img/favicon.png" />,
 });
 ```
 
@@ -139,7 +139,7 @@ registerKindIcon("MyCustomResource", {
 
 ## Custom Detail Views
 
-When a node is selected on the map, its details are shown in a side panel. By default, if the node represents a Kubernetes resource (has `kubeObject` property), Headlamp will show the standard resource details view.
+When a node is selected on the map, its details are shown in a side panel. By default, if the node represents a Kubernetes resource (has `kubeObject` property), K8sense will show the standard resource details view.
 
 You can override this behavior by providing a custom details component:
 
@@ -170,13 +170,13 @@ This is useful when you want to:
 
 ## Custom Glance Component
 
-When hovering over a node in the map, a preview (or "glance") is displayed. For Kubernetes resources, Headlamp provides default glance components. You can register a custom glance component for any node type (Kubernetes or custom) using `registerKubeObjectGlance`.
+When hovering over a node in the map, a preview (or "glance") is displayed. For Kubernetes resources, K8sense provides default glance components. You can register a custom glance component for any node type (Kubernetes or custom) using `registerKubeObjectGlance`.
 
 <figure style="text-align: center">
 
 ![Screenshot of a node with a Deployment glance showing status](./images/node-glance.png)
 
-<figcaption>Example: "Glance" for a Deployment node (`message-processor`) in Headlamp's graph view</figcaption>
+<figcaption>Example: "Glance" for a Deployment node (`message-processor`) in K8sense's graph view</figcaption>
 </figure>
 
 Here's how you can register a custom glance component:

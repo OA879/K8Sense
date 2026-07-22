@@ -137,16 +137,16 @@ func getResponse(handler http.Handler, method, url string, body interface{}) (*h
 
 func getResponseFromRestrictedEndpoint(handler http.Handler, method, url string, body interface{}) (*httptest.ResponseRecorder, error) { //nolint:lll
 	token := uuid.New().String()
-	_ = os.Setenv("HEADLAMP_BACKEND_TOKEN", token)
+	_ = os.Setenv("K8SENSE_BACKEND_TOKEN", token)
 
-	defer func() { _ = os.Unsetenv("HEADLAMP_BACKEND_TOKEN") }()
+	defer func() { _ = os.Unsetenv("K8SENSE_BACKEND_TOKEN") }()
 
 	req, err := makeJSONReq(method, url, body)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("X-HEADLAMP_BACKEND-TOKEN", token)
+	req.Header.Set("X-K8SENSE_BACKEND-TOKEN", token)
 
 	rr := httptest.NewRecorder()
 
@@ -223,7 +223,7 @@ func TestGetConfigIncludesDefaultNodeShellNamespace(t *testing.T) {
 
 //nolint:gocognit,funlen
 func TestDynamicClusters(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("skipping integration test")
 	}
 
@@ -1260,7 +1260,7 @@ func TestDeletePlugin(t *testing.T) {
 func TestRestrictedEndpointsRequireToken(t *testing.T) {
 	const validToken = "valid-token-for-test"
 
-	t.Setenv("HEADLAMP_BACKEND_TOKEN", validToken)
+	t.Setenv("K8SENSE_BACKEND_TOKEN", validToken)
 
 	kubeConfigBytes, err := os.ReadFile("./headlamp_testdata/kubeconfig")
 	require.NoError(t, err)
@@ -1371,7 +1371,7 @@ func assertRouteRequiresBackendToken(t *testing.T, method, path string, body int
 			require.NoError(t, err)
 
 			if av.setHeader {
-				req.Header.Set("X-HEADLAMP_BACKEND-TOKEN", av.headerValue)
+				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", av.headerValue)
 			}
 
 			rr := httptest.NewRecorder()
@@ -1396,7 +1396,7 @@ func assertRouteRequiresBackendToken(t *testing.T, method, path string, body int
 // TestRestrictedEndpointsRejectEmptyEnvToken makes sure an empty env var doesn't
 // turn into a bypass when the client also sends an empty header.
 func TestRestrictedEndpointsRejectEmptyEnvToken(t *testing.T) {
-	t.Setenv("HEADLAMP_BACKEND_TOKEN", "")
+	t.Setenv("K8SENSE_BACKEND_TOKEN", "")
 
 	c := HeadlampConfig{
 		HeadlampConfig: &headlampconfig.HeadlampConfig{
@@ -1430,13 +1430,13 @@ func TestRestrictedEndpointsRejectEmptyEnvToken(t *testing.T) {
 				req, err := makeJSONReq(route.method, route.path, nil)
 				require.NoError(t, err)
 
-				req.Header.Set("X-HEADLAMP_BACKEND-TOKEN", headerValue)
+				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", headerValue)
 
 				rr := httptest.NewRecorder()
 				handler.ServeHTTP(rr, req)
 
 				assert.Equal(t, http.StatusForbidden, rr.Code,
-					"empty HEADLAMP_BACKEND_TOKEN env must reject all callers (header=%q)", headerValue)
+					"empty K8SENSE_BACKEND_TOKEN env must reject all callers (header=%q)", headerValue)
 			}
 		})
 	}
@@ -1447,7 +1447,7 @@ func TestRestrictedEndpointsRejectEmptyEnvToken(t *testing.T) {
 // to hand a token to. A non-empty env var is set to make sure that doesn't
 // accidentally re-enable rejection.
 func TestRestrictedEndpointsBypassedInCluster(t *testing.T) {
-	t.Setenv("HEADLAMP_BACKEND_TOKEN", "some-token")
+	t.Setenv("K8SENSE_BACKEND_TOKEN", "some-token")
 
 	c := HeadlampConfig{
 		HeadlampConfig: &headlampconfig.HeadlampConfig{
@@ -1481,7 +1481,7 @@ func TestRestrictedEndpointsBypassedInCluster(t *testing.T) {
 		t.Run(route.method+" "+route.path, func(t *testing.T) {
 			req, err := makeJSONReq(route.method, route.path, nil)
 			require.NoError(t, err)
-			// No X-HEADLAMP_BACKEND-TOKEN header on purpose.
+			// No X-K8SENSE_BACKEND-TOKEN header on purpose.
 
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
@@ -2147,7 +2147,7 @@ func TestOidcCallbackEmptyStateDoesNotLogStaleError(t *testing.T) {
 
 	// createHeadlampHandler overwrites config.StaticPluginDir from this env
 	// var, so set it deterministically rather than relying on the caller.
-	t.Setenv("HEADLAMP_STATIC_PLUGINS_DIR", scratch)
+	t.Setenv("K8SENSE_STATIC_PLUGINS_DIR", scratch)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
@@ -2469,9 +2469,9 @@ func TestStartHeadlampServerTLS(t *testing.T) {
 //nolint:funlen
 func TestHandleClusterHelm(t *testing.T) {
 	// Set up test environment
-	require.NoError(t, os.Setenv("HEADLAMP_BACKEND_TOKEN", "test-token"))
+	require.NoError(t, os.Setenv("K8SENSE_BACKEND_TOKEN", "test-token"))
 
-	defer func() { _ = os.Unsetenv("HEADLAMP_BACKEND_TOKEN") }()
+	defer func() { _ = os.Unsetenv("K8SENSE_BACKEND_TOKEN") }()
 
 	config := &HeadlampConfig{
 		HeadlampConfig: &headlampconfig.HeadlampConfig{
@@ -2547,7 +2547,7 @@ func TestHandleClusterHelm(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, nil)
 			if tc.token != "" {
-				req.Header.Set("X-HEADLAMP_BACKEND-TOKEN", tc.token)
+				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", tc.token)
 			}
 
 			w := httptest.NewRecorder()
@@ -2833,7 +2833,7 @@ func TestCacheMiddleware_BypassesNonKubernetesAPIPaths(t *testing.T) {
 
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.Equal(t, "ok", respString)
-			assert.Equal(t, "", resp.Header.Get("X-HEADLAMP-CACHE"))
+			assert.Equal(t, "", resp.Header.Get("X-K8SENSE-CACHE"))
 		})
 	}
 }
@@ -2897,16 +2897,16 @@ func TestCacheMiddleware_CachesResourceNamedVersion(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp1.StatusCode)
 	assert.Equal(t, expectedResponse, resp1String)
-	assert.Equal(t, "", resp1.Header.Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "", resp1.Header.Get("X-K8SENSE-CACHE"))
 	assert.Equal(t, http.StatusOK, resp2.StatusCode)
 	assert.Equal(t, expectedResponse, resp2String)
-	assert.Equal(t, "true", resp2.Header.Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "true", resp2.Header.Get("X-K8SENSE-CACHE"))
 }
 
 // TestCacheMiddleware_CacheHitAndCacheMiss test whether the k8s is storing into the cache
 // and returns the data if the data is present in the cache.
 func TestCacheMiddleware_CacheHitAndCacheMiss(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
 		t.Skip("skipping integration test")
 	}
 
@@ -2964,10 +2964,10 @@ func TestCacheMiddleware_CacheHitAndCacheMiss(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, expectedResponse, resp1String)
-	assert.Equal(t, "", resp1.Header.Get("X-HEADLAMP-CACHE")) // response is from k8s server, hence X-HEADLAMP-CACHE: ""
+	assert.Equal(t, "", resp1.Header.Get("X-K8SENSE-CACHE")) // response is from k8s server, hence X-K8SENSE-CACHE: ""
 	assert.Equal(t, http.StatusOK, resp1.StatusCode)
 	assert.Equal(t, expectedResponse, resp2String)
-	assert.Equal(t, "true", resp2.Header.Get("X-HEADLAMP-CACHE")) // response is from cache, hence X-HEADLAMP-CACHE: true
+	assert.Equal(t, "true", resp2.Header.Get("X-K8SENSE-CACHE")) // response is from cache, hence X-K8SENSE-CACHE: true
 	assert.Equal(t, http.StatusOK, resp2.StatusCode)
 }
 
@@ -2975,7 +2975,7 @@ func TestCacheMiddleware_CacheHitAndCacheMiss(t *testing.T) {
 // to access a resource, CacheMiddleware should return AuthErrorResponse to
 // the client without going to k8 server.
 func TestCacheMiddleware_AuthErrorResponse(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
 		t.Skip("skipping integration test")
 	}
 
@@ -3027,7 +3027,7 @@ func TestCacheMiddleware_AuthErrorResponse(t *testing.T) {
 	resp1String, err := stringResponse(resp1)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, resp1String) // expected authErroResponse to the client.
-	assert.Equal(t, "true", resp1.Header.Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "true", resp1.Header.Get("X-K8SENSE-CACHE"))
 	assert.Equal(t, http.StatusForbidden, resp1.StatusCode)
 }
 
@@ -3035,7 +3035,7 @@ func TestCacheMiddleware_AuthErrorResponse(t *testing.T) {
 // it should delete the keys, making new fresh request to k8s server and store
 // into the cache if the request is same it should return response from the client.
 func TestCacheMiddleware_CacheInvalidation(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
 		t.Skip("skipping integration test")
 	}
 
@@ -3081,7 +3081,7 @@ func TestCacheMiddleware_CacheInvalidation(t *testing.T) {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	assert.Equal(t, "", resp.Header.Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "", resp.Header.Get("X-K8SENSE-CACHE"))
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	resp1, err := httpRequestWithContext(ctx, ts.URL+"/clusters/test/api/v1/resource", "GET")
@@ -3092,7 +3092,7 @@ func TestCacheMiddleware_CacheInvalidation(t *testing.T) {
 	resp1String, err := stringResponse(resp1)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedResponse, resp1String)
-	assert.Equal(t, "true", resp1.Header.Get("X-HEADLAMP-CACHE"))
+	assert.Equal(t, "true", resp1.Header.Get("X-K8SENSE-CACHE"))
 	assert.Equal(t, http.StatusOK, resp1.StatusCode)
 }
 
@@ -3230,10 +3230,10 @@ func setEnvForTest(t *testing.T, key, value string) func() {
 }
 
 // TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s tests cache hit/miss with a
-// real Kubernetes API server (e.g. minikube). Requires HEADLAMP_RUN_INTEGRATION_TESTS=true
+// real Kubernetes API server (e.g. minikube). Requires K8SENSE_RUN_INTEGRATION_TESTS=true
 // and a running cluster.
 func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
 		t.Skip("skipping integration test")
 	}
 
@@ -3251,7 +3251,7 @@ func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
 	defer func() { _ = resp1.Body.Close() }()
 
 	require.Equal(t, http.StatusOK, resp1.StatusCode, "first GET should succeed")
-	firstFromCache := resp1.Header.Get("X-HEADLAMP-CACHE")
+	firstFromCache := resp1.Header.Get("X-K8SENSE-CACHE")
 
 	resp2, err := httpRequestWithContext(ctx, ts.URL+apiPath, "GET")
 	require.NoError(t, err)
@@ -3259,7 +3259,7 @@ func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
 	defer func() { _ = resp2.Body.Close() }()
 
 	require.Equal(t, http.StatusOK, resp2.StatusCode, "second GET should succeed")
-	secondFromCache := resp2.Header.Get("X-HEADLAMP-CACHE")
+	secondFromCache := resp2.Header.Get("X-K8SENSE-CACHE")
 
 	assert.NotEqual(t, "true", firstFromCache, "first request should not be from cache")
 	assert.Equal(t, "true", secondFromCache, "second request should be from cache")
@@ -3267,12 +3267,12 @@ func TestCacheMiddleware_CacheHitAndCacheMiss_RealK8s(t *testing.T) {
 
 // TestCacheMiddleware_CacheInvalidation_RealK8s tests cache invalidation with a
 // real Kubernetes API server. Creates a ConfigMap, invalidates via DELETE, then
-// verifies the next GET fetches fresh data. Requires HEADLAMP_RUN_INTEGRATION_TESTS=true
+// verifies the next GET fetches fresh data. Requires K8SENSE_RUN_INTEGRATION_TESTS=true
 // and a running cluster.
 //
 //nolint:funlen // Integration test requires setup, requests, and assertions in one function
 func TestCacheMiddleware_CacheInvalidation_RealK8s(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != strconv.FormatBool(istrue) {
 		t.Skip("skipping integration test")
 	}
 

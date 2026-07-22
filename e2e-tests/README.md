@@ -13,20 +13,20 @@ minikube addons list
 # If the addon is not already enabled run the following command
 minikube addons enable headlamp
 
-# Generate the URL needed for the HEADLAMP_TEST_URL environment variable
+# Generate the URL needed for the K8SENSE_TEST_URL environment variable
 # note: Make sure to use the URL created after the " Starting tunnel for service headlamp. " message
 minikube service headlamp -n headlamp
 
 # Open the browser to the URL generated above, it should direct you to a page waiting for a token
 
 # run in a separate terminal...
-export HEADLAMP_TEST_URL= # from the "minikube service headlamp -n headlamp" command directly above.
+export K8SENSE_TEST_URL= # from the "minikube service headlamp -n headlamp" command directly above.
 
 # Create a token for the tests to use
-export HEADLAMP_TOKEN=$(kubectl create token headlamp --duration 24h -n headlamp)
+export K8SENSE_TOKEN=$(kubectl create token headlamp --duration 24h -n headlamp)
 
 # To see the token to login via the web browser
-echo $HEADLAMP_TOKEN
+echo $K8SENSE_TOKEN
 ```
 
 Now with those two environment variables set we can run the tests.

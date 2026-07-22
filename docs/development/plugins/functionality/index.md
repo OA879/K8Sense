@@ -4,27 +4,27 @@ sidebar_label: Functionality
 sidebar_position: 3
 ---
 
-Headlamp's plugins exist to change or add functionality related to
+K8sense's plugins exist to change or add functionality related to
 the user interface and experience.
 
 ## Plugins Lib
 
-The `@kinvolk/headlamp-plugin` module provides a library
-(`@kinvolk/headlamp-plugin/lib`) with Headlamp development modules.
+The `@kinvolk/k8sense-plugin` module provides a library
+(`@kinvolk/k8sense-plugin/lib`) with K8sense development modules.
 
 The main ones are:
 
 - K8s: Kubernetes functionality.
-- Headlamp: To register plugins.
-- CommonComponents: Commonly used React components in the Headlamp UI.
+- K8sense: To register plugins.
+- CommonComponents: Commonly used React components in the K8sense UI.
 - Notification: This module exports two members: `Notification` and `setNotificationsInStore`.
   The `Notification` class creates notifications. The `setNotificationsInStore`
-  function sends the notification to Headlamp to be displayed.
+  function sends the notification to K8sense to be displayed.
 - Router: To get or generate routes.
 
 ### Shared Modules
 
-Headlamp shares many npm modules with plugins. It includes VSCode configuration
+K8sense shares many npm modules with plugins. It includes VSCode configuration
 files to find them.
 
 These are:
@@ -38,8 +38,8 @@ These are:
 - notistack
 - recharts
 
-This means that plugins only need to install dependencies not already in Headlamp. If a plugin
-installs a dependency that Headlamp already has, make sure the versions are the
+This means that plugins only need to install dependencies not already in K8sense. If a plugin
+installs a dependency that K8sense already has, make sure the versions are the
 same. The build process will not bundle these shared modules. Instead, they are
 replaced by the version in the `pluginLib` global object.
 
@@ -60,7 +60,7 @@ Show a component in the top right of the app bar with
 
 ![screenshot of the header showing two actions](../images/podcounter_screenshot.png)
 
-- Example plugin: [How To Register an App Bar Action](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/pod-counter)
+- Example plugin: [How To Register an App Bar Action](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/pod-counter)
 - API reference: [registerAppBarAction](../../api/plugin/registry/functions/registerappbaraction)
 
 ### App Logo
@@ -70,18 +70,18 @@ Change the logo in the top left with
 
 ![screenshot of the logo being changed](../images/change-logo.png)
 
-- Example plugin: [How To Change The Logo](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/change-logo)
+- Example plugin: [How To Change The Logo](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/change-logo)
 - API reference: [registerAppLogo](../../api/plugin/registry/functions/registerapplogo)
 
 ### App Menus
 
-Add menus when Headlamp runs as an app with
-[Headlamp.setAppMenu](../../api/plugin/lib/classes/Headlamp#setappmenu).
+Add menus when K8sense runs as an app with
+[K8sense.setAppMenu](../../api/plugin/lib/classes/K8sense#setappmenu).
 
 ![screenshot of the logo being changed](../images/app-menus.png)
 
-- Example plugin: [How To Add App Menus](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/app-menus)
-- API reference: [Headlamp.setAppMenu](../../api/plugin/lib/classes/Headlamp#setappmenu)
+- Example plugin: [How To Add App Menus](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/app-menus)
+- API reference: [K8sense.setAppMenu](../../api/plugin/lib/classes/K8sense#setappmenu)
 
 ### Cluster Chooser
 
@@ -90,7 +90,7 @@ Change the Cluster Chooser button in the top right of the app bar with
 
 ![screenshot of the cluster chooser button](../images/cluster-chooser.png)
 
-- Example plugin: [How To Register Cluster Chooser button](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/cluster-chooser)
+- Example plugin: [How To Register Cluster Chooser button](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/cluster-chooser)
 - API reference: [registerClusterChooser](../../api/plugin/registry/functions/registerclusterchooser)
 
 ### Details View Header Action
@@ -100,7 +100,7 @@ Show a component in the top right of a detail view with
 
 ![screenshot of the header showing two actions](../images/header_actions_screenshot.png)
 
-- Example plugin: [How To set a Details View Header Action](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/details-view)
+- Example plugin: [How To set a Details View Header Action](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/details-view)
 - API reference: [registerDetailsViewHeaderAction](../../api/plugin/registry/functions/registerdetailsviewheaderaction)
 
 ### Details View Section
@@ -114,23 +114,23 @@ Or, add a component to the bottom of a details view with
 
 ![screenshot of the appended Details View Section](../images/details-view.jpeg)
 
-- Example plugin: [How To set a Details View Section](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/details-view)
+- Example plugin: [How To set a Details View Section](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/details-view)
 - API reference: [registerDetailsViewSection](../../api/plugin/registry/functions/registerdetailsviewsection)
 
 ### Dynamic Clusters
 
 Set a cluster dynamically, instead of from a configuration file, with
-[Headlamp.setCluster](../../api/plugin/lib/classes/Headlamp.md#setcluster).
+[K8sense.setCluster](../../api/plugin/lib/classes/K8sense.md#setcluster).
 
-- Example plugin: [How To Dynamically Set a Cluster](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/dynamic-clusters)
-- API reference: [Headlamp.setCluster](../../api/plugin/lib/classes/Headlamp.md#setcluster)
+- Example plugin: [How To Dynamically Set a Cluster](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/dynamic-clusters)
+- API reference: [K8sense.setCluster](../../api/plugin/lib/classes/K8sense.md#setcluster)
 
 ### Route
 
 Show a component in the main area at a given URL with
 [registerRoute](../../api/plugin/registry/functions/registerroute).
 
-- Example plugin: [How To Register a Route](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/sidebar)
+- Example plugin: [How To Register a Route](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/sidebar)
 - API reference: [registerRoute](../../api/plugin/registry/functions/registerroute)
 - API reference: [registerRouteFilter](../../api/plugin/registry/functions/registerroutefilter)
 
@@ -149,46 +149,46 @@ subheader styles.
 
 ![screenshot of the sidebar being changed](../images/sidebar.png)
 
-- Example plugin: [How To add items to the sidebar](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/sidebar)
+- Example plugin: [How To add items to the sidebar](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/sidebar)
 - API reference: [registerSidebarEntry](../../api/plugin/registry/functions/registersidebarentry)
 - API reference: [registerSidebarEntryFilter](../../api/plugin/registry/functions/registersidebarentryfilter)
 - API reference: [registerHomeSidebarEntryFilter](../../api/plugin/registry/functions/registerhomesidebarentryfilter)
 
 ### Tables
 
-Change tables in Headlamp with
+Change tables in K8sense with
 [registerResourceTableColumnsProcessor](../../api/plugin/registry/functions/registersidebarentry).
 This lets you add, remove, update, or move table columns.
 
 ![screenshot of the pods list with a context menu added by a plugin](../images/table-context-menu.png)
 
-- Example plugin: [How to add a context menu to each row in the pods list table](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/tables)
+- Example plugin: [How to add a context menu to each row in the pods list table](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/tables)
 - API reference: [registerResourceTableColumnsProcessor](../../api/plugin/registry/functions/registerresourcetablecolumnsprocessor)
 
-### Headlamp Events
+### K8sense Events
 
-Headlamp fires events when something important happens.
+K8sense fires events when something important happens.
 
-React to Headlamp events with
-[registerHeadlampEventCallback](../../api/plugin/registry/functions/registerheadlampeventcallback).
+React to K8sense events with
+[registerK8senseEventCallback](../../api/plugin/registry/functions/registerk8senseeventcallback).
 
 ![screenshot of a snackbar notification when an event occurred](../images/event-snackbar.png)
 
-- Example plugin: [How to show snackbars for Headlamp events](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/headlamp-events)
-- API reference: [registerHeadlampEventCallback](../../api/plugin/registry/functions/registerheadlampeventcallback)
+- Example plugin: [How to show snackbars for K8sense events](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/k8sense-events)
+- API reference: [registerK8senseEventCallback](../../api/plugin/registry/functions/registerk8senseeventcallback)
 
 ### Plugin Settings
 
 Plugins can have user settings. Create them with
 [registerPluginSettings](../../api/plugin/registry/functions/registerpluginsettings).
 
-- Example plugin: [How to create plugin settings and use them](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/change-logo)
+- Example plugin: [How to create plugin settings and use them](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/change-logo)
 
 ![screenshot of the plugin settings](../images/plugin-settings.png)
 
 ### App Theme
 
-Add a custom Headlamp theme with
+Add a custom K8sense theme with
 [registerAppTheme](../../api/plugin/registry/functions/registerapptheme).
 The theme name must be unique. You can specify 'light' or 'dark' as a base.
 The default is 'light'.
@@ -206,7 +206,7 @@ theme automatically. To override their colors, set the optional `terminal`
 field on `AppTheme` — `background`, `foreground`, `cursor`, and a 16-color
 `ansi` palette. Anything you leave out is auto-derived from the surrounding
 MUI palette and contrast-clamped to stay readable on the chosen background.
-See the [custom-theme example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/custom-theme)
+See the [custom-theme example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/custom-theme)
 for a working `registerAppTheme({ ..., terminal: { ... } })` call.
 
 ![pod log viewer in light theme](./images/themed-xterm/themed-xterm-light.png)
@@ -222,12 +222,12 @@ right, bottom), and a React component.
 ![screenshot of the side panels](./images/side-panels-example.png)
 
 Check the
-[example plugin](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/ui-panels)
+[example plugin](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/ui-panels)
 for the full code.
 
 ### Projects customization
 
-Customize Headlamp's Projects feature with several registration functions:
+Customize K8sense's Projects feature with several registration functions:
 
 Add custom tabs to the project details view with
 [registerProjectDetailsTab](../../api/plugin/registry/functions/registerProjectDetailsTab).
@@ -243,15 +243,15 @@ Once registered, the CRD resources will appear in the project's resource count,
 health status, and Resources tab. Only namespaced resources can be registered,
 since Projects are scoped to namespaces.
 
-Example plugin: [How to customize projects](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/projects)
+Example plugin: [How to customize projects](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/projects)
 
 ### Activities
 
-Activity is a Headlamp feature that allows you to create resizable popup windows.
+Activity is a K8sense feature that allows you to create resizable popup windows.
 For example when you click on a resource (like a Pod or ReplicaSet), the details will open in Activity.
 
 ![screenshot of an activity example](./images/activity-example.png)
 
 You can create and update Actitivities from plugins using [Activity API](../../api/components/activity/Activity/variables/Activity.md)
 
-Check the [example plugin](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/activity) for the full code.
+Check the [example plugin](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/activity) for the full code.

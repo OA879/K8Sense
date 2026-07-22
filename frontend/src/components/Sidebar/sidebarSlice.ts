@@ -132,7 +132,7 @@ export function setInitialSidebarOpen() {
     defaultOpen = openUserSelected;
   } else {
     // Check for build-time environment variable first
-    const envDefaultOpen = import.meta.env.REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN;
+    const envDefaultOpen = import.meta.env.REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN;
     if (envDefaultOpen !== undefined) {
       // Convert string to boolean, accepting 'true'/'false' or '1'/'0'
       defaultOpen = envDefaultOpen === 'true' || envDefaultOpen === '1';

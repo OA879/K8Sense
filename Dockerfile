@@ -99,6 +99,6 @@ USER headlamp
 
 EXPOSE 4466
 
-ENV HEADLAMP_STATIC_PLUGINS_DIR=/headlamp/static-plugins
+ENV K8SENSE_STATIC_PLUGINS_DIR=/headlamp/static-plugins
 ENV K8SENSE_RULES_DIR=/headlamp/rules
 ENTRYPOINT ["/headlamp/k8sense-server", "-html-static-dir", "/headlamp/frontend", "-plugins-dir", "/headlamp/plugins"]

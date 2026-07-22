@@ -34,9 +34,9 @@ Re-exports [ContainerState](../interfaces/lib_k8s_cluster.ContainerState.md)
 
 ___
 
-### HEADLAMP\_ALLOWED\_NAMESPACES
+### K8SENSE\_ALLOWED\_NAMESPACES
 
-Re-exports [HEADLAMP_ALLOWED_NAMESPACES](lib_k8s_cluster.md#headlamp_allowed_namespaces)
+Re-exports [K8SENSE_ALLOWED_NAMESPACES](lib_k8s_cluster.md#k8sense_allowed_namespaces)
 
 ___
 

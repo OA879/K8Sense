@@ -111,7 +111,7 @@
   },
   "scripts": {
     "prestart": "npm run make-version",
-    "start": "cross-env REACT_APP_HEADLAMP_BACKEND_TOKEN=headlamp vite",
+    "start": "cross-env REACT_APP_K8SENSE_BACKEND_TOKEN=headlamp vite",
     "preview": "vite preview",
     "prebuild": "npm run make-version",
     "build": "cross-env PUBLIC_URL=./ NODE_OPTIONS=--max-old-space-size=8096 vite build && npx shx rm -f build/frontend/index.baseUrl.html",
@@ -128,7 +128,7 @@
     "i18n": "i18next 'src/**/*.{ts,tsx}' -c ./src/i18n/i18next-parser.config.js",
     "tsc": "tsgo",
     "make-version": "node ./make-env.js",
-    "star": "cross-env REACT_APP_HEADLAMP_BACKEND_TOKEN=headlamp rsbuild dev",
+    "star": "cross-env REACT_APP_K8SENSE_BACKEND_TOKEN=headlamp rsbuild dev",
     "build:rsbuild": "rsbuild build"
   },
   "browserslist": {

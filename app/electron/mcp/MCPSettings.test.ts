@@ -75,8 +75,8 @@ describe('expandEnvAndResolvePaths', () => {
     process.env.LOCALAPPDATA = process.env.LOCALAPPDATA || '';
   });
 
-  it('replaces HEADLAMP_CURRENT_CLUSTER with cluster', () => {
-    const result = expandEnvAndResolvePaths(['connect HEADLAMP_CURRENT_CLUSTER'], 'my-current');
+  it('replaces K8SENSE_CURRENT_CLUSTER with cluster', () => {
+    const result = expandEnvAndResolvePaths(['connect K8SENSE_CURRENT_CLUSTER'], 'my-current');
     expect(result).toEqual(['connect my-current']);
   });
 
@@ -219,14 +219,14 @@ describe('MultiServerMCPClient', () => {
     expect(entry.restart.delayMs).toBe(2000);
   });
 
-  it('expands HEADLAMP_CURRENT_CLUSTER placeholder using provided clusters[0]', () => {
+  it('expands K8SENSE_CURRENT_CLUSTER placeholder using provided clusters[0]', () => {
     const mcpSettings = {
       enabled: true,
       servers: [
         {
           name: 'withCluster',
           command: 'cmd',
-          args: ['connect', 'HEADLAMP_CURRENT_CLUSTER'],
+          args: ['connect', 'K8SENSE_CURRENT_CLUSTER'],
           enabled: true,
         },
       ],

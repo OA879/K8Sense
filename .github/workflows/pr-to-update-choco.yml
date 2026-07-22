@@ -51,13 +51,13 @@ jobs:
           latestTag=$(git tag --list --sort=version:refname 'v*' | tail -1)
           # Remove the 'v' from the tag
           latestTag=${latestTag#v}
-          echo "LATEST_HEADLAMP_TAG=$latestTag" >> $GITHUB_ENV
+          echo "LATEST_K8SENSE_TAG=$latestTag" >> $GITHUB_ENV
           echo $latestTag
       - name: Download checksum / Set hash and checksum
         run: |
           echo "Downloading checksum"
           cd $GITHUB_WORKSPACE/app/windows/chocolatey
-          curl -L -O "https://github.com/kubernetes-sigs/headlamp/releases/download/v$LATEST_HEADLAMP_TAG/checksums.txt"
+          curl -L -O "https://github.com/kubernetes-sigs/headlamp/releases/download/v$LATEST_K8SENSE_TAG/checksums.txt"
           echo "Checksum downloaded"
           if [ -f checksums.txt ]; then
             echo "Checksum file exists"
@@ -66,7 +66,7 @@ jobs:
             exit 1
           fi
           echo "Setting hash and checksum"
-          expected_win_file_name="Headlamp-${LATEST_HEADLAMP_TAG}-win-x64.exe"
+          expected_win_file_name="Headlamp-${LATEST_K8SENSE_TAG}-win-x64.exe"
           mapfile -t matches < <(grep -F "  $expected_win_file_name" ./checksums.txt || true)
           if [ "${#matches[@]}" -ne 1 ]; then
             echo "Error: Expected exactly one checksum entry for $expected_win_file_name, found ${#matches[@]}"
@@ -89,11 +89,11 @@ jobs:
           echo "Workspace: ${GITHUB_WORKSPACE}"
           echo $GITHUB_WORKSPACE
           pwd
-          echo "LATEST_HEADLAMP_TAG=$LATEST_HEADLAMP_TAG"
+          echo "LATEST_K8SENSE_TAG=$LATEST_K8SENSE_TAG"
           echo "WIN_FILE_HASH=$WIN_FILE_HASH"
           echo "creating nuget pkgs"
           cd $GITHUB_WORKSPACE/app/windows/chocolatey
-          ./choco-bump.sh $LATEST_HEADLAMP_TAG $WIN_FILE_HASH
+          ./choco-bump.sh $LATEST_K8SENSE_TAG $WIN_FILE_HASH
           echo "Script finished"
       # REFACTOR FOR CUSTOM NUGET REPO LATER IF NEEDED
       - name: Create PR branch and push
@@ -106,13 +106,13 @@ jobs:
           echo "Repository: ${{ github.repository }}"
           echo "Workspace: ${GITHUB_WORKSPACE}"
           pwd
-          echo echo "https://github.com/kubernetes-sigs/headlamp/pull/new/hl-ci-choco-update-$LATEST_HEADLAMP_TAG"
-          git checkout -b "hl-ci-choco-update-$LATEST_HEADLAMP_TAG"
+          echo echo "https://github.com/kubernetes-sigs/headlamp/pull/new/hl-ci-choco-update-$LATEST_K8SENSE_TAG"
+          git checkout -b "hl-ci-choco-update-$LATEST_K8SENSE_TAG"
           git add .
-          git commit -s -m "chocolatey: Bump Headlamp version to $LATEST_HEADLAMP_TAG"
-          git push origin "hl-ci-choco-update-$LATEST_HEADLAMP_TAG"
+          git commit -s -m "chocolatey: Bump Headlamp version to $LATEST_K8SENSE_TAG"
+          git push origin "hl-ci-choco-update-$LATEST_K8SENSE_TAG"
           gh pr create \
-            --title "chocolatey: Bump Headlamp version to $LATEST_HEADLAMP_TAG" \
+            --title "chocolatey: Bump Headlamp version to $LATEST_K8SENSE_TAG" \
             --base main \
             --assignee $user \
             --body "This PR updates the chocolatey package to the latest version of Headlamp" \

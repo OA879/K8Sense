@@ -16,4 +16,4 @@
 
 #### Defined in
 
-[lib/k8s/pod.ts:13](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/lib/k8s/pod.ts#L13)
+[lib/k8s/pod.ts:13](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/lib/k8s/pod.ts#L13)

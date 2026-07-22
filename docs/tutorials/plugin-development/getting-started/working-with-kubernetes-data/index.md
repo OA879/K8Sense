@@ -50,8 +50,8 @@ By the end of this tutorial, your plugin will:
 Before starting, ensure you have:
 
 - ✅ Completed [Tutorial 3: Adding Pages and Sidebar Navigation](../adding-pages-and-sidebar-navigation/)
-- ✅ Your `hello-headlamp` plugin ready
-- ✅ Headlamp running with a connected cluster (minikube, kind, or any Kubernetes cluster)
+- ✅ Your `hello-k8sense` plugin ready
+- ✅ K8sense running with a connected cluster (minikube, kind, or any Kubernetes cluster)
 
 **Time to complete:** ~25 minutes
 
@@ -59,7 +59,7 @@ Before starting, ensure you have:
 
 ## Understanding Cluster Context
 
-When a user navigates to a cluster-specific page, your plugin needs to know which cluster they're viewing. Headlamp provides the `getCluster()` utility for this.
+When a user navigates to a cluster-specific page, your plugin needs to know which cluster they're viewing. K8sense provides the `getCluster()` utility for this.
 
 ### Display the Current Cluster
 
@@ -71,9 +71,9 @@ Open `src/index.tsx` and update it:
 import {
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Typography, Box } from '@mui/material';
 
 function OverviewPage() {
@@ -116,7 +116,7 @@ registerSidebarEntry({
 ### Test It
 
 1. Save the file
-2. Navigate to a cluster in Headlamp
+2. Navigate to a cluster in K8sense
 3. Click **My Plugin** → **Overview** in the sidebar
 4. You should see the cluster name displayed!
 
@@ -135,9 +135,9 @@ registerSidebarEntry({
 
 ## Using Built-in Resource Classes
 
-Now let's fetch actual Kubernetes resources. Headlamp provides `K8s.ResourceClasses` with built-in hooks for all standard Kubernetes resources including Pod, Namespace, Node, Deployment, Service, ConfigMap, Secret, and many more.
+Now let's fetch actual Kubernetes resources. K8sense provides `K8s.ResourceClasses` with built-in hooks for all standard Kubernetes resources including Pod, Namespace, Node, Deployment, Service, ConfigMap, Secret, and many more.
 
-> **📚 Full list:** See [ResourceClasses API Reference](https://headlamp.dev/docs/latest/development/api/lib/k8s/variables/ResourceClasses) for all available resource classes.
+> **📚 Full list:** See [ResourceClasses API Reference](https://k8sense.dev/docs/latest/development/api/lib/k8s/variables/ResourceClasses) for all available resource classes.
 
 Each class provides two hooks:
 - **`useList()`** — Fetch multiple resources
@@ -152,9 +152,9 @@ import {
   K8s,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import {
   Typography,
   Box,
@@ -302,9 +302,9 @@ import {
   K8s,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import {
   Typography,
   Box,
@@ -460,9 +460,9 @@ import {
   K8s,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import {
   Typography,
   Box,
@@ -675,7 +675,7 @@ const response = await ApiProxy.request('/version', {
 
 **Common issues:**
 - RBAC permissions — User may not have permission to list resources
-- Cluster connectivity — Check if Headlamp can reach the cluster
+- Cluster connectivity — Check if K8sense can reach the cluster
 
 ### useList Returns Empty Array
 
@@ -738,7 +738,7 @@ In the next tutorial, you'll learn advanced techniques:
 ### getCluster
 
 ```tsx
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 
 const cluster = getCluster(); // Returns cluster name or null
 ```
@@ -746,7 +746,7 @@ const cluster = getCluster(); // Returns cluster name or null
 ### K8s.ResourceClasses
 
 ```tsx
-import { K8s } from '@kinvolk/headlamp-plugin/lib';
+import { K8s } from '@kinvolk/k8sense-plugin/lib';
 
 // List all resources
 const [items, error] = K8s.ResourceClasses.Namespace.useList();
@@ -766,7 +766,7 @@ const [pod, error] = K8s.ResourceClasses.Pod.useGet('pod-name', 'namespace');
 ### ApiProxy.request
 
 ```tsx
-import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
+import { ApiProxy } from '@kinvolk/k8sense-plugin/lib';
 
 // GET request
 const response = await ApiProxy.request('/api/v1/namespaces', {
@@ -783,7 +783,7 @@ try {
 
 ### Useful Links
 
-- [ResourceClasses API Reference](https://headlamp.dev/docs/latest/development/api/lib/k8s/variables/ResourceClasses) — Full list of built-in resource classes
-- [K8s Module API Reference](https://headlamp.dev/docs/latest/development/api/modules/lib_k8s/)
-- [ApiProxy API Reference](https://headlamp.dev/docs/latest/development/api/classes/lib_k8s_apiProxy.ApiProxy/)
+- [ResourceClasses API Reference](https://k8sense.dev/docs/latest/development/api/lib/k8s/variables/ResourceClasses) — Full list of built-in resource classes
+- [K8s Module API Reference](https://k8sense.dev/docs/latest/development/api/modules/lib_k8s/)
+- [ApiProxy API Reference](https://k8sense.dev/docs/latest/development/api/classes/lib_k8s_apiProxy.ApiProxy/)
 - [Kubernetes API Reference](https://kubernetes.io/docs/reference/kubernetes-api/)

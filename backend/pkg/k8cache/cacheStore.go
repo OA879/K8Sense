@@ -227,7 +227,7 @@ func SetHeader(cacheData CachedResponseData, w http.ResponseWriter) {
 		w.Header()[idx] = header
 	}
 
-	w.Header().Set("X-HEADLAMP-CACHE", "true")
+	w.Header().Set("X-K8SENSE-CACHE", "true")
 	w.WriteHeader(cacheData.StatusCode)
 }
 

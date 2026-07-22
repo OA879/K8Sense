@@ -4,7 +4,7 @@ sidebar_label: Internationalization
 sidebar_position: 5
 ---
 
-Headlamp's internationalization uses the i18next, i18next-parser, and
+K8sense's internationalization uses the i18next, i18next-parser, and
 react-i18next libraries.
 
 ## Default language, and locales

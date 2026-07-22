@@ -18,4 +18,4 @@
 
 #### Defined in
 
-[lib/k8s/apiProxy.ts:1592](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/lib/k8s/apiProxy.ts#L1592)
+[lib/k8s/apiProxy.ts:1592](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/lib/k8s/apiProxy.ts#L1592)

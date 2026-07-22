@@ -532,7 +532,7 @@ func TestGetPortForwardByID_UserIDKeyIsolation(t *testing.T) {
 }
 
 // TestGetPortForwardsHandler_UserIDKeyIsolation uses the exported HTTP handler
-// to verify that the X-HEADLAMP-USER-ID header causes a different cache lookup.
+// to verify that the X-K8SENSE-USER-ID header causes a different cache lookup.
 func TestGetPortForwardsHandler_UserIDKeyIsolation(t *testing.T) {
 	c := cache.New[interface{}]()
 
@@ -561,7 +561,7 @@ func TestGetPortForwardsHandler_UserIDKeyIsolation(t *testing.T) {
 	w2 := httptest.NewRecorder()
 	r2 := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/portforward/list", nil)
 	r2 = mux.SetURLVars(r2, map[string]string{"clusterName": "cluster"})
-	r2.Header.Set("X-HEADLAMP-USER-ID", "user999")
+	r2.Header.Set("X-K8SENSE-USER-ID", "user999")
 
 	GetPortForwards(c, w2, r2)
 
@@ -577,7 +577,7 @@ func TestGetPortForwardsHandler_UserIDKeyIsolation(t *testing.T) {
 }
 
 // TestGetPortForwardByIDHandler_UserIDKeyIsolation uses the exported HTTP handler
-// to verify that the X-HEADLAMP-USER-ID header causes a different cache lookup.
+// to verify that the X-K8SENSE-USER-ID header causes a different cache lookup.
 func TestGetPortForwardByIDHandler_UserIDKeyIsolation(t *testing.T) {
 	c := cache.New[interface{}]()
 
@@ -604,7 +604,7 @@ func TestGetPortForwardByIDHandler_UserIDKeyIsolation(t *testing.T) {
 	r2 := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/portforward?id=pf-4", nil)
 	r2 = mux.SetURLVars(r2, map[string]string{"clusterName": "cluster"})
 	r2.URL = &url.URL{RawQuery: "id=pf-4"}
-	r2.Header.Set("X-HEADLAMP-USER-ID", "user999")
+	r2.Header.Set("X-K8SENSE-USER-ID", "user999")
 
 	GetPortForwardByID(c, w2, r2)
 
@@ -633,7 +633,7 @@ func TestStopOrDeletePortForwardHandler_UserIDKeyIsolation(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequestWithContext(context.Background(), http.MethodDelete, "/portforward", bytes.NewReader(payload))
 	r = mux.SetURLVars(r, map[string]string{"clusterName": "cluster"})
-	r.Header.Set("X-HEADLAMP-USER-ID", "user999")
+	r.Header.Set("X-K8SENSE-USER-ID", "user999")
 
 	StopOrDeletePortForward(c, w, r)
 

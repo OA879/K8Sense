@@ -19,22 +19,22 @@
  *
  * These tests assume:
  * - Headlamp is running in-cluster mode and exposed locally via port-forward
- *   at HEADLAMP_TEST_URL (e.g. http://localhost:8080)
+ *   at K8SENSE_TEST_URL (e.g. http://localhost:8080)
  * - A service account token with cluster-admin permissions is available in
- *   HEADLAMP_SA_TOKEN
+ *   K8SENSE_SA_TOKEN
  */
 
 import { expect, test } from '@playwright/test';
 
-const baseURL = process.env.HEADLAMP_TEST_URL || 'http://localhost:8080';
-const saToken = process.env.HEADLAMP_SA_TOKEN || '';
+const baseURL = process.env.K8SENSE_TEST_URL || 'http://localhost:8080';
+const saToken = process.env.K8SENSE_SA_TOKEN || '';
 
 // Only run these tests when explicitly configured (e.g. from CI in in-cluster job).
 // In all other environments, they are skipped so they don't interfere with normal e2e runs.
 const shouldRun = !!saToken;
 
 test.describe('Headlamp in-cluster API', () => {
-  test.skip(!shouldRun, 'HEADLAMP_SA_TOKEN is not set; skipping in-cluster API tests');
+  test.skip(!shouldRun, 'K8SENSE_SA_TOKEN is not set; skipping in-cluster API tests');
 
   test('can list namespaces via /clusters/main/api/v1/namespaces', async ({ request }) => {
     const response = await request.get('/clusters/main/api/v1/namespaces', {

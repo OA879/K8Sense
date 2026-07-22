@@ -3,7 +3,7 @@ title: Release Guide
 sidebar_position: 6
 ---
 
-This document describes how to perform a Headlamp release.
+This document describes how to perform a K8sense release.
 
 The idea is that we list the steps here as a guide and automate it along the way, so the number of steps is reduced as much as possible in the future.
 
@@ -11,7 +11,7 @@ The idea is that we list the steps here as a guide and automate it along the way
 
 We follow the [semantic versioning](https://semver.org/) guide.
 
-## Steps to perform a Headlamp release  
+## Steps to perform a K8sense release  
 
 When ready to perform a release (changes worth releasing since last time is done, QA is done), then:
 
@@ -73,7 +73,7 @@ Upload the binary to the release's assets with the script.
 Run the push-assets.js script for pushing assets. This script pushes the assets and automatically sets the right type for them. It also updates and uploads a checksums file:
 
 ```shell
-   GITHUB_TOKEN=MY_TOKEN_123 node ./app/scripts/push-release-assets.js v0.19.0 Headlamp....tar.gz
+   GITHUB_TOKEN=MY_TOKEN_123 node ./app/scripts/push-release-assets.js v0.19.0 K8sense....tar.gz
 ```
 
 Note: If you use the gh command line tool, you can use `gh auth token`. To create a new GITHUB_TOKEN, see the document [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens).

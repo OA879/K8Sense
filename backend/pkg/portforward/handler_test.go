@@ -56,7 +56,7 @@ func getDefaultKubeConfigPath(t *testing.T) string {
 func TestStartPortForward(t *testing.T) {
 	t.Parallel()
 
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("skipping integration test")
 	}
 
@@ -333,7 +333,7 @@ func TestStartPortForward(t *testing.T) {
 }
 
 // TestGetPortForwardsClusterNameNotExposingUserID verifies that when a dynamic
-// cluster request carries an X-HEADLAMP-USER-ID header, the port forwards
+// cluster request carries an X-K8SENSE-USER-ID header, the port forwards
 // returned by GetPortForwards contain the original cluster name and not the
 // internal cache key (clusterName + userID).
 func TestGetPortForwardsClusterNameNotExposingUserID(t *testing.T) {
@@ -356,7 +356,7 @@ func TestGetPortForwardsClusterNameNotExposingUserID(t *testing.T) {
 	}
 	listResp := httptest.NewRecorder()
 	listReq.URL = &url.URL{}
-	listReq.Header.Set("X-HEADLAMP-USER-ID", userID)
+	listReq.Header.Set("X-K8SENSE-USER-ID", userID)
 	listReq = mux.SetURLVars(listReq, map[string]string{"clusterName": clusterName})
 
 	portforward.GetPortForwards(ch, listResp, listReq)
@@ -380,5 +380,5 @@ func TestGetPortForwardsClusterNameNotExposingUserID(t *testing.T) {
 	assert.Equal(t, clusterName, clusterVal,
 		"cluster field must be the original cluster name, not the internal cache key")
 	assert.NotContains(t, clusterVal, userID,
-		"cluster field must not contain the X-HEADLAMP-USER-ID suffix")
+		"cluster field must not contain the X-K8SENSE-USER-ID suffix")
 }

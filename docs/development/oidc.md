@@ -81,12 +81,12 @@ kubectl config set-context --current --user=oidc-user
 kubectl get po -A
 ```
 
-By following these steps, you can test OIDC with the Kubernetes API Server and authenticate using the OIDC user you created. Refer to [this doc](../installation/in-cluster/oidc.md) to access Headlamp using OIDC.
+By following these steps, you can test OIDC with the Kubernetes API Server and authenticate using the OIDC user you created. Refer to [this doc](../installation/in-cluster/oidc.md) to access K8sense using OIDC.
 
 
 # Using self-signed CA certificates for OIDC
 
-When working with OIDC providers that use self-signed certificates or custom Certificate Authorities (CAs), Headlamp provides several options to handle TLS verification issues.
+When working with OIDC providers that use self-signed certificates or custom Certificate Authorities (CAs), K8sense provides several options to handle TLS verification issues.
 
 ## Command Line Options
 
@@ -95,7 +95,7 @@ When working with OIDC providers that use self-signed certificates or custom Cer
 To skip TLS verification entirely (not recommended for production):
 
 ```bash
-headlamp --oidc-skip-tls-verify
+k8sense --oidc-skip-tls-verify
 ```
 
 **Warning**: This option disables TLS certificate validation and is not safe for production environments.
@@ -105,7 +105,7 @@ headlamp --oidc-skip-tls-verify
 To specify a custom CA certificate file:
 
 ```bash
-headlamp --oidc-ca-file=/path/to/ca-certificate.pem
+k8sense --oidc-ca-file=/path/to/ca-certificate.pem
 ```
 
 The CA file must be a valid PEM-encoded certificate file.

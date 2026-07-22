@@ -69,11 +69,11 @@ describe('clusterFetch', () => {
     expect(responseBody).toEqual(mockResponse);
   });
 
-  it('Sets KUBECONFIG and X-HEADLAMP-USER-ID headers if kubeconfig exists', async () => {
+  it('Sets KUBECONFIG and X-K8SENSE-USER-ID headers if kubeconfig exists', async () => {
     nock(BASE_HTTP_URL)
       .get(`/clusters/${clusterName}${testUrl}`)
       .matchHeader('KUBECONFIG', kubeconfig)
-      .matchHeader('X-HEADLAMP-USER-ID', userID)
+      .matchHeader('X-K8SENSE-USER-ID', userID)
       .reply(200, mockResponse);
 
     await clusterFetch(testUrl, { cluster: clusterName });

@@ -19,14 +19,14 @@
  * The token is requested from the main process via IPC once the renderer is ready,
  * and stored for use in the getHeadlampAPIHeaders function below.
  *
- * The app also sets HEADLAMP_BACKEND_TOKEN in the k8sense-server environment,
+ * The app also sets K8SENSE_BACKEND_TOKEN in the k8sense-server environment,
  * which the server checks to validate requests containing this same token.
  *
  * For development, when running the frontend separately from the backend,
- * the token can be initialized from the REACT_APP_HEADLAMP_BACKEND_TOKEN
+ * the token can be initialized from the REACT_APP_K8SENSE_BACKEND_TOKEN
  * environment variable to authenticate API requests.
  */
-let backendToken: string | null = import.meta.env.REACT_APP_HEADLAMP_BACKEND_TOKEN || null;
+let backendToken: string | null = import.meta.env.REACT_APP_K8SENSE_BACKEND_TOKEN || null;
 
 /**
  * Sets the backend token to use when making API calls from Headlamp when running as an app.
@@ -34,7 +34,7 @@ let backendToken: string | null = import.meta.env.REACT_APP_HEADLAMP_BACKEND_TOK
  * This is not a K8s or OIDC token, but one that protects k8sense-server APIs.
  */
 export function setBackendToken(token: string | null) {
-  backendToken = import.meta.env.REACT_APP_HEADLAMP_BACKEND_TOKEN || token;
+  backendToken = import.meta.env.REACT_APP_K8SENSE_BACKEND_TOKEN || token;
 }
 
 /**
@@ -46,6 +46,6 @@ export function getHeadlampAPIHeaders(): { [key: string]: string } {
   }
 
   return {
-    'X-HEADLAMP_BACKEND-TOKEN': backendToken,
+    'X-K8SENSE_BACKEND-TOKEN': backendToken,
   };
 }

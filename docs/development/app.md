@@ -3,7 +3,7 @@ title: Desktop App
 sidebar_position: 3
 ---
 
-Headlamp's desktop application is built using Electron. It packages the frontend UI and backend server into a standalone desktop application for Windows, macOS, and Linux.
+K8sense's desktop application is built using Electron. It packages the frontend UI and backend server into a standalone desktop application for Windows, macOS, and Linux.
 
 The desktop app is written in TypeScript and uses Babel to transpile the Electron code. It provides a native desktop experience with features like system tray integration, window management, and plugin support.
 

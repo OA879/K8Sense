@@ -1,0 +1,7 @@
+securityContext:
+  readOnlyRootFilesystem: true
+
+volumes:
+  - name: k8sense-tmp
+    emptyDir:
+      sizeLimit: 100Mi

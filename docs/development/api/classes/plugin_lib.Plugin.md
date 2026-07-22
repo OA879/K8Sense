@@ -4,7 +4,7 @@
 
 [plugin/lib](../modules/plugin_lib.md).Plugin
 
-Plugins may call Headlamp.registerPlugin(pluginId: string, pluginObj: Plugin) to register themselves.
+Plugins may call K8sense.registerPlugin(pluginId: string, pluginObj: Plugin) to register themselves.
 
 They will have their initialize(register) method called at plugin initialization time.
 
@@ -38,4 +38,4 @@ The return code is not used, but used to be required.
 
 #### Defined in
 
-[plugin/lib.ts:49](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L49)
+[plugin/lib.ts:49](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L49)

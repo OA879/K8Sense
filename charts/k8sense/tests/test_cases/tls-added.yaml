@@ -1,0 +1,20 @@
+config:
+  tlsCertPath: "/k8sense-cert/k8sense-ca.crt"
+  tlsKeyPath: "/k8sense-cert/k8sense-tls.key"
+
+probes:
+  scheme: HTTPS
+
+volumes:
+  - name: "k8sense-cert"
+    secret:
+      secretName: "k8sense-tls"
+      items:
+        - key: "tls.crt"
+          path: "k8sense-ca.crt"
+        - key: "tls.key"
+          path: "k8sense-tls.key"
+
+volumeMounts:
+  - name: "k8sense-cert"
+    mountPath: "/k8sense-cert"

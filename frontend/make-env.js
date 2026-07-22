@@ -23,11 +23,11 @@ const appInfo = JSON.parse(fs.readFileSync('../app/package.json', 'utf8'));
 const gitVersion = execSync('git rev-parse HEAD').toString().trim();
 
 const envContents = {
-  REACT_APP_HEADLAMP_VERSION: appInfo.version,
-  REACT_APP_HEADLAMP_GIT_VERSION: gitVersion,
-  REACT_APP_HEADLAMP_PRODUCT_NAME: appInfo.productName,
+  REACT_APP_K8SENSE_VERSION: appInfo.version,
+  REACT_APP_K8SENSE_GIT_VERSION: gitVersion,
+  REACT_APP_K8SENSE_PRODUCT_NAME: appInfo.productName,
   REACT_APP_ENABLE_REACT_QUERY_DEVTOOLS: 'false',
-  REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN: 'true'
+  REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN: 'true'
 };
 
 function createEnvText() {

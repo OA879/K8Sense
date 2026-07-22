@@ -111,7 +111,7 @@ describe('setInitialSidebarOpen', () => {
 
   beforeEach(() => {
     originalInnerWidth = window.innerWidth;
-    originalEnv = import.meta.env.REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN;
+    originalEnv = import.meta.env.REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN;
     localStorage.clear();
   });
 
@@ -122,9 +122,9 @@ describe('setInitialSidebarOpen', () => {
     });
     // Restore original environment variable
     if (originalEnv !== undefined) {
-      (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = originalEnv;
+      (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = originalEnv;
     } else {
-      delete (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN;
+      delete (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN;
     }
   });
 
@@ -143,25 +143,25 @@ describe('setInitialSidebarOpen', () => {
     expect(localStorage.getItem('sidebar')).toBeNull();
 
     // Test with environment variable set to true
-    (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = 'true';
+    (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = 'true';
     expect(setInitialSidebarOpen().isSidebarOpen).toBe(true);
 
     // Test with environment variable set to false
-    (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = 'false';
+    (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = 'false';
     expect(setInitialSidebarOpen().isSidebarOpen).toBe(false);
 
     // Test with environment variable set to 1 (true)
-    (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = '1';
+    (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = '1';
     expect(setInitialSidebarOpen().isSidebarOpen).toBe(true);
 
     // Test with environment variable set to 0 (false)
-    (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = '0';
+    (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = '0';
     expect(setInitialSidebarOpen().isSidebarOpen).toBe(false);
   });
 
   it('should fall back to window width when neither localStorage nor environment variable is set', () => {
     expect(localStorage.getItem('sidebar')).toBeNull();
-    delete (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN;
+    delete (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN;
 
     // Set width less than md breakpoint.
     Object.defineProperty(window, 'innerWidth', {
@@ -174,7 +174,7 @@ describe('setInitialSidebarOpen', () => {
 
   it('should prioritize localStorage over environment variable', () => {
     localStorage.setItem('sidebar', JSON.stringify({ shrink: true }));
-    (import.meta.env as any).REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN = 'true';
+    (import.meta.env as any).REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN = 'true';
 
     expect(setInitialSidebarOpen().isSidebarOpen).toBe(false);
   });

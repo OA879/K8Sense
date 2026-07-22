@@ -17,6 +17,6 @@ jobs:
     steps:
       - name: Trigger via gh
         env:
-          GITHUB_TOKEN: ${{ secrets.FLATPAK_HEADLAMP_REPO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.FLATPAK_K8SENSE_REPO_TOKEN }}
         run: |
           gh api repos/flathub/io.kinvolk.Headlamp/dispatches --raw-field event_type=headlamp-release

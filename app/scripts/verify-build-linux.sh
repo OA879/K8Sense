@@ -79,21 +79,21 @@ if [ ! -z "$TARBALL" ]; then
   echo "Reusing extracted files for app testing..."
   
   # Find the headlamp executable
-  HEADLAMP_EXEC=$(find "$EXTRACT_DIR" -name "headlamp" -type f -executable | head -n 1)
-  if [ -z "$HEADLAMP_EXEC" ]; then
+  K8SENSE_EXEC=$(find "$EXTRACT_DIR" -name "headlamp" -type f -executable | head -n 1)
+  if [ -z "$K8SENSE_EXEC" ]; then
     echo "✗ Headlamp executable not found"
     rm -rf "$EXTRACT_DIR"
     exit 1
   fi
-  echo "Found Headlamp at: $HEADLAMP_EXEC"
+  echo "Found Headlamp at: $K8SENSE_EXEC"
   
   # Create unique temporary file for output
   OUTPUT_FILE=$(mktemp)
   
   # Run with list-plugins command (exits immediately, no GUI needed)
-  chmod +x "$HEADLAMP_EXEC"
+  chmod +x "$K8SENSE_EXEC"
   set +e
-  timeout 30 "$HEADLAMP_EXEC" list-plugins > "$OUTPUT_FILE" 2>&1
+  timeout 30 "$K8SENSE_EXEC" list-plugins > "$OUTPUT_FILE" 2>&1
   EXIT_CODE=$?
   set -e
   if [ $EXIT_CODE -eq 0 ]; then
@@ -118,15 +118,15 @@ if [ ! -z "$TARBALL" ]; then
 
   # Record existing k8sense-server and headlamp PIDs to exclude them
   EXISTING_SERVER_PIDS=$(pgrep -f k8sense-server 2>/dev/null || true)
-  EXISTING_HEADLAMP_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
+  EXISTING_K8SENSE_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
 
   # Start the app in the background (needs a virtual display on headless CI)
   if command -v xvfb-run &>/dev/null; then
     echo "Using xvfb-run to launch app with virtual display..."
-    xvfb-run --auto-servernum "$HEADLAMP_EXEC" > /dev/null 2>&1 &
+    xvfb-run --auto-servernum "$K8SENSE_EXEC" > /dev/null 2>&1 &
   else
     echo "xvfb-run not available, launching app directly..."
-    "$HEADLAMP_EXEC" > /dev/null 2>&1 &
+    "$K8SENSE_EXEC" > /dev/null 2>&1 &
   fi
   WRAPPER_PID=$!
   echo "Launcher started with PID: $WRAPPER_PID"
@@ -153,9 +153,9 @@ if [ ! -z "$TARBALL" ]; then
     echo "⚠ k8sense-server did not start within 30 seconds, skipping cleanup test"
     # Kill the wrapper and any headlamp (Electron) processes we spawned
     kill -TERM "$WRAPPER_PID" 2>/dev/null || true
-    ALL_HEADLAMP_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
-    for pid in $ALL_HEADLAMP_PIDS; do
-      if [ -z "$EXISTING_HEADLAMP_PIDS" ] || ! echo "$EXISTING_HEADLAMP_PIDS" | grep -qw "$pid"; then
+    ALL_K8SENSE_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
+    for pid in $ALL_K8SENSE_PIDS; do
+      if [ -z "$EXISTING_K8SENSE_PIDS" ] || ! echo "$EXISTING_K8SENSE_PIDS" | grep -qw "$pid"; then
         kill -TERM "$pid" 2>/dev/null || true
       fi
     done
@@ -163,8 +163,8 @@ if [ ! -z "$TARBALL" ]; then
       if kill -0 "$WRAPPER_PID" 2>/dev/null; then sleep 1; else break; fi
     done
     kill -9 "$WRAPPER_PID" 2>/dev/null || true
-    for pid in $ALL_HEADLAMP_PIDS; do
-      if [ -z "$EXISTING_HEADLAMP_PIDS" ] || ! echo "$EXISTING_HEADLAMP_PIDS" | grep -qw "$pid"; then
+    for pid in $ALL_K8SENSE_PIDS; do
+      if [ -z "$EXISTING_K8SENSE_PIDS" ] || ! echo "$EXISTING_K8SENSE_PIDS" | grep -qw "$pid"; then
         kill -9 "$pid" 2>/dev/null || true
       fi
     done
@@ -173,9 +173,9 @@ if [ ! -z "$TARBALL" ]; then
     # $WRAPPER_PID is the wrapper, not the Electron process. We need to SIGTERM
     # the Electron process directly so its quit handler fires.
     ELECTRON_PID=""
-    ALL_HEADLAMP_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
-    for pid in $ALL_HEADLAMP_PIDS; do
-      if [ -z "$EXISTING_HEADLAMP_PIDS" ] || ! echo "$EXISTING_HEADLAMP_PIDS" | grep -qw "$pid"; then
+    ALL_K8SENSE_PIDS=$(pgrep -x headlamp 2>/dev/null || true)
+    for pid in $ALL_K8SENSE_PIDS; do
+      if [ -z "$EXISTING_K8SENSE_PIDS" ] || ! echo "$EXISTING_K8SENSE_PIDS" | grep -qw "$pid"; then
         ELECTRON_PID="$pid"
         break
       fi

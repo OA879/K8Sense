@@ -19,8 +19,8 @@ import { HeadlampPage } from './headlampPage';
 
 test.describe('multi-cluster setup', () => {
   let headlampPage: HeadlampPage;
-  const testToken = process.env.HEADLAMP_TEST_TOKEN;
-  const test2Token = process.env.HEADLAMP_TEST2_TOKEN;
+  const testToken = process.env.K8SENSE_TEST_TOKEN;
+  const test2Token = process.env.K8SENSE_TEST2_TOKEN;
 
   test.beforeEach(async ({ page }) => {
     headlampPage = new HeadlampPage(page);

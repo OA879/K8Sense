@@ -154,7 +154,7 @@ func StartPortForward(kubeConfigStore kubeconfig.ContextStore, cache cache.Cache
 		p.ID = uuid.New().String()
 	}
 
-	userID := r.Header.Get("X-HEADLAMP-USER-ID")
+	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	requestClusterName := mux.Vars(r)["clusterName"]
 	clusterName := requestClusterName
 
@@ -719,7 +719,7 @@ func StopOrDeletePortForward(cache cache.Cache[interface{}], w http.ResponseWrit
 		return
 	}
 
-	userID := r.Header.Get("X-HEADLAMP-USER-ID")
+	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	clusterName := mux.Vars(r)["clusterName"]
 
 	if userID != "" {
@@ -749,7 +749,7 @@ func GetPortForwards(cache cache.Cache[interface{}], w http.ResponseWriter, r *h
 		return
 	}
 
-	userID := r.Header.Get("X-HEADLAMP-USER-ID")
+	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	clusterName := cluster
 
 	if userID != "" {
@@ -786,7 +786,7 @@ func GetPortForwardByID(cache cache.Cache[interface{}], w http.ResponseWriter, r
 		return
 	}
 
-	userID := r.Header.Get("X-HEADLAMP-USER-ID")
+	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	clusterName := cluster
 
 	if userID != "" {

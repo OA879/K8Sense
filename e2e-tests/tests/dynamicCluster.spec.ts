@@ -37,7 +37,7 @@ test.beforeEach(async ({ page }) => {
     .then(() => true)
     .catch(() => false);
   if (hasAuthPage) {
-    await headlampPage.authenticate(process.env.HEADLAMP_TEST_TOKEN);
+    await headlampPage.authenticate(process.env.K8SENSE_TEST_TOKEN);
   }
 });
 

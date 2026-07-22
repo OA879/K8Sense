@@ -64,13 +64,13 @@ npm run docs
 
 The API output markdown is generated in docs/development/api and is not
 committed to Git, but is shown on the website at
-[headlamp/latest/development/api](https://headlamp.dev/docs/latest/development/api/)
+[k8sense/latest/development/api](https://k8sense.dev/docs/latest/development/api/)
 
 ## Storybook
 
 Components can be discovered, developed, and tested inside the 'storybook'.
 
-From within the [Headlamp](https://github.com/kubernetes-sigs/headlamp/) repo run:
+From within the [K8sense](https://github.com/kubernetes-sigs/k8sense/) repo run:
 
 ```bash
 npm run frontend:storybook
@@ -91,7 +91,7 @@ current or future stories:
 ### Developer console warnings and errors
 
 axe-core is used to detect some a11y issues at runtime when running
-Headlamp in developer mode. This detects more issues than testing
+K8sense in developer mode. This detects more issues than testing
 components via eslint or via unit tests.
 
 Any issues found are reported in the developer console.

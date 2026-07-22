@@ -573,7 +573,7 @@ func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Han
 	kubeConfigPath := config.KubeConfigPath
 
 	config.ServerCtx = ctx
-	config.StaticPluginDir = os.Getenv("HEADLAMP_STATIC_PLUGINS_DIR")
+	config.StaticPluginDir = os.Getenv("K8SENSE_STATIC_PLUGINS_DIR")
 
 	logger.Log(logger.LevelInfo, nil, nil, "Creating Headlamp handler")
 	logger.Log(logger.LevelInfo, nil, nil, "Listen address: "+fmt.Sprintf("%s:%d", config.ListenAddr, config.Port))
@@ -658,7 +658,7 @@ func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Han
 
 	// Prometheus metrics endpoint
 	// to enable this endpoint, run command run-backend-with-metrics
-	// or set the environment variable HEADLAMP_CONFIG_METRICS_ENABLED=true
+	// or set the environment variable K8SENSE_CONFIG_METRICS_ENABLED=true
 	if config.Metrics != nil && config.TelemetryConfig.MetricsEnabled != nil && *config.TelemetryConfig.MetricsEnabled {
 		r.Handle("/metrics", promhttp.Handler())
 		logger.Log(logger.LevelInfo, nil, nil, "prometheus metrics endpoint: /metrics")
@@ -1146,9 +1146,9 @@ func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Han
 	// On dev mode we're loose about where connections come from
 	if config.DevMode {
 		headers := handlers.AllowedHeaders([]string{
-			"X-HEADLAMP_BACKEND-TOKEN", "X-Requested-With", "Content-Type",
+			"X-K8SENSE_BACKEND-TOKEN", "X-Requested-With", "Content-Type",
 			"Authorization", "Forward-To",
-			"KUBECONFIG", "X-HEADLAMP-USER-ID",
+			"KUBECONFIG", "X-K8SENSE-USER-ID",
 		})
 		methods := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "HEAD", "DELETE", "PATCH", "OPTIONS"})
 
@@ -1572,20 +1572,20 @@ func getHelmHandler(c *HeadlampConfig, w http.ResponseWriter, r *http.Request) (
 	return helmHandler, nil
 }
 
-// Check request for header "X-HEADLAMP_BACKEND-TOKEN" matches HEADLAMP_BACKEND_TOKEN env
+// Check request for header "X-K8SENSE_BACKEND-TOKEN" matches K8SENSE_BACKEND_TOKEN env
 // This check is to prevent access except for from the app.
-// The app sets HEADLAMP_BACKEND_TOKEN, and gives the token to the frontend.
+// The app sets K8SENSE_BACKEND_TOKEN, and gives the token to the frontend.
 func (c *HeadlampConfig) checkHeadlampBackendToken(w http.ResponseWriter, r *http.Request) error {
 	if c.UseInCluster {
 		return nil
 	}
 
-	backendToken := r.Header.Get("X-HEADLAMP_BACKEND-TOKEN")
-	backendTokenEnv := os.Getenv("HEADLAMP_BACKEND_TOKEN")
+	backendToken := r.Header.Get("X-K8SENSE_BACKEND-TOKEN")
+	backendTokenEnv := os.Getenv("K8SENSE_BACKEND_TOKEN")
 
 	if backendToken != backendTokenEnv || backendTokenEnv == "" {
 		http.Error(w, "access denied", http.StatusForbidden)
-		return errors.New("X-HEADLAMP_BACKEND-TOKEN does not match HEADLAMP_BACKEND_TOKEN")
+		return errors.New("X-K8SENSE_BACKEND-TOKEN does not match K8SENSE_BACKEND_TOKEN")
 	}
 
 	return nil

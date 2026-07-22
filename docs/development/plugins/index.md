@@ -3,13 +3,13 @@ title: Plugins
 sidebar_position: 6
 ---
 
-# Headlamp Plugins
+# K8sense Plugins
 
-Plugins are one of the key features of Headlamp, enabling you to customize and extend the Kubernetes web interface to meet your specific needs. The plugin system allows vendors and developers to add functionality without maintaining a fork of the project.
+Plugins are one of the key features of K8sense, enabling you to customize and extend the Kubernetes web interface to meet your specific needs. The plugin system allows vendors and developers to add functionality without maintaining a fork of the project.
 
 ## What Can Plugins Do?
 
-Headlamp plugins can transform your Kubernetes experience by:
+K8sense plugins can transform your Kubernetes experience by:
 
 - **🎨 Customizing the UI**: Add components to the app bar, sidebar, and resource detail views
 - **📊 Creating Dashboards**: Build custom pages with specialized visualizations and metrics
@@ -24,7 +24,7 @@ New to plugin development? Follow our step-by-step guide:
 
 ### 🏗️ [Plugin Architecture](../architecture.md)
 
-Understand how plugins work, where they're loaded from, and how they integrate with Headlamp.
+Understand how plugins work, where they're loaded from, and how they integrate with K8sense.
 
 ### 📚 [Getting Started With Plugin Development](./getting-started.md)
 
@@ -60,4 +60,4 @@ Add support for multiple languages and locales
 
 👉 **Need architectural details?** Read about [Plugin Architecture](./architecture.md)
 
-The Headlamp plugin ecosystem is growing rapidly. Whether you're building internal tools or creating plugins for the community, you're contributing to making Kubernetes more accessible and powerful for everyone!
+The K8sense plugin ecosystem is growing rapidly. Whether you're building internal tools or creating plugins for the community, you're contributing to making Kubernetes more accessible and powerful for everyone!

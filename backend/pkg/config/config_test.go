@@ -16,11 +16,11 @@ import (
 
 func TestMain(m *testing.M) {
 	clusterInventoryEnv := []string{
-		"HEADLAMP_CONFIG_ENABLE_CLUSTER_INVENTORY",
-		"HEADLAMP_CONFIG_CLUSTER_INVENTORY_PROVIDER_FILE",
-		"HEADLAMP_CONFIG_CLUSTER_INVENTORY_LABEL_SELECTOR",
-		"HEADLAMP_CONFIG_CLUSTER_INVENTORY_ROOT_RECONCILE_INTERVAL",
-		"HEADLAMP_CONFIG_CLUSTER_INVENTORY_NO_CRD_CACHE_TTL",
+		"K8SENSE_CONFIG_ENABLE_CLUSTER_INVENTORY",
+		"K8SENSE_CONFIG_CLUSTER_INVENTORY_PROVIDER_FILE",
+		"K8SENSE_CONFIG_CLUSTER_INVENTORY_LABEL_SELECTOR",
+		"K8SENSE_CONFIG_CLUSTER_INVENTORY_ROOT_RECONCILE_INTERVAL",
+		"K8SENSE_CONFIG_CLUSTER_INVENTORY_NO_CRD_CACHE_TTL",
 	}
 
 	previous := map[string]string{}
@@ -142,7 +142,7 @@ var ParseWithEnvTests = []struct {
 		name: "from_env",
 		args: []string{"go run ./cmd", "-in-cluster"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_OIDC_CLIENT_SECRET": "superSecretBotsStayAwayPlease",
+			"K8SENSE_CONFIG_OIDC_CLIENT_SECRET": "superSecretBotsStayAwayPlease",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, "superSecretBotsStayAwayPlease", conf.OidcClientSecret)
@@ -152,7 +152,7 @@ var ParseWithEnvTests = []struct {
 		name: "both_args_and_env",
 		args: []string{"go run ./cmd", "--port=9876"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_PORT": "1234",
+			"K8SENSE_CONFIG_PORT": "1234",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.NotEqual(t, uint(1234), conf.Port)
@@ -163,10 +163,10 @@ var ParseWithEnvTests = []struct {
 		name: "me_paths",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_ME_USERNAME_PATH": "user.name",
-			"HEADLAMP_CONFIG_ME_EMAIL_PATH":    "user.email",
-			"HEADLAMP_CONFIG_ME_GROUPS_PATH":   "user.groups",
-			"HEADLAMP_CONFIG_ME_USER_INFO_URL": "/oauth2/userinfo",
+			"K8SENSE_CONFIG_ME_USERNAME_PATH": "user.name",
+			"K8SENSE_CONFIG_ME_EMAIL_PATH":    "user.email",
+			"K8SENSE_CONFIG_ME_GROUPS_PATH":   "user.groups",
+			"K8SENSE_CONFIG_ME_USER_INFO_URL": "/oauth2/userinfo",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, "user.name", conf.MeUsernamePath)
@@ -189,7 +189,7 @@ var ParseWithEnvTests = []struct {
 		name: "in_cluster_context_name_env",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_IN_CLUSTER_CONTEXT_NAME": "mycluster",
+			"K8SENSE_CONFIG_IN_CLUSTER_CONTEXT_NAME": "mycluster",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, "mycluster", conf.InClusterContextName)
@@ -199,7 +199,7 @@ var ParseWithEnvTests = []struct {
 		name: "log_level_from_env",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_LOG_LEVEL": "warn",
+			"K8SENSE_CONFIG_LOG_LEVEL": "warn",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, "warn", conf.LogLevel)
@@ -209,7 +209,7 @@ var ParseWithEnvTests = []struct {
 		name: "proxy_auth_enabled_from_env",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_PROXY_AUTH": "true",
+			"K8SENSE_CONFIG_PROXY_AUTH": "true",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, true, conf.ProxyAuthEnabled)
@@ -219,11 +219,11 @@ var ParseWithEnvTests = []struct {
 		name: "proxy_auth_headers_from_env",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_PROXY_AUTH":                 "true",
-			"HEADLAMP_CONFIG_PROXY_AUTH_USERNAME_HEADER": "X-Env-User",
-			"HEADLAMP_CONFIG_PROXY_AUTH_GROUP_HEADER":    "X-Env-Group",
-			"HEADLAMP_CONFIG_PROXY_AUTH_EMAIL_HEADER":    "X-Env-Email",
-			"HEADLAMP_CONFIG_PROXY_AUTH_TOKEN_HEADER":    "X-Env-Token-Header", // #nosec G101
+			"K8SENSE_CONFIG_PROXY_AUTH":                 "true",
+			"K8SENSE_CONFIG_PROXY_AUTH_USERNAME_HEADER": "X-Env-User",
+			"K8SENSE_CONFIG_PROXY_AUTH_GROUP_HEADER":    "X-Env-Group",
+			"K8SENSE_CONFIG_PROXY_AUTH_EMAIL_HEADER":    "X-Env-Email",
+			"K8SENSE_CONFIG_PROXY_AUTH_TOKEN_HEADER":    "X-Env-Token-Header", // #nosec G101
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, true, conf.ProxyAuthEnabled)
@@ -237,7 +237,7 @@ var ParseWithEnvTests = []struct {
 		name: "watch_plugins_changes_env_kept_in_cluster",
 		args: []string{"go run ./cmd", "--in-cluster"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_WATCH_PLUGINS_CHANGES": "true",
+			"K8SENSE_CONFIG_WATCH_PLUGINS_CHANGES": "true",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, true, conf.WatchPluginsChanges)
@@ -247,8 +247,8 @@ var ParseWithEnvTests = []struct {
 		name: "watch_plugins_changes_env_kept_in_cluster_from_env",
 		args: []string{"go run ./cmd"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_IN_CLUSTER":            "true",
-			"HEADLAMP_CONFIG_WATCH_PLUGINS_CHANGES": "true",
+			"K8SENSE_CONFIG_IN_CLUSTER":            "true",
+			"K8SENSE_CONFIG_WATCH_PLUGINS_CHANGES": "true",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, true, conf.InCluster)
@@ -259,7 +259,7 @@ var ParseWithEnvTests = []struct {
 		name: "watch_plugins_changes_env_false_kept_in_cluster",
 		args: []string{"go run ./cmd", "--in-cluster"},
 		env: map[string]string{
-			"HEADLAMP_CONFIG_WATCH_PLUGINS_CHANGES": "false",
+			"K8SENSE_CONFIG_WATCH_PLUGINS_CHANGES": "false",
 		},
 		verify: func(t *testing.T, conf *config.Config) {
 			assert.Equal(t, false, conf.WatchPluginsChanges)
@@ -502,9 +502,9 @@ func TestParseClusterInventoryFlags(t *testing.T) {
 
 func TestParseClusterInventoryEnv(t *testing.T) {
 	providerFile := writeClusterInventoryProviderFile(t)
-	t.Setenv("HEADLAMP_CONFIG_ENABLE_CLUSTER_INVENTORY", "true")
-	t.Setenv("HEADLAMP_CONFIG_CLUSTER_INVENTORY_PROVIDER_FILE", providerFile)
-	t.Setenv("HEADLAMP_CONFIG_CLUSTER_INVENTORY_LABEL_SELECTOR", "!headlamp.dev/ignore")
+	t.Setenv("K8SENSE_CONFIG_ENABLE_CLUSTER_INVENTORY", "true")
+	t.Setenv("K8SENSE_CONFIG_CLUSTER_INVENTORY_PROVIDER_FILE", providerFile)
+	t.Setenv("K8SENSE_CONFIG_CLUSTER_INVENTORY_LABEL_SELECTOR", "!headlamp.dev/ignore")
 
 	conf, err := config.Parse([]string{"go run ./cmd"})
 	require.NoError(t, err)
@@ -661,7 +661,7 @@ func TestOIDCTLSEnvironmentVariables(t *testing.T) {
 			name: "oidc_skip_tls_verify_from_env",
 			args: []string{"go run ./cmd"},
 			env: map[string]string{
-				"HEADLAMP_CONFIG_OIDC_SKIP_TLS_VERIFY": "true",
+				"K8SENSE_CONFIG_OIDC_SKIP_TLS_VERIFY": "true",
 			},
 			verify: func(t *testing.T, conf *config.Config) {
 				assert.Equal(t, true, conf.OidcSkipTLSVerify)
@@ -671,7 +671,7 @@ func TestOIDCTLSEnvironmentVariables(t *testing.T) {
 			name: "oidc_ca_file_from_env",
 			args: []string{"go run ./cmd"},
 			env: map[string]string{
-				"HEADLAMP_CONFIG_OIDC_CA_FILE": filepath.Join(getTestDataPath(), "valid_ca.pem"),
+				"K8SENSE_CONFIG_OIDC_CA_FILE": filepath.Join(getTestDataPath(), "valid_ca.pem"),
 			},
 			verify: func(t *testing.T, conf *config.Config) {
 				assert.Equal(t, filepath.Join(getTestDataPath(), "valid_ca.pem"), conf.OidcCAFile)
@@ -681,8 +681,8 @@ func TestOIDCTLSEnvironmentVariables(t *testing.T) {
 			name: "both_tls_options_from_env",
 			args: []string{"go run ./cmd"},
 			env: map[string]string{
-				"HEADLAMP_CONFIG_OIDC_SKIP_TLS_VERIFY": "true",
-				"HEADLAMP_CONFIG_OIDC_CA_FILE":         filepath.Join(getTestDataPath(), "valid_ca.pem"),
+				"K8SENSE_CONFIG_OIDC_SKIP_TLS_VERIFY": "true",
+				"K8SENSE_CONFIG_OIDC_CA_FILE":         filepath.Join(getTestDataPath(), "valid_ca.pem"),
 			},
 			verify: func(t *testing.T, conf *config.Config) {
 				assert.Equal(t, true, conf.OidcSkipTLSVerify)
@@ -962,7 +962,7 @@ func TestDefaultHeadlampKubeConfigFile(t *testing.T) {
 func TestProxyAuthFlagOverridesEnv(t *testing.T) {
 	// Single header override.
 	t.Run("flag_overrides_env_username_header", func(t *testing.T) {
-		t.Setenv("HEADLAMP_CONFIG_PROXY_AUTH_USERNAME_HEADER", "X-Env-User")
+		t.Setenv("K8SENSE_CONFIG_PROXY_AUTH_USERNAME_HEADER", "X-Env-User")
 
 		conf, err := config.Parse([]string{"go run ./cmd", "--proxy-auth-username-header=X-Flag-User"})
 		require.NoError(t, err)
@@ -972,11 +972,11 @@ func TestProxyAuthFlagOverridesEnv(t *testing.T) {
 	// All proxy auth flags override corresponding env vars.
 	t.Run("flag_overrides_env_all_proxy_auth", func(t *testing.T) {
 		for k, v := range map[string]string{
-			"HEADLAMP_CONFIG_PROXY_AUTH":                 "false",
-			"HEADLAMP_CONFIG_PROXY_AUTH_USERNAME_HEADER": "X-Env-User",
-			"HEADLAMP_CONFIG_PROXY_AUTH_GROUP_HEADER":    "X-Env-Group",
-			"HEADLAMP_CONFIG_PROXY_AUTH_EMAIL_HEADER":    "X-Env-Email",
-			"HEADLAMP_CONFIG_PROXY_AUTH_TOKEN_HEADER":    "X-Env-Token-Header", // #nosec G101
+			"K8SENSE_CONFIG_PROXY_AUTH":                 "false",
+			"K8SENSE_CONFIG_PROXY_AUTH_USERNAME_HEADER": "X-Env-User",
+			"K8SENSE_CONFIG_PROXY_AUTH_GROUP_HEADER":    "X-Env-Group",
+			"K8SENSE_CONFIG_PROXY_AUTH_EMAIL_HEADER":    "X-Env-Email",
+			"K8SENSE_CONFIG_PROXY_AUTH_TOKEN_HEADER":    "X-Env-Token-Header", // #nosec G101
 		} {
 			t.Setenv(k, v)
 		}

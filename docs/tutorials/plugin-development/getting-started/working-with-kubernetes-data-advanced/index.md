@@ -43,8 +43,8 @@ By the end of this tutorial, you'll have:
 Before starting, ensure you have:
 
 - ✅ Completed [Tutorial 4: Working with Kubernetes Data](../working-with-kubernetes-data/)
-- ✅ Your `hello-headlamp` plugin with the Overview page showing namespaces and API server version
-- ✅ Headlamp running with a connected cluster
+- ✅ Your `hello-k8sense` plugin with the Overview page showing namespaces and API server version
+- ✅ K8sense running with a connected cluster
 
 **Time to complete:** ~30 minutes
 
@@ -59,14 +59,14 @@ While `K8s.ResourceClasses` provides built-in classes for standard Kubernetes re
 
 ### Understanding the Building Blocks
 
-Headlamp provides these base types for creating resource classes:
+K8sense provides these base types for creating resource classes:
 
 ```tsx
 import {
   KubeObject,
   KubeObjectInterface,
   KubeMetadata,
-} from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
+} from '@kinvolk/k8sense-plugin/lib/k8s/cluster';
 ```
 
 | Type | Purpose |
@@ -83,7 +83,7 @@ Let's create a custom Pod class with helper methods. First, create a new file `s
 import {
   KubeObject,
   KubeObjectInterface,
-} from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
+} from '@kinvolk/k8sense-plugin/lib/k8s/cluster';
 
 // Define the Pod spec interface (simplified)
 interface PodSpec {
@@ -178,8 +178,8 @@ import {
   K8s,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import {
   Typography,
   Box,
@@ -299,7 +299,7 @@ pod.age              // string - formatted age like "5h 30m"
 
 ## Using Your Custom Resource Class
 
-The `KubeObject` base class provides many built-in methods and hooks. While we focus on `useList` and `useGet` below, you can refer to the [KubeObject API documentation](https://headlamp.dev/docs/latest/development/api/lib/k8s/KubeObject/classes/KubeObject) for the full list of capabilities, including:
+The `KubeObject` base class provides many built-in methods and hooks. While we focus on `useList` and `useGet` below, you can refer to the [KubeObject API documentation](https://k8sense.dev/docs/latest/development/api/lib/k8s/KubeObject/classes/KubeObject) for the full list of capabilities, including:
 
 ### useList() Hook
 
@@ -373,7 +373,7 @@ There are several ways to modify resources:
 
 ### Pod Eviction (Subresource POST)
 
-Building on our `MyPod` example, let's add a "one-click" eviction feature. This demonstrates how to use **subresources** (like `/eviction`) and shows off Headlamp's automatic UI updates.
+Building on our `MyPod` example, let's add a "one-click" eviction feature. This demonstrates how to use **subresources** (like `/eviction`) and shows off K8sense's automatic UI updates.
 
 ### Step 1: Add Evict Method to MyPod Class
 
@@ -383,8 +383,8 @@ Update your `src/resources/pod.ts` to include an `evict` helper. This method use
 import {
   KubeObject,
   KubeObjectInterface,
-} from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
-import { ApiProxy } from '@kinvolk/headlamp-plugin/lib';
+} from '@kinvolk/k8sense-plugin/lib/k8s/cluster';
+import { ApiProxy } from '@kinvolk/k8sense-plugin/lib';
 
 // ... (keep your existing interfaces)
 
@@ -427,9 +427,9 @@ import {
   K8s,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+} from '@kinvolk/k8sense-plugin/lib';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 import {
   Typography,
   Box,
@@ -592,7 +592,7 @@ You've mastered advanced Kubernetes data patterns:
 import {
   KubeObject,
   KubeObjectInterface,
-} from '@kinvolk/headlamp-plugin/lib/k8s/cluster';
+} from '@kinvolk/k8sense-plugin/lib/k8s/cluster';
 
 interface MyResourceInterface extends KubeObjectInterface {
   spec: { /* your spec fields */ };
@@ -627,6 +627,6 @@ const [item, error] = MyResource.useGet('name', 'namespace');
 
 ### Useful Links
 
-- [KubeObject API Reference](https://headlamp.dev/docs/latest/development/api/lib/k8s/KubeObject/classes/KubeObject)
-- [ApiProxy API Reference](https://headlamp.dev/docs/latest/development/api/classes/lib_k8s_apiProxy.ApiProxy/)
+- [KubeObject API Reference](https://k8sense.dev/docs/latest/development/api/lib/k8s/KubeObject/classes/KubeObject)
+- [ApiProxy API Reference](https://k8sense.dev/docs/latest/development/api/classes/lib_k8s_apiProxy.ApiProxy/)
 - [Kubernetes API Concepts](https://kubernetes.io/docs/reference/using-api/api-concepts/)

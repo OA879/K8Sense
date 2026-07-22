@@ -550,12 +550,12 @@ func TestSetHeader(t *testing.T) {
 			},
 		},
 		{
-			name: "cache return X-HEADLAMP-CACHE as true",
+			name: "cache return X-K8SENSE-CACHE as true",
 			cacheData: k8cache.CachedResponseData{
 				StatusCode: 200,
 				Headers: http.Header{
 					"Content-Type":     {"application/json"},
-					"X-HEADLAMP-CACHE": {"true"},
+					"X-K8SENSE-CACHE": {"true"},
 				},
 			},
 		},

@@ -3,30 +3,30 @@ title: Local Cluster
 sidebar_position: 6
 ---
 
-This is the Headlamp Local Cluster Setup Guide. If you are interested in learning how to run a cluster locally with Headlamp, then you are at the right place.
+This is the K8sense Local Cluster Setup Guide. If you are interested in learning how to run a cluster locally with K8sense, then you are at the right place.
 
 ## Introduction
 
-Kubernetes is powerful, but getting started can be intimidating. Until now, Headlamp required users to bring their own Kubernetes cluster. This meant setting up infrastructure, managing configurations, and often incurring cloud costs. For developers and Kubernetes operators who just want to test an app or learn Kubernetes basics, this setup was a barrier.
+Kubernetes is powerful, but getting started can be intimidating. Until now, K8sense required users to bring their own Kubernetes cluster. This meant setting up infrastructure, managing configurations, and often incurring cloud costs. For developers and Kubernetes operators who just want to test an app or learn Kubernetes basics, this setup was a barrier.
 
-With the new Local Cluster feature, Headlamp removes that friction. You can now create and manage a fully functional Kubernetes cluster directly from the Headlamp UI. No terminal, no cloud provider, no YAML required. This makes Kubernetes more accessible than ever, especially for:
+With the new Local Cluster feature, K8sense removes that friction. You can now create and manage a fully functional Kubernetes cluster directly from the K8sense UI. No terminal, no cloud provider, no YAML required. This makes Kubernetes more accessible than ever, especially for:
 
 -   Developers testing apps before deploying to production
 -   Students and learners exploring Kubernetes for the first time
 
-Whether you're deploying a sample app or just curious about how Kubernetes works, Headlamp now gives you a one-click experience to get started locally.
+Whether you're deploying a sample app or just curious about how Kubernetes works, K8sense now gives you a one-click experience to get started locally.
 
 ## What You're Creating
 
-When you use Headlamp's Local Cluster feature, you're setting up a fully functional Kubernetes cluster on your local machine using Minikube. This cluster behaves just like a remote Kubernetes environment but runs entirely on your desktop, giving you a fast, cost-free, and isolated space to experiment and build.
+When you use K8sense's Local Cluster feature, you're setting up a fully functional Kubernetes cluster on your local machine using Minikube. This cluster behaves just like a remote Kubernetes environment but runs entirely on your desktop, giving you a fast, cost-free, and isolated space to experiment and build.
 
 This cluster is:
 
 -   **Self-contained**: No need for cloud infrastructure or external services
--   **Integrated with Headlamp**: Managed entirely through the Headlamp UI
+-   **Integrated with K8sense**: Managed entirely through the K8sense UI
 -   **Ideal for testing and learning**: Quickly deploy apps, inspect resources, and explore Kubernetes features without setup overhead.
 
-Once created, the cluster appears in your Headlamp interface like any other connected cluster. You can start and stop it, deploy applications, view logs, and interact with it using Headlamp's visual tools. It's a great way to:
+Once created, the cluster appears in your K8sense interface like any other connected cluster. You can start and stop it, deploy applications, view logs, and interact with it using K8sense's visual tools. It's a great way to:
 
 -   Try out Kubernetes features without risk
 -   Explore application behavior and resource configurations
@@ -38,9 +38,9 @@ This setup is especially useful for developers who want to iterate quickly, stud
 
 ## Key Capabilities
 
-Once your local cluster is up and running, Headlamp provides a rich set of capabilities to help you interact with it visually and intuitively. These features are designed to support learning, experimentation, and lightweight development workflows.
+Once your local cluster is up and running, K8sense provides a rich set of capabilities to help you interact with it visually and intuitively. These features are designed to support learning, experimentation, and lightweight development workflows.
 
--   **Create and delete clusters** directly from the Headlamp UI, without needing to use the terminal or write configuration files
+-   **Create and delete clusters** directly from the K8sense UI, without needing to use the terminal or write configuration files
 -   **Deploy applications** using built-in tools, including support for manifests and Helm charts
 -   **View cluster details** such as node status, resource usage, and active workloads
 -   **Start and stop the cluster** as needed, giving you control over local resource usage
@@ -52,7 +52,7 @@ Once your local cluster is up and running, Headlamp provides a rich set of capab
 -   **Install and use plugins** such as Prometheus for metrics or the AI
     Assistant for natural language queries
 
-These capabilities make Headlamp a powerful tool for working with Kubernetes locally, whether you're exploring how things work or building something new.
+These capabilities make K8sense a powerful tool for working with Kubernetes locally, whether you're exploring how things work or building something new.
 
 
 
@@ -90,7 +90,7 @@ On Windows HyperV can be used which comes built into Windows. On Mac no extra so
 
 It shows some logs during cluster creation to show what's happening. When it's done we can go to the Overview on the Home to see what's happening in our cluster.
 
-![Headlamp cluster creation information showing the cluster has been created](./cluster-started-press-home-4.png)
+![K8sense cluster creation information showing the cluster has been created](./cluster-started-press-home-4.png)
 
 The cluster has been created. How do you access it from the command line? If you use kubectl on the command line you can access your cluster with that. The `.kube/config` file has been modified with the new cluster added.
 
@@ -104,7 +104,7 @@ kubectl get pods
 #### Deploy an Application (Step 1) - Apply some YAML
 
 
-This is a demo web server deployment to copy/paste into Headlamp.
+This is a demo web server deployment to copy/paste into K8sense.
 
 ```yaml
 apiVersion: apps/v1
@@ -141,11 +141,11 @@ spec:
       targetPort: 80
   type: NodePort
 ```
-![Screen shot of headlamp showing the YAML getting applied](./apply-yaml-5.png)
+![Screen shot of k8sense showing the YAML getting applied](./apply-yaml-5.png)
 
 #### Deploy an Application (Step 2) - See the pod details that it has deployed
 
-![A screen shot of Headlamp showing the pod details that it has deployed](./pod-details-6.png)
+![A screen shot of K8sense showing the pod details that it has deployed](./pod-details-6.png)
 
 #### Deploy an Application (Step 3) - See the deployment in the browser
 
@@ -178,7 +178,7 @@ Deleting it frees all the memory and disk used by the cluster, and deletes all r
 
 #### Delete Cluster (Step 2) - confirm deletion
 
-![Headlamp is showing a dialog confirming deletion](./delete-confirmation-11.png)
+![K8sense is showing a dialog confirming deletion](./delete-confirmation-11.png)
 
 ### Starting and stopping clusters
 
@@ -188,11 +188,11 @@ Go to the Overview Home page, and you'll see a start and stop button.
 
 ![Cluster overview page showing start and stop buttons](./start-stop-buttons-12.png)
 
-![Headlamp Overview Home page showing start and stop cluster buttons](./overview-start-stop-13.png)
+![K8sense Overview Home page showing start and stop cluster buttons](./overview-start-stop-13.png)
 
 ## Post-Deployment Experience
 
-Once your local cluster is created, it becomes fully integrated into your Headlamp interface. From here, you can begin interacting with it just like you would with any other Kubernetes cluster.
+Once your local cluster is created, it becomes fully integrated into your K8sense interface. From here, you can begin interacting with it just like you would with any other Kubernetes cluster.
 
 Here's what you'll see and be able to do:
 
@@ -200,15 +200,15 @@ Here's what you'll see and be able to do:
 -   You'll have access to **real-time status indicators**, showing whether the cluster is running, stopped, or in transition
 -   You can **start or stop the cluster** with a single click, giving you control over your system's resources
 -   The **resource explorer** lets you browse workloads, services, pods, and more using a visual interface
--   You can **view and edit YAML configurations** directly in Headlamp, with syntax highlighting and validation
+-   You can **view and edit YAML configurations** directly in K8sense, with syntax highlighting and validation
 -   **Context actions** are available throughout the UI, allowing you to quickly inspect, modify, or remove resources
 
-This experience is designed to be intuitive and responsive, making it easy to explore Kubernetes concepts, troubleshoot deployments, and iterate on your work without leaving the Headlamp UI.
+This experience is designed to be intuitive and responsive, making it easy to explore Kubernetes concepts, troubleshoot deployments, and iterate on your work without leaving the K8sense UI.
 
 
 ## What You Can Do Next
 
-With your local cluster running, you can begin exploring Kubernetes in a hands-on way. Headlamp makes it easy to:
+With your local cluster running, you can begin exploring Kubernetes in a hands-on way. K8sense makes it easy to:
 
 -   Familiarize yourself with core concepts like pods, services, and deployments
 -   Experiment with resource configurations using the YAML editor
@@ -238,7 +238,7 @@ This is a safe space to learn, explore, and build without needing cloud infrastr
 
 ## Roadmap
 
-Headlamp Local is growing to support more flexible and complete local Kubernetes experiences. Upcoming improvements include:
+K8sense Local is growing to support more flexible and complete local Kubernetes experiences. Upcoming improvements include:
 
 -   Support for **Windows nodes**, enabling local testing across operating systems
 -   **Resource presets** for faster cluster setup based on common development needs
@@ -252,10 +252,10 @@ Headlamp Local is growing to support more flexible and complete local Kubernetes
 -   Can I run multiple clusters at once?
     -   Yes, you can run multiple clusters simultaneously.
 -   What if Minikube fails to start?
-    -   Headlamp provides error messages with details and suggestions.
+    -   K8sense provides error messages with details and suggestions.
         If one driver fails, you can try another supported option such
         as Docker, VirtualBox, or Hyper-V depending on your operating
         system.
 -   Where can I get help or report issues?
-    -   You can report issues or ask questions in the [Headlamp Plugins
-        GitHub issue tracker](https://github.com/headlamp-k8s/plugins/issues).
+    -   You can report issues or ask questions in the [K8sense Plugins
+        GitHub issue tracker](https://github.com/k8sense-k8s/plugins/issues).

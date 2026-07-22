@@ -6,7 +6,7 @@ sidebar_position: 3
 
 # Building a WhoAmI Plugin
 
-In the [Getting Started](../getting-started/) series, you learned the full toolkit for Headlamp plugin development — scaffolding, sidebar navigation, Kubernetes data fetching, pages, and more. Now let's apply that knowledge to solve a real problem: **"Who am I in this cluster?"**
+In the [Getting Started](../getting-started/) series, you learned the full toolkit for K8sense plugin development — scaffolding, sidebar navigation, Kubernetes data fetching, pages, and more. Now let's apply that knowledge to solve a real problem: **"Who am I in this cluster?"**
 
 In this tutorial, you'll build a focused, single-purpose plugin that adds a **WhoAmI** entry under the **Cluster** section in the cluster sidebar — alongside Namespaces and Nodes. When clicked, it shows the current user's identity — username, UID, and groups — just like `kubectl auth whoami`.
 
@@ -38,14 +38,14 @@ UID         abc-123-def
 Groups      [system:authenticated, developers]
 ```
 
-But when you're working in Headlamp's UI, there's no built-in way to see this identity at a glance. Let's fix that by building a plugin that calls the same Kubernetes API (`SelfSubjectReview`) and displays the result in a clean page.
+But when you're working in K8sense's UI, there's no built-in way to see this identity at a glance. Let's fix that by building a plugin that calls the same Kubernetes API (`SelfSubjectReview`) and displays the result in a clean page.
 
 ### Prerequisites
 
 Before starting, ensure you have:
 
 - Completed the [Getting Started](../getting-started/) tutorial series (at least Tutorials 1-4)
-- Headlamp running locally with a connected cluster
+- K8sense running locally with a connected cluster
 - Node.js >= 22.0.0 and npm >= 11.0.0
 - Your cluster running Kubernetes >= 1.28 (for `SelfSubjectReview` API)
 
@@ -55,7 +55,7 @@ Before starting, ensure you have:
 
 ## What You'll Build
 
-A plugin called `whoami-headlamp` that:
+A plugin called `whoami-k8sense` that:
 
 1. Adds a **WhoAmI** entry under **Cluster** in the cluster sidebar (alongside Namespaces and Nodes)
 2. Calls the `SelfSubjectReview` API to fetch the current user's identity
@@ -80,8 +80,8 @@ Scaffold a new plugin project:
 
 ```bash
 cd ~/projects
-npx --yes @kinvolk/headlamp-plugin create whoami-headlamp
-cd whoami-headlamp
+npx --yes @kinvolk/k8sense-plugin create whoami-k8sense
+cd whoami-k8sense
 ```
 
 Start the plugin in development mode:
@@ -90,7 +90,7 @@ Start the plugin in development mode:
 npm start
 ```
 
-> Make sure Headlamp is also running in a separate terminal (`npm start` in the Headlamp directory).
+> Make sure K8sense is also running in a separate terminal (`npm start` in the K8sense directory).
 
 ---
 
@@ -99,8 +99,8 @@ npm start
 Open `src/index.tsx` and replace its contents with:
 
 ```tsx
-import { registerRoute, registerSidebarEntry } from '@kinvolk/headlamp-plugin/lib';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+import { registerRoute, registerSidebarEntry } from '@kinvolk/k8sense-plugin/lib';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Typography } from '@mui/material';
 
 function WhoAmIPage() {
@@ -140,12 +140,12 @@ registerRoute({
 ### Test It
 
 1. Save the file
-2. Navigate to a cluster in Headlamp
+2. Navigate to a cluster in K8sense
 3. Expand the **Cluster** section in the sidebar
 4. You should see **WhoAmI** alongside Namespaces and Nodes
 5. Click it — you'll see the placeholder page
 
-![Screenshot of Headlamp showing the WhoAmI entry under Cluster in the sidebar alongside Namespaces and Nodes, and the placeholder page with "Loading identity..." text](./sidebar-and-placeholder.png)
+![Screenshot of K8sense showing the WhoAmI entry under Cluster in the sidebar alongside Namespaces and Nodes, and the placeholder page with "Loading identity..." text](./sidebar-and-placeholder.png)
 
 ---
 
@@ -163,9 +163,9 @@ import {
   ApiProxy,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
-import { SectionBox } from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
+import { SectionBox } from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Typography, CircularProgress, Box } from '@mui/material';
 
 // Type for the SelfSubjectReview response
@@ -291,7 +291,7 @@ Save the file and click WhoAmI in the sidebar. You should see the username displ
 
 ## Display the Identity
 
-Let's use Headlamp's `NameValueTable` component to display the identity information cleanly, matching the style of built-in resource detail pages.
+Let's use K8sense's `NameValueTable` component to display the identity information cleanly, matching the style of built-in resource detail pages.
 
 Update the `WhoAmIPage` component:
 
@@ -301,12 +301,12 @@ import {
   ApiProxy,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { getCluster } from '@kinvolk/headlamp-plugin/lib/Utils';
+} from '@kinvolk/k8sense-plugin/lib';
+import { getCluster } from '@kinvolk/k8sense-plugin/lib/Utils';
 import {
   NameValueTable,
   SectionBox,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Typography, CircularProgress, Box, Chip } from '@mui/material';
 
 interface UserInfo {
@@ -433,7 +433,7 @@ registerRoute({
 
 | Component | Purpose |
 |-----------|---------|
-| `NameValueTable` | Headlamp's built-in key-value display, matching the style of resource detail pages |
+| `NameValueTable` | K8sense's built-in key-value display, matching the style of resource detail pages |
 | `Chip` | MUI component for displaying groups as tags |
 | Extra fields | Dynamically renders any additional identity attributes the API returns |
 
@@ -452,7 +452,7 @@ Save the file and navigate to the WhoAmI page. You should see a clean table show
 
 ## Supporting Multi-Cluster
 
-Our plugin works, but there's a problem: it uses `getCluster()`, which returns only a **single** cluster name. Headlamp supports multi-cluster views where users can select and work with several clusters at once. If a user has multiple clusters selected, our plugin will only show the identity for one of them.
+Our plugin works, but there's a problem: it uses `getCluster()`, which returns only a **single** cluster name. K8sense supports multi-cluster views where users can select and work with several clusters at once. If a user has multiple clusters selected, our plugin will only show the identity for one of them.
 
 This is a common oversight in plugin development. Let's fix it by using the `useSelectedClusters()` hook, which returns **all** currently selected clusters.
 
@@ -471,12 +471,12 @@ import {
   ApiProxy,
   registerRoute,
   registerSidebarEntry,
-} from '@kinvolk/headlamp-plugin/lib';
-import { useSelectedClusters } from '@kinvolk/headlamp-plugin/lib/k8s';
+} from '@kinvolk/k8sense-plugin/lib';
+import { useSelectedClusters } from '@kinvolk/k8sense-plugin/lib/k8s';
 import {
   NameValueTable,
   SectionBox,
-} from '@kinvolk/headlamp-plugin/lib/CommonComponents';
+} from '@kinvolk/k8sense-plugin/lib/CommonComponents';
 import { Typography, CircularProgress, Box, Chip } from '@mui/material';
 
 interface UserInfo {
@@ -564,7 +564,7 @@ function ClusterIdentity({
 
 function WhoAmIPage() {
   // useSelectedClusters() returns all clusters the user currently has selected,
-  // supporting Headlamp's multi-cluster feature.
+  // supporting K8sense's multi-cluster feature.
   const selectedClusters = useSelectedClusters();
   const [clusterIdentities, setClusterIdentities] = useState<
     Record<string, { userInfo?: UserInfo; error?: string }>
@@ -661,7 +661,7 @@ registerRoute({
 | `Promise.all(...)` | Fetches identities for all clusters in parallel |
 | `SectionBox title={`WhoAmI — ${cluster}`}` | Labels each section with the cluster name so users can tell them apart |
 
-With a single cluster selected, the page looks exactly like before (just with the cluster name in the title). With multiple clusters, users see one section per cluster — matching how Headlamp's built-in list pages show resources across clusters.
+With a single cluster selected, the page looks exactly like before (just with the cluster name in the title). With multiple clusters, users see one section per cluster — matching how K8sense's built-in list pages show resources across clusters.
 
 ### Test It
 
@@ -775,4 +775,4 @@ registerSidebarEntry({
 
 - [SelfSubjectReview API](https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/self-subject-review-v1/) — Kubernetes API reference
 - [kubectl auth whoami](https://kubernetes.io/docs/reference/kubectl/generated/kubectl_auth/kubectl_auth_whoami/) — CLI equivalent
-- [Headlamp Plugin API](https://headlamp.dev/docs/latest/development/plugins/) — Plugin development docs
+- [K8sense Plugin API](https://k8sense.dev/docs/latest/development/plugins/) — Plugin development docs

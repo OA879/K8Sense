@@ -1,9 +1,9 @@
 ---
-title: HolmesGPT on Headlamp
+title: HolmesGPT on K8sense
 sidebar_position: 9
 ---
 
-# HolmesGPT on Headlamp
+# HolmesGPT on K8sense
 
 The HolmesGPT integration helps teams troubleshoot Kubernetes by turning cluster signals into clear explanations. It helps you understand what is happening and what to do next while you stay focused on the workload you are investigating.
 
@@ -11,17 +11,17 @@ This works well because the AI Assistant is context aware. It can use the cluste
 
 HolmesGPT runs as an agent in your cluster. The AI Assistant connects to that agent to provide enhanced diagnostics and troubleshooting.
 
-## Why Use HolmesGPT with Headlamp
+## Why Use HolmesGPT with K8sense
 
 Troubleshooting often requires pulling signals from many places. Logs show one symptom. Events show another. Resource state adds more detail, but it can still be hard to see the cause.
 
-Headlamp already helps you inspect workloads and related resources. HolmesGPT adds reasoning on top of that context. It helps connect signals across resources and controller behavior so you can move from symptoms to likely causes faster.
+K8sense already helps you inspect workloads and related resources. HolmesGPT adds reasoning on top of that context. It helps connect signals across resources and controller behavior so you can move from symptoms to likely causes faster.
 
 This is most useful during active investigation. You can ask questions in plain language and get answers that match the workload and state you are looking at.
 
 ## Requirements
 
-- You need Headlamp with the AI Assistant plugin installed and enabled.
+- You need K8sense with the AI Assistant plugin installed and enabled.
 - You need an AI provider configured for the AI Assistant. The plugin supports multiple providers and requires your provider credentials and endpoint information.
 - You need permission to deploy resources into the cluster where you want to run the HolmesGPT agent.
 
@@ -31,9 +31,9 @@ Before you install HolmesGPT, configure the AI Assistant so it can run and answe
 
 ### Step 1: Install and enable the AI Assistant plugin
 
-The AI Assistant is available as a Headlamp plugin. Once installed and enabled, it appears inside the Headlamp UI as a chat experience.
+The AI Assistant is available as a K8sense plugin. Once installed and enabled, it appears inside the K8sense UI as a chat experience.
 
-If you are using Headlamp Desktop, you can install plugins through the Plugin Catalog.
+If you are using K8sense Desktop, you can install plugins through the Plugin Catalog.
 
 <img width="624" height="389" alt="A-plugins-catalog-highlight" src="https://github.com/user-attachments/assets/e49b1381-f3f4-4b57-861d-8e88b6d5bd45" />
 
@@ -112,9 +112,9 @@ command: ['python3', '-u', '/app/experimental/ag-ui/server-agui.py']
 kubectl apply -f rendered.yaml
 ```
 
-## Use HolmesGPT in Headlamp
+## Use HolmesGPT in K8sense
 
-Once the agent is running, open Headlamp and use the AI Assistant to troubleshoot.
+Once the agent is running, open K8sense and use the AI Assistant to troubleshoot.
 
 A good first test is to open a workload that looks unhealthy and ask a direct question. For example, you can ask what is wrong or why a pod is restarting. The AI Assistant is designed to use cluster context and provide troubleshooting help in natural language.
 
@@ -122,7 +122,7 @@ A good first test is to open a workload that looks unhealthy and ask a direct qu
 
 ## Troubleshooting
 
-### Headlamp cannot reach the HolmesGPT agent
+### K8sense cannot reach the HolmesGPT agent
 
 Start by confirming the agent pods are running and ready.
 
@@ -138,4 +138,4 @@ Also confirm the Holmes `values.yaml` provider settings match your intended prov
 
 ## Get Started
 
-Install the HolmesGPT agent in your cluster, then open Headlamp and use the AI Assistant while investigating a workload. HolmesGPT helps turn signals into explanations so you can decide what to do next with less guesswork.
+Install the HolmesGPT agent in your cluster, then open K8sense and use the AI Assistant while investigating a workload. HolmesGPT helps turn signals into explanations so you can decide what to do next with less guesswork.

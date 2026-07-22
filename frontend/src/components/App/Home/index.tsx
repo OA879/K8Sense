@@ -151,7 +151,7 @@ function HomeComponent(props: HomeComponentProps) {
 
   React.useEffect(() => {
     if (isBackstage()) {
-      window.parent.postMessage({ type: 'HEADLAMP_READY' }, '*');
+      window.parent.postMessage({ type: 'K8SENSE_READY' }, '*');
       return setupBackstageMessageReceiver();
     }
   }, []);

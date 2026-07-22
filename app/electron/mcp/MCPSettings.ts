@@ -88,8 +88,8 @@ export function saveMCPSettings(settingsPath: string, mcpSettings: MCPSettings):
  * Expand environment variables and resolve paths in arguments.
  *
  * @param args - The array of argument strings to expand.
- * @param currentCluster - The current cluster name to replace HEADLAMP_CURRENT_CLUSTER.
- * @param cluster - The specific cluster name to replace HEADLAMP_CURRENT_CLUSTER, if provided.
+ * @param currentCluster - The current cluster name to replace K8SENSE_CURRENT_CLUSTER.
+ * @param cluster - The specific cluster name to replace K8SENSE_CURRENT_CLUSTER, if provided.
  *
  * @returns The array of expanded argument strings.
  */
@@ -98,9 +98,9 @@ export function expandEnvAndResolvePaths(args: string[], cluster: string | null 
     // Replace Windows environment variables like %USERPROFILE%
     let expandedArg = arg;
 
-    // Handle HEADLAMP_CURRENT_CLUSTER placeholder
-    if (expandedArg.includes('HEADLAMP_CURRENT_CLUSTER')) {
-      expandedArg = expandedArg.replace(/HEADLAMP_CURRENT_CLUSTER/g, cluster || '');
+    // Handle K8SENSE_CURRENT_CLUSTER placeholder
+    if (expandedArg.includes('K8SENSE_CURRENT_CLUSTER')) {
+      expandedArg = expandedArg.replace(/K8SENSE_CURRENT_CLUSTER/g, cluster || '');
     }
 
     // Handle %USERPROFILE%
@@ -316,12 +316,12 @@ export async function showSettingsChangeDialog(
 }
 
 /**
- * Check if any server in the settings uses HEADLAMP_CURRENT_CLUSTER placeholder.
+ * Check if any server in the settings uses K8SENSE_CURRENT_CLUSTER placeholder.
  * This determines whether the MCP client needs to be restarted on cluster changes.
  *
  * @param settingsPath - path to settings file
  *
- * @returns True if any enabled server has HEADLAMP_CURRENT_CLUSTER in its arguments
+ * @returns True if any enabled server has K8SENSE_CURRENT_CLUSTER in its arguments
  */
 export function hasClusterDependentServers(settingsPath: string): boolean {
   return (
@@ -329,7 +329,7 @@ export function hasClusterDependentServers(settingsPath: string): boolean {
       server =>
         server.enabled &&
         server.args &&
-        server.args.some(arg => arg.includes('HEADLAMP_CURRENT_CLUSTER'))
+        server.args.some(arg => arg.includes('K8SENSE_CURRENT_CLUSTER'))
     ) || false
   );
 }

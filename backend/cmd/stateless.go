@@ -95,7 +95,7 @@ func (c *HeadlampConfig) setKeyInCache(key string, context kubeconfig.Context) e
 func (c *HeadlampConfig) handleStatelessReq(r *http.Request, kubeConfig string) (string, error) {
 	var contextKey string
 
-	userID := r.Header.Get("X-HEADLAMP-USER-ID")
+	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	targetClusterName := mux.Vars(r)["clusterName"]
 
 	contexts, contextLoadErrors, err := kubeconfig.LoadContextsFromBase64String(kubeConfig, kubeconfig.DynamicCluster)
@@ -263,7 +263,7 @@ func websocketConnContextKey(r *http.Request, clusterName string) string {
 
 // getContextKeyForRequest handles every requests. It returns context key
 // which is used to store the context in the cache. The context key is
-// unique for each user. It is found in the "X-HEADLAMP-USER-ID" parameter.
+// unique for each user. It is found in the "X-K8SENSE-USER-ID" parameter.
 // For stateless clusters it is combination of cluster name and user id.
 // For normal clusters it is just the cluster name.
 func (c *HeadlampConfig) getContextKeyForRequest(r *http.Request) (string, error) {
@@ -289,7 +289,7 @@ func (c *HeadlampConfig) getContextKeyForRequest(r *http.Request) (string, error
 	}
 
 	// This means the connection is from websocket so there won't be kubeconfig header.
-	// We get the value of X-HEADLAMP-USER-ID from the parameter and append it to the cluster name
+	// We get the value of X-K8SENSE-USER-ID from the parameter and append it to the cluster name
 	// to get the context key. This is to ensure that the context key is unique for each user.
 	if r.Header.Get("Upgrade") == "websocket" {
 		contextKey = websocketConnContextKey(r, clusterName)

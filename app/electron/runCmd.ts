@@ -285,14 +285,14 @@ export function handleRunCommand(
       ? [getPluginsScriptPath(commandData.args[0]), ...commandData.args.slice(1)]
       : commandData.args;
 
-  // If the command is 'scriptjs', we pass the HEADLAMP_RUN_SCRIPT=true
+  // If the command is 'scriptjs', we pass the K8SENSE_RUN_SCRIPT=true
   // env var so that the Headlamp or Electron process runs the script.
   const child: ChildProcessWithoutNullStreams = spawn(command, args, {
     ...commandData.options,
     shell: false,
     env: {
       ...process.env,
-      ...(commandData.command === 'scriptjs' ? { HEADLAMP_RUN_SCRIPT: 'true' } : {}),
+      ...(commandData.command === 'scriptjs' ? { K8SENSE_RUN_SCRIPT: 'true' } : {}),
     },
   });
 

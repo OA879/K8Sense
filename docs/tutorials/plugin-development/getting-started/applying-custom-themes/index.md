@@ -6,11 +6,11 @@ sidebar_position: 10
 
 # Applying Custom Themes
 
-In [Tutorial 8](../adding-plugin-settings/) we made parts of our plugin configurable through a settings page. In this tutorial we will look at a completely different kind of plugin capability: **customising the visual appearance of the entire Headlamp application**.
+In [Tutorial 8](../adding-plugin-settings/) we made parts of our plugin configurable through a settings page. In this tutorial we will look at a completely different kind of plugin capability: **customising the visual appearance of the entire K8sense application**.
 
-Headlamp provides a theming system that lets any plugin register one or more named themes. Once registered, a theme appears as a selectable option in the **Themes** section of **Settings → General**, alongside the built-in Light and Dark choices. The entire application — sidebar, navbar, buttons, backgrounds, text — re-renders in your chosen colours.
+K8sense provides a theming system that lets any plugin register one or more named themes. Once registered, a theme appears as a selectable option in the **Themes** section of **Settings → General**, alongside the built-in Light and Dark choices. The entire application — sidebar, navbar, buttons, backgrounds, text — re-renders in your chosen colours.
 
-We will build this up with a concrete, fun example: a **Christmas theme** that dresses Headlamp in festive deep greens and reds. Along the way we will also learn something equally important: **how to make your own plugin components respond to theme changes**, so they always look at home regardless of which theme the user has chosen.
+We will build this up with a concrete, fun example: a **Christmas theme** that dresses K8sense in festive deep greens and reds. Along the way we will also learn something equally important: **how to make your own plugin components respond to theme changes**, so they always look at home regardless of which theme the user has chosen.
 
 ---
 
@@ -22,7 +22,7 @@ We will build this up with a concrete, fun example: a **Christmas theme** that d
 4. [Why Your Plugin Components Should Use Theme Colours](#why-your-plugin-components-should-use-theme-colours)
 5. [Updating the Container Images Tooltip to Use Theme Colours](#updating-the-container-images-tooltip-to-use-theme-colours)
 6. [Replacing the Application Logo](#replacing-the-application-logo)
-7. [Building a White-label Headlamp Flavour](#building-a-white-label-headlamp-flavour)
+7. [Building a White-label K8sense Flavour](#building-a-white-label-k8sense-flavour)
 8. [What's Next](#whats-next)
 9. [Quick Reference](#quick-reference)
 
@@ -30,7 +30,7 @@ We will build this up with a concrete, fun example: a **Christmas theme** that d
 
 ## Introduction
 
-Headlamp's UI is built on [Material UI (MUI)](https://mui.com/). Rather than exposing the raw MUI theme object, Headlamp provides a simpler, flatter `AppTheme` structure. You set the values you care about; everything else inherits from the chosen `base` theme (`'light'` or `'dark'`).
+K8sense's UI is built on [Material UI (MUI)](https://mui.com/). Rather than exposing the raw MUI theme object, K8sense provides a simpler, flatter `AppTheme` structure. You set the values you care about; everything else inherits from the chosen `base` theme (`'light'` or `'dark'`).
 
 This keeps theming approachable — you don't need to know MUI internals — while still giving fine-grained control over the parts of the UI that matter most: the sidebar, the navbar, the primary accent colour, backgrounds, and typography.
 
@@ -42,12 +42,12 @@ By the end of this tutorial your plugin will:
 - Understand **why** plugin components must read colours from the active theme rather than hard-coding them
 - Update the **Container Images tooltip** from Tutorial 7 so its colour adapts automatically when any theme (including Christmas) is active
 - Replace the **application logo** with a custom component using `registerAppLogo`
-- Combine a custom theme and logo to produce a **white-label Headlamp flavour**
+- Combine a custom theme and logo to produce a **white-label K8sense flavour**
 
 ### Prerequisites
 
 - ✅ Completed [Tutorial 7: Extending Existing Resource Views](../extending-existing-resource-views/) (the Container Images column is the component we will improve)
-- ✅ Your `hello-headlamp` plugin running in Headlamp
+- ✅ Your `hello-k8sense` plugin running in K8sense
 
 **Time to complete:** ~20 minutes
 
@@ -58,7 +58,7 @@ By the end of this tutorial your plugin will:
 Registering a theme takes a single import and a single call in `src/index.tsx`:
 
 ```tsx
-import { registerAppTheme } from '@kinvolk/headlamp-plugin/lib';
+import { registerAppTheme } from '@kinvolk/k8sense-plugin/lib';
 
 registerAppTheme({
   name: 'Christmas',
@@ -69,14 +69,14 @@ registerAppTheme({
 
 That's it. After saving, go to **Settings → General** and your theme will appear as one of the selectable options in the **Themes** section.
 
-![Screenshot of the Headlamp General settings page showing the Theme options with "Christmas" alongside the built-in Light and Dark choices](./theme-settings.png)
+![Screenshot of the K8sense General settings page showing the Theme options with "Christmas" alongside the built-in Light and Dark choices](./theme-settings.png)
 
-The `name` field is what the user sees in the theme options — make it descriptive. Once selected, Headlamp stores the user's choice in local storage and restores it on the next visit.
+The `name` field is what the user sees in the theme options — make it descriptive. Once selected, K8sense stores the user's choice in local storage and restores it on the next visit.
 
 Now let's flesh it out into a proper Christmas theme. Replace the minimal call above with the full version:
 
 ```tsx
-import { registerAppTheme } from '@kinvolk/headlamp-plugin/lib';
+import { registerAppTheme } from '@kinvolk/k8sense-plugin/lib';
 
 registerAppTheme({
   name: 'Christmas',
@@ -120,7 +120,7 @@ registerAppTheme({
 
 Save the file, go to **Settings → General**, and choose **"Christmas"** in the **Themes** section. The sidebar turns deep festive green, the active navigation item gets a red highlight, and all interactive elements (buttons, focus rings, progress bars) switch to Christmas red.
 
-![Screenshot of Headlamp with the "Christmas" theme active, showing the deep green sidebar with a red selected item highlight and a light main content area](./christmas-theme.png)
+![Screenshot of K8sense with the "Christmas" theme active, showing the deep green sidebar with a red selected item highlight and a light main content area](./christmas-theme.png)
 
 ---
 
@@ -178,7 +178,7 @@ interface AppTheme {
 
 ## Why Your Plugin Components Should Use Theme Colours
 
-Here is the key insight for this tutorial: **registering a theme only changes how Headlamp's own built-in components look**. Any colour you hard-code in your own plugin components using a plain `style` attribute will not change when the user switches themes.
+Here is the key insight for this tutorial: **registering a theme only changes how K8sense's own built-in components look**. Any colour you hard-code in your own plugin components using a plain `style` attribute will not change when the user switches themes.
 
 Consider the Container Images tooltip we built in Tutorial 7. It renders like this:
 
@@ -197,7 +197,7 @@ Consider the Container Images tooltip we built in Tutorial 7. It renders like th
 
 If the user is running the Christmas theme, this looks fine — the red matches. But if they switch to the built-in Dark theme or the Light theme, the tooltip stays Christmas red. It is out of place; it looks like a bug.
 
-![Two side-by-side screenshots: on the left the Headlamp Christmas theme is active and the tooltip is red which looks correct; on the right the default Light theme is active but the tooltip is still Christmas red, which looks out of place](./tooltip-colour-mismatch.png)
+![Two side-by-side screenshots: on the left the K8sense Christmas theme is active and the tooltip is red which looks correct; on the right the default Light theme is active but the tooltip is still Christmas red, which looks out of place](./tooltip-colour-mismatch.png)
 
 The fix is to read the **current** primary colour from the active MUI theme at render time, using the `useTheme` hook:
 
@@ -232,8 +232,8 @@ function ContainerImagesCell({ pod }: { pod: Pod }) {
 
 Now:
 - Christmas theme active → tooltip is Christmas red (`#c0392b`)
-- Light theme active → tooltip is black (Headlamp's default primary colour)
-- Dark theme active → tooltip is white (Headlamp's default primary colour)
+- Light theme active → tooltip is black (K8sense's default primary colour)
+- Dark theme active → tooltip is white (K8sense's default primary colour)
 - Any future custom theme → tooltip automatically matches its primary colour
 
 This is the right pattern for **every** colour a plugin component displays. Whenever you would otherwise write a colour literal like `'#c0392b'` or `'rgba(255,0,0,0.8)'`, ask: *"Should this change when the user switches themes?"*. If yes, reach for `useTheme()` and pull the value from `theme.palette`.
@@ -306,14 +306,14 @@ In your existing `registerResourceTableColumnsProcessor` call, replace the inlin
 
 ```tsx
 registerResourceTableColumnsProcessor(function addContainerImagesColumn({ id, columns }) {
-  if (id !== 'headlamp-pods') {
+  if (id !== 'k8sense-pods') {
     return columns;
   }
 
   const podColumns = columns as ResourceTableColumn<Pod>[];
 
   podColumns.push({
-    id: 'hello-headlamp-container-images',
+    id: 'hello-k8sense-container-images',
     label: 'Container Images',
     getValue: (pod: Pod) => pod.spec.containers.map(c => c.image).join(', '),
     render: (pod: Pod) => <ContainerImagesCell pod={pod} />,  // ← uses useTheme internally
@@ -332,7 +332,7 @@ registerResourceTableColumnsProcessor(function addContainerImagesColumn({ id, co
 ![Screenshot of the Pods list with the Christmas theme active; the Container Images tooltip is shown with a Christmas red background, matching the sidebar and active highlights](./tooltip-christmas.png)
 
 4. Now go to **Settings → General** and choose **Light** in the **Themes** section, then hover again
-5. The tooltip is now **black** — Headlamp's default primary colour for the Light theme
+5. The tooltip is now **black** — K8sense's default primary colour for the Light theme
 
 ![Screenshot of the same Pods list with the default Light theme active; the tooltip now appears with a black background, matching the rest of the app](./tooltip-light.png)
 
@@ -342,16 +342,16 @@ The tooltip automatically follows whichever theme the user has selected, with no
 
 ## Replacing the Application Logo
 
-`registerAppLogo` lets you swap out the Headlamp logo that appears in the sidebar and the top bar. It is a natural companion to `registerAppTheme` — combine them and your users see your branding everywhere.
+`registerAppLogo` lets you swap out the K8sense logo that appears in the sidebar and the top bar. It is a natural companion to `registerAppTheme` — combine them and your users see your branding everywhere.
 
 `registerAppLogo` accepts either a **React element** (always renders the same thing) or a **React component** that receives `AppLogoProps` and can adapt to context.
 
 ### Adding a Christmas tree logo
 
-For a festive touch, let's swap the Headlamp logo for a Christmas tree. The component receives `AppLogoProps` and can adapt based on `logoType` (whether the sidebar is expanded or collapsed):
+For a festive touch, let's swap the K8sense logo for a Christmas tree. The component receives `AppLogoProps` and can adapt based on `logoType` (whether the sidebar is expanded or collapsed):
 
 ```tsx
-import { AppLogoProps, registerAppLogo } from '@kinvolk/headlamp-plugin/lib';
+import { AppLogoProps, registerAppLogo } from '@kinvolk/k8sense-plugin/lib';
 
 function ChristmasLogo({ logoType }: AppLogoProps) {
   const style = {
@@ -366,7 +366,7 @@ function ChristmasLogo({ logoType }: AppLogoProps) {
 
   return (
     <span style={{ ...style, fontSize: '1.1rem', fontWeight: 700, letterSpacing: '0.02em' }}>
-      🎄 Headlamp
+      🎄 K8sense
     </span>
   );
 }
@@ -374,20 +374,20 @@ function ChristmasLogo({ logoType }: AppLogoProps) {
 registerAppLogo(ChristmasLogo);
 ```
 
-![Screenshot of Headlamp with the Christmas theme active showing the Christmas tree emoji logo in the sidebar](./logo-christmas.png)
+![Screenshot of K8sense with the Christmas theme active showing the Christmas tree emoji logo in the sidebar](./logo-christmas.png)
 
 > **Only one logo at a time.** If multiple plugins call `registerAppLogo`, the last registration wins. This is intentional — a single logo is always shown.
 
 ---
 
-## Building a White-label Headlamp Flavour
+## Building a White-label K8sense Flavour
 
-Combining a custom theme and a custom logo is the standard pattern for shipping a **branded flavour of Headlamp** — for example, an internal platform portal, a managed Kubernetes product, or an enterprise console.
+Combining a custom theme and a custom logo is the standard pattern for shipping a **branded flavour of K8sense** — for example, an internal platform portal, a managed Kubernetes product, or an enterprise console.
 
 A typical white-label `src/index.tsx` looks like this:
 
 ```tsx
-import { registerAppLogo, registerAppTheme, AppLogoProps } from '@kinvolk/headlamp-plugin/lib';
+import { registerAppLogo, registerAppTheme, AppLogoProps } from '@kinvolk/k8sense-plugin/lib';
 
 // ── 1. Register a branded theme ───────────────────────────────────────────────
 
@@ -426,13 +426,13 @@ registerAppLogo(MyPlatformLogo);
 
 After the user chooses the **"MyPlatform"** theme in the **Themes** section of **Settings → General**, the entire application takes on the branded look — your logo, your colours, your typography.
 
-![Screenshot of Headlamp fully branded as "MyPlatform" with the custom logo and a teal-accented theme active](./white-label.png)
+![Screenshot of K8sense fully branded as "MyPlatform" with the custom logo and a teal-accented theme active](./white-label.png)
 
 ---
 
 ## What's Next
 
-You've learned how to fully customise the look of the whole Headlamp application, and — just as importantly — how to make your plugin's own components respect that customisation:
+You've learned how to fully customise the look of the whole K8sense application, and — just as importantly — how to make your plugin's own components respect that customisation:
 
 - ✅ Using `registerAppTheme` to register a named theme (the Christmas theme)
 - ✅ Understanding every field in the `AppTheme` object
@@ -440,10 +440,10 @@ You've learned how to fully customise the look of the whole Headlamp application
 - ✅ Using `useTheme()` to read the active theme's palette at render time
 - ✅ Applying this pattern to the Container Images tooltip from Tutorial 7
 - ✅ Replacing the application logo with `registerAppLogo`
-- ✅ Combining theme and logo to ship a white-label Headlamp flavour
+- ✅ Combining theme and logo to ship a white-label K8sense flavour
 
 **Coming up in Tutorial 10: Adding Custom Map Nodes**
-- Registering custom node types for the Headlamp resource map
+- Registering custom node types for the K8sense resource map
 - Controlling how your resources are visualised in the topology view
 
 ---
@@ -453,7 +453,7 @@ You've learned how to fully customise the look of the whole Headlamp application
 ### registerAppTheme
 
 ```tsx
-import { registerAppTheme } from '@kinvolk/headlamp-plugin/lib';
+import { registerAppTheme } from '@kinvolk/k8sense-plugin/lib';
 
 registerAppTheme({
   name: 'My Theme',          // shown in the Themes section of Settings → General (required)
@@ -521,7 +521,7 @@ function MyPluginComponent() {
 ### registerAppLogo
 
 ```tsx
-import { registerAppLogo, AppLogoProps } from '@kinvolk/headlamp-plugin/lib';
+import { registerAppLogo, AppLogoProps } from '@kinvolk/k8sense-plugin/lib';
 
 // Simple — a React element (always the same)
 registerAppLogo(<img src="/my-logo.svg" alt="My Logo" style={{ height: 32 }} />);

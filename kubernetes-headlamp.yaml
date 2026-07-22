@@ -32,15 +32,15 @@ spec:
             - "-in-cluster"
             - "-plugins-dir=/headlamp/plugins"
           env:
-            - name: HEADLAMP_CONFIG_TRACING_ENABLED
+            - name: K8SENSE_CONFIG_TRACING_ENABLED
               value: "true"
-            - name: HEADLAMP_CONFIG_METRICS_ENABLED
+            - name: K8SENSE_CONFIG_METRICS_ENABLED
               value: "true"
-            - name: HEADLAMP_CONFIG_OTLP_ENDPOINT
+            - name: K8SENSE_CONFIG_OTLP_ENDPOINT
               value: "otel-collector:4317"
-            - name: HEADLAMP_CONFIG_SERVICE_NAME
+            - name: K8SENSE_CONFIG_SERVICE_NAME
               value: "headlamp"
-            - name: HEADLAMP_CONFIG_SERVICE_VERSION
+            - name: K8SENSE_CONFIG_SERVICE_VERSION
               value: "latest"
           ports:
             - containerPort: 4466

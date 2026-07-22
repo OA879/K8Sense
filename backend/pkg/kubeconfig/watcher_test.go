@@ -16,7 +16,7 @@ import (
 
 //nolint:funlen
 func TestWatchAndLoadFiles(t *testing.T) {
-	if os.Getenv("HEADLAMP_RUN_INTEGRATION_TESTS") != "true" {
+	if os.Getenv("K8SENSE_RUN_INTEGRATION_TESTS") != "true" {
 		t.Skip("skipping integration test")
 	}
 

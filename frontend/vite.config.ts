@@ -21,7 +21,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 import svgr from 'vite-plugin-svgr';
 
 // Use environment variable for backend port, defaulting to 4466
-const backendPort = process.env.HEADLAMP_PORT || '4466';
+const backendPort = process.env.K8SENSE_PORT || '4466';
 const backendTarget = `http://localhost:${backendPort}`;
 const underTest = process.env.UNDER_TEST === 'true' || process.env.VITEST === 'true';
 

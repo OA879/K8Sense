@@ -21,7 +21,7 @@ Event fired when editing a resource.
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:100](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L100)
+[redux/k8senseEventSlice.ts:100](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L100)
 
 ___
 
@@ -31,4 +31,4 @@ ___
 
 #### Defined in
 
-[redux/headlampEventSlice.ts:99](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/redux/headlampEventSlice.ts#L99)
+[redux/k8senseEventSlice.ts:99](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/redux/k8senseEventSlice.ts#L99)

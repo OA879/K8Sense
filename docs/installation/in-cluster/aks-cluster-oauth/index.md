@@ -1,15 +1,15 @@
 ---
 title: AKS Cluster Setup with Azure Entra Login and RBAC Using OAuth2Proxy
-sidebar_label: "Tutorial: Headlamp on AKS with Azure Entra-ID Using OAuth2Proxy"
+sidebar_label: "Tutorial: K8sense on AKS with Azure Entra-ID Using OAuth2Proxy"
 ---
 
-This guide walks you through configuring Headlamp in an AKS cluster using OAuth2Proxy for authentication via Azure Entra ID (Microsoft Entra ID) and RBAC.
+This guide walks you through configuring K8sense in an AKS cluster using OAuth2Proxy for authentication via Azure Entra ID (Microsoft Entra ID) and RBAC.
 
 We'll cover:
 
 1. Setting up AKS with OIDC  
 2. Creating an Azure App Registration  
-3. Deploying Headlamp via Helm  
+3. Deploying K8sense via Helm  
 4. Setting up OAuth2Proxy  
 
 ---
@@ -78,36 +78,36 @@ Make sure to enable **OIDC Issuer** while creating the cluster.
 
 ---
 
-## Step 5: Deploy Headlamp to AKS
+## Step 5: Deploy K8sense to AKS
 
 ### Prerequisites:
 - Install [Helm](https://helm.sh/)
 - Download kubeconfig for the AKS cluster
 
-### Add Headlamp Helm repo:
+### Add K8sense Helm repo:
 ```bash
-helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
+helm repo add k8sense https://kubernetes-sigs.github.io/k8sense/
 helm repo update
 ```
 
 ### Create a `values.yaml` for any customizations (optional) and deploy:
 ```bash
-helm install my-headlamp headlamp/headlamp --namespace kube-system
+helm install my-k8sense k8sense/k8sense --namespace kube-system
 ```
 
-### Verify Headlamp is running:
+### Verify K8sense is running:
 ```bash
 kubectl get pods -n kube-system
 ```
 
 ### Port-forward to access the UI:
 ```bash
-kubectl port-forward svc/my-headlamp 8000:80 -n kube-system
+kubectl port-forward svc/my-k8sense 8000:80 -n kube-system
 ```
 
-Headlamp should now show an **Authentication** screen.
+K8sense should now show an **Authentication** screen.
 
-![Headlamp Authentication Screen](./headlamp_auth.png)
+![K8sense Authentication Screen](./k8sense_auth.png)
 
 ---
 
@@ -153,7 +153,7 @@ alphaConfig:
       upstreams:
         - id: main
           path: /
-          uri: http://<your-headlamp-service-name>.<your-headlamp-namespace>.svc.cluster.local
+          uri: http://<your-k8sense-service-name>.<your-k8sense-namespace>.svc.cluster.local
 ```
 
 ### Deploy OAuth2Proxy:
@@ -194,7 +194,7 @@ kubectl apply -f your-rbac-binding.yaml
 
 ## Step 8: Login Flow
 
-- Navigate to the port-forwarded Headlamp UI.
+- Navigate to the port-forwarded K8sense UI.
 - Click **Sign in**.
 - Follow the Entra login prompt.
 
@@ -202,7 +202,7 @@ kubectl apply -f your-rbac-binding.yaml
 
 Note: In a development environment, OAuth2Proxy may try to redirect to `https://` by default. For local testing, ensure your redirect URI and settings use `http://`.
 
-Once authenticated, you'll be redirected back to Headlamp and should have access to your cluster UI.
+Once authenticated, you'll be redirected back to K8sense and should have access to your cluster UI.
 
 ---
 

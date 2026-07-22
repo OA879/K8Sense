@@ -131,9 +131,9 @@ func TestParseKubeConfigInvalidJSONReturnsBadRequest(t *testing.T) {
 	handler := createHeadlampHandler(context.Background(), &c)
 
 	token := uuid.New().String()
-	require.NoError(t, os.Setenv("HEADLAMP_BACKEND_TOKEN", token))
+	require.NoError(t, os.Setenv("K8SENSE_BACKEND_TOKEN", token))
 
-	defer func() { _ = os.Unsetenv("HEADLAMP_BACKEND_TOKEN") }()
+	defer func() { _ = os.Unsetenv("K8SENSE_BACKEND_TOKEN") }()
 
 	req := httptest.NewRequestWithContext(
 		context.Background(),
@@ -141,7 +141,7 @@ func TestParseKubeConfigInvalidJSONReturnsBadRequest(t *testing.T) {
 		"/parseKubeConfig",
 		strings.NewReader("{"),
 	)
-	req.Header.Set("X-HEADLAMP_BACKEND-TOKEN", token)
+	req.Header.Set("X-K8SENSE_BACKEND-TOKEN", token)
 
 	resp := &writeCountingResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 	handler.ServeHTTP(resp, req)
@@ -309,7 +309,7 @@ func TestStatelessClusterApiRequest(t *testing.T) {
 			handler := createHeadlampHandler(context.Background(), &c)
 			headers := map[string]string{
 				"KUBECONFIG":         kubeConfig,
-				"X-HEADLAMP-USER-ID": tc.userID,
+				"X-K8SENSE-USER-ID": tc.userID,
 			}
 			requestPath := fmt.Sprintf("/clusters/%s/version/", tc.name)
 			req, err := http.NewRequest("GET", requestPath, nil) //nolint:noctx
@@ -395,7 +395,7 @@ current-context: raw-context
 
 	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/clusters/display-cluster/version", nil)
 	req = mux.SetURLVars(req, map[string]string{"clusterName": displayName})
-	req.Header.Set("X-HEADLAMP-USER-ID", userID)
+	req.Header.Set("X-K8SENSE-USER-ID", userID)
 
 	contextKey, err := c.handleStatelessReq(req, base64.StdEncoding.EncodeToString([]byte(rawKubeconfig)))
 	require.NoError(t, err)

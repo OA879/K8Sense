@@ -22,7 +22,7 @@ export class HeadlampPage {
   private testURL: string;
 
   constructor(private page: Page) {
-    this.testURL = process.env.HEADLAMP_TEST_URL || '/';
+    this.testURL = process.env.K8SENSE_TEST_URL || '/';
   }
 
   async a11y() {

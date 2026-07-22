@@ -1,12 +1,12 @@
 ---
-title: "Tutorial 1: Running Headlamp from Source"
+title: "Tutorial 1: Running K8sense from Source"
 sidebar_label: "1. Running from Source"
 sidebar_position: 2
 ---
 
-# Running Headlamp from Source
+# Running K8sense from Source
 
-This tutorial guides you through building and running Headlamp from source code. By the end, you'll have Headlamp running locally in development mode—ready for plugin development or contributing to the project.
+This tutorial guides you through building and running K8sense from source code. By the end, you'll have K8sense running locally in development mode—ready for plugin development or contributing to the project.
 
 ---
 
@@ -28,14 +28,14 @@ This tutorial guides you through building and running Headlamp from source code.
 
 ## Introduction
 
-**Headlamp** is an open-source, extensible Kubernetes web UI. It provides:
+**K8sense** is an open-source, extensible Kubernetes web UI. It provides:
 
 - A clean, modern interface for managing Kubernetes clusters
 - Multi-cluster support
 - A powerful plugin system for customization
 - Desktop and in-cluster deployment options
 
-Headlamp has three main components:
+K8sense has three main components:
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -43,7 +43,7 @@ Headlamp has three main components:
 | **Backend** | Go | API server that proxies requests to Kubernetes |
 | **Desktop App** | Electron | Native app wrapper for macOS, Windows, Linux |
 
-Building from source lets you modify Headlamp, develop plugins with live reload, and contribute to the project.
+Building from source lets you modify K8sense, develop plugins with live reload, and contribute to the project.
 
 ---
 
@@ -83,29 +83,29 @@ git --version     # Any recent version
 
 ### Option A: Fork First (for contributors)
 
-1. Fork the repo at [github.com/kubernetes-sigs/headlamp](https://github.com/kubernetes-sigs/headlamp)
+1. Fork the repo at [github.com/kubernetes-sigs/k8sense](https://github.com/kubernetes-sigs/k8sense)
 2. Clone your fork:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/headlamp.git
-cd headlamp
+git clone https://github.com/YOUR_USERNAME/k8sense.git
+cd k8sense
 ```
 
 ### Option B: Clone Directly
 
 ```bash
-git clone https://github.com/kubernetes-sigs/headlamp.git
-cd headlamp
+git clone https://github.com/kubernetes-sigs/k8sense.git
+cd k8sense
 ```
 
 ---
 
 ## Repository Structure
 
-Headlamp is organized as a monorepo with three main components: a React **frontend** for the UI, a Go **backend** that proxies requests to Kubernetes, and an Electron **app** for the desktop version. All build commands are orchestrated from the root `package.json`.
+K8sense is organized as a monorepo with three main components: a React **frontend** for the UI, a Go **backend** that proxies requests to Kubernetes, and an Electron **app** for the desktop version. All build commands are orchestrated from the root `package.json`.
 
 ```
-headlamp/
+k8sense/
 ├── frontend/          # React/TypeScript web UI
 │   ├── src/           # Source code, components, and tests
 │   └── package.json   # Frontend dependencies
@@ -121,7 +121,7 @@ headlamp/
 │
 ├── plugins/           # Plugin system
 │   ├── examples/      # Example plugins to learn from
-│   └── headlamp-plugin/  # Plugin development tools
+│   └── k8sense-plugin/  # Plugin development tools
 │
 ├── docs/              # Documentation (markdown)
 ├── package.json       # Root scripts for building/running
@@ -170,14 +170,14 @@ This runs `backend:build` and `frontend:build` sequentially.
 ### Build Individually
 
 ```bash
-# Build backend only (compiles Go → backend/headlamp-server binary)
+# Build backend only (compiles Go → backend/k8sense-server binary)
 npm run backend:build
 
 # Build frontend only (compiles TypeScript → frontend/build/)
 npm run frontend:build
 ```
 
-> **Note**: Building creates the artifacts but doesn't run them. See the next section to start Headlamp.
+> **Note**: Building creates the artifacts but doesn't run them. See the next section to start K8sense.
 
 ---
 
@@ -199,9 +199,9 @@ This starts both backend and frontend with live reload. You'll see color-coded o
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend API: [http://localhost:4466](http://localhost:4466)
 
-Open http://localhost:3000 in your browser. You should see Headlamp's welcome screen:
+Open http://localhost:3000 in your browser. You should see K8sense's welcome screen:
 
-![Screenshot of Headlamp running in a web browser showing the welcome screen](./headlamp-browser.png)
+![Screenshot of K8sense running in a web browser showing the welcome screen](./k8sense-browser.png)
 
 ### Option 2: Run Separately (Two Terminals)
 
@@ -234,7 +234,7 @@ Builds frontend and runs the complete Electron app:
 npm run app:start
 ```
 
-![Screenshot of the Headlamp desktop application window](./headlamp-desktop-app.png)
+![Screenshot of the K8sense desktop application window](./k8sense-desktop-app.png)
 
 ### Option 2: App-Only Mode (Development)
 
@@ -258,9 +258,9 @@ npm run start:with-app
 
 ## Connect to a Kubernetes Cluster
 
-Headlamp automatically detects Kubernetes clusters from your kubeconfig file. By default, it looks for the file at `~/.kube/config` on macOS/Linux or `%USERPROFILE%\.kube\config` on Windows. If you have multiple clusters configured, Headlamp will show all of them and let you switch between them.
+K8sense automatically detects Kubernetes clusters from your kubeconfig file. By default, it looks for the file at `~/.kube/config` on macOS/Linux or `%USERPROFILE%\.kube\config` on Windows. If you have multiple clusters configured, K8sense will show all of them and let you switch between them.
 
-> **Already have a cluster?** If you already have `kubectl` working with a cluster (try `kubectl get nodes`), you can skip to the next section—Headlamp will pick it up automatically.
+> **Already have a cluster?** If you already have `kubectl` working with a cluster (try `kubectl get nodes`), you can skip to the next section—K8sense will pick it up automatically.
 
 ### Quick Setup with minikube
 
@@ -272,9 +272,9 @@ minikube start
 kubectl get nodes
 ```
 
-Now refresh Headlamp, it should detect your cluster automatically.
+Now refresh K8sense, it should detect your cluster automatically.
 
-![Screenshot of Headlamp cluster overview showing minikube with resource metrics and sidebar navigation](./headlamp-with-cluster.png)
+![Screenshot of K8sense cluster overview showing minikube with resource metrics and sidebar navigation](./k8sense-with-cluster.png)
 
 ---
 
@@ -296,8 +296,8 @@ lsof -i :4466  # macOS/Linux
 Ensure the binary exists:
 
 ```bash
-ls backend/headlamp-server  # macOS/Linux
-dir backend\headlamp-server.exe  # Windows
+ls backend/k8sense-server  # macOS/Linux
+dir backend\k8sense-server.exe  # Windows
 ```
 
 If missing, rebuild:
@@ -317,7 +317,7 @@ go version      # Need ≥1.25.9
 
 ### kubeconfig Not Found
 
-Headlamp looks for `~/.kube/config` by default. Verify it exists:
+K8sense looks for `~/.kube/config` by default. Verify it exists:
 
 ```bash
 cat ~/.kube/config  # macOS/Linux
@@ -338,21 +338,21 @@ npm run build
 
 ## Next Steps
 
-🎉 **Congratulations!** You now have Headlamp running from source!
+🎉 **Congratulations!** You now have K8sense running from source!
 
 Here's where to go next:
 
-- **[Tutorial 2: Creating Your First Plugin](../creating-your-first-plugin/)** — Create your first Headlamp plugin
-- **[Architecture Overview](https://headlamp.dev/docs/latest/development/architecture/)** — Understand how Headlamp is built
-- **[Frontend Development](https://headlamp.dev/docs/latest/development/frontend/)** — Deep dive into the Frontend
-- **[Backend Development](https://headlamp.dev/docs/latest/development/backend/)** — Learn about the Backend Server
-- **[Contributing Guidelines](https://headlamp.dev/docs/latest/contributing/)** — How to submit changes
+- **[Tutorial 2: Creating Your First Plugin](../creating-your-first-plugin/)** — Create your first K8sense plugin
+- **[Architecture Overview](https://k8sense.dev/docs/latest/development/architecture/)** — Understand how K8sense is built
+- **[Frontend Development](https://k8sense.dev/docs/latest/development/frontend/)** — Deep dive into the Frontend
+- **[Backend Development](https://k8sense.dev/docs/latest/development/backend/)** — Learn about the Backend Server
+- **[Contributing Guidelines](https://k8sense.dev/docs/latest/contributing/)** — How to submit changes
 
 ### Get Help
 
-- 💬 [#headlamp on Kubernetes Slack](https://kubernetes.slack.com/messages/headlamp)
-- 🐛 [GitHub Issues](https://github.com/kubernetes-sigs/headlamp/issues)
-- 📖 [FAQ](https://headlamp.dev/docs/latest/faq/)
+- 💬 [#k8sense on Kubernetes Slack](https://kubernetes.slack.com/messages/k8sense)
+- 🐛 [GitHub Issues](https://github.com/kubernetes-sigs/k8sense/issues)
+- 📖 [FAQ](https://k8sense.dev/docs/latest/faq/)
 
 ---
 

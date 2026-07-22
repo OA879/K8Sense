@@ -1,9 +1,9 @@
 ---
-title: How to Set Up Headlamp on AKS with Azure Entra-ID as the OIDC provider
-sidebar_label: "Tutorial: Headlamp on AKS with Azure Entra-ID"
+title: How to Set Up K8sense on AKS with Azure Entra-ID as the OIDC provider
+sidebar_label: "Tutorial: K8sense on AKS with Azure Entra-ID"
 ---
 
-This tutorial is about configuring Headlamp 0.30.1 with:
+This tutorial is about configuring K8sense 0.30.1 with:
 
 1. [Azure Entra ID OIDC](https://learn.microsoft.com/en-us/azure/aks/enable-authentication-microsoft-entra-id) for [OpenID Connect (OIDC)](https://www.microsoft.com/en-us/security/business/security-101/what-is-openid-connect-oidc) authentication
 2. [Azure AKS](https://azure.microsoft.com/en-us/products/kubernetes-service)
@@ -76,7 +76,7 @@ A successful activation of an AKS-managed Microsoft Entra ID cluster has the fol
     }
 ```
 
-## Set up Enterprise App for Headlamp integration
+## Set up Enterprise App for K8sense integration
 
 
 1. Log in to the Microsoft Azure Portal and choose `Microsoft Entra ID` from the sidebar or search menu.
@@ -87,11 +87,11 @@ A successful activation of an AKS-managed Microsoft Entra ID cluster has the fol
 
 ![App Registration Creation](./azure-app-reg-01.png)
 
-4. Enter a meaningful Name for your, for example `headlamp-oidc`. App users can see this name, and it can be changed at any time. You can have multiple app registrations with the same name.
+4. Enter a meaningful Name for your, for example `k8sense-oidc`. App users can see this name, and it can be changed at any time. You can have multiple app registrations with the same name.
 
 5. Under Supported account types, specify who can use the application. We recommend you select `Accounts in this organizational directory only` for most applications. Refer to the table for more information on each option.
 
-6. Under `Redirect URI`, select the `Web` platform, and for the purposes of this tutorial, input `http://localhost:8000/oidc-callback`. For an actual production implementation, you would replace this with the ingress url of your headlamp installation with the `/oidc-callback` path.
+6. Under `Redirect URI`, select the `Web` platform, and for the purposes of this tutorial, input `http://localhost:8000/oidc-callback`. For an actual production implementation, you would replace this with the ingress url of your k8sense installation with the `/oidc-callback` path.
 
 6. Select `Register` to complete the app registration.
 
@@ -117,18 +117,18 @@ Select the corresponding `user.read` permission, then `Add permissions`.
 
 ![App Registration Credentials](./azure-app-reg-05.png)
 
-11. With this complete, we need to record a few pieces of information used when deploying headlamp. The first two can be obtained from the `Overview` panel of the `App Registration`. You will need the `Application (client) ID` and the `Directory (tenant) ID`
+11. With this complete, we need to record a few pieces of information used when deploying k8sense. The first two can be obtained from the `Overview` panel of the `App Registration`. You will need the `Application (client) ID` and the `Directory (tenant) ID`
 
 ![App Registration Credentials](./azure-app-reg-06.png)
 
-12. Lastly, you'll need to generate a ClientSecret for headlamp to use. Select `Certificates and secrets` from the `App Registration` menu, then `New client secret`.
+12. Lastly, you'll need to generate a ClientSecret for k8sense to use. Select `Certificates and secrets` from the `App Registration` menu, then `New client secret`.
 
 13. Enter a description and expiry length, then select `Add`. Now copy the value of the newly generated client secret and record it for the next step.
 
 
-## Setting up Headlamp with EntraID OIDC
+## Setting up K8sense with EntraID OIDC
 
-Now that we have our cluster configured and our App Registration configured for OIDC auth flows, we need to deploy headlamp.
+Now that we have our cluster configured and our App Registration configured for OIDC auth flows, we need to deploy k8sense.
 
 1. First make sure you have the [Helm package manager](https://helm.sh/) installed on your local machine. There is a [Helm installation guide](https://helm.sh/docs/intro/install/) if you need to install it.
 2. Your cluster should be running and configured with EntraID.
@@ -151,25 +151,25 @@ Replace `<Your Application (client) ID>`,`<Your Application (client) Secret>`, a
 
 > Note: The `scopes` string must be comma separated so each scope is passed individually to the OIDC provider.
 
-4. Save the `values.yaml` file and Install Headlamp using helm with the following commands:
+4. Save the `values.yaml` file and Install K8sense using helm with the following commands:
 
 ```shell
-helm repo add headlamp https://kubernetes-sigs.github.io/headlamp/
-helm install headlamp-oidc headlamp/headlamp -f values.yaml --namespace=headlamp --create-namespace
+helm repo add k8sense https://kubernetes-sigs.github.io/k8sense/
+helm install k8sense-oidc k8sense/k8sense -f values.yaml --namespace=k8sense --create-namespace
 ```
 
-<!-- ![Headlamp install](./headlamp-install.jpg) -->
+<!-- ![K8sense install](./k8sense-install.jpg) -->
 
-This will install Headlamp in the headlamp namespace with the OIDC configuration from the values.yaml file.
+This will install K8sense in the k8sense namespace with the OIDC configuration from the values.yaml file.
 
-7. After a successful installation, you can access Headlamp by port-forwarding to the pod:
+7. After a successful installation, you can access K8sense by port-forwarding to the pod:
 
 Make sure the portforwarding is done to the port that you set as the callback URL in the Azure App Registration configuration. So in our case if you followed the steps above, the callback URL is <http://localhost:8000/oidc-callback>, and we should port forward to 8000.
 
 ```shell
-kubectl port-forward svc/headlamp-oidc 8000:80 -n headlamp
+kubectl port-forward svc/k8sense-oidc 8000:80 -n k8sense
 ```
 
-8. Open your web browser and go to <http://localhost:8000>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using Headlamp.
+8. Open your web browser and go to <http://localhost:8000>. Click on "sign-in." After completing the login flow successfully, you'll gain access to your Kubernetes cluster using K8sense.
 
-![Headlamp Login](./headlamp_auth_screen.png)
+![K8sense Login](./k8sense_auth_screen.png)

@@ -22,7 +22,7 @@ import { NamespacesPage } from './namespacesPage';
 test('create a namespace with the minimal editor then delete it', async ({ page }) => {
   const name = 'testing-e2e';
   const headlampPage = new HeadlampPage(page);
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 
   // If there's no namespaces permission, then we return
   const content = await page.content();

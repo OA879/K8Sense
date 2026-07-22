@@ -16,18 +16,18 @@
 
 import { expect, test } from '@playwright/test';
 
-const baseURL = process.env.HEADLAMP_TEST_URL || 'http://localhost:3000';
-const backendToken = process.env.HEADLAMP_TEST_BACKEND_TOKEN || 'headlamp';
-const shouldRun = process.env.HEADLAMP_CLUSTER_INVENTORY_E2E === 'true';
+const baseURL = process.env.K8SENSE_TEST_URL || 'http://localhost:3000';
+const backendToken = process.env.K8SENSE_TEST_BACKEND_TOKEN || 'headlamp';
+const shouldRun = process.env.K8SENSE_CLUSTER_INVENTORY_E2E === 'true';
 
 test.describe('Cluster Inventory', () => {
-  test.skip(!shouldRun, 'Set HEADLAMP_CLUSTER_INVENTORY_E2E=true to run Cluster Inventory E2E');
+  test.skip(!shouldRun, 'Set K8SENSE_CLUSTER_INVENTORY_E2E=true to run Cluster Inventory E2E');
 
   test('discovers clusters and proxies to them', async ({ request }) => {
     const configResponse = await request.get('/config', {
       baseURL,
       headers: {
-        'X-HEADLAMP_BACKEND-TOKEN': backendToken,
+        'X-K8SENSE_BACKEND-TOKEN': backendToken,
       },
     });
     expect(configResponse.status()).toBe(200);
@@ -43,7 +43,7 @@ test.describe('Cluster Inventory', () => {
       const response = await request.get(`/clusters/${clusterName}/api/v1/namespaces`, {
         baseURL,
         headers: {
-          'X-HEADLAMP_BACKEND-TOKEN': backendToken,
+          'X-K8SENSE_BACKEND-TOKEN': backendToken,
         },
       });
 

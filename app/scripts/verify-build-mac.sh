@@ -46,10 +46,10 @@ test_backend() {
 
 # Function to test Electron app
 test_electron_app() {
-  local HEADLAMP_EXEC="$1"
-  if [ -f "$HEADLAMP_EXEC" ]; then
-    echo "Found Headlamp at: $HEADLAMP_EXEC"
-    chmod +x "$HEADLAMP_EXEC"
+  local K8SENSE_EXEC="$1"
+  if [ -f "$K8SENSE_EXEC" ]; then
+    echo "Found Headlamp at: $K8SENSE_EXEC"
+    chmod +x "$K8SENSE_EXEC"
     
     echo "Running app with 10 second timeout..."
     # Create unique temporary file for output (macOS BSD mktemp -t adds random suffix automatically)
@@ -57,7 +57,7 @@ test_electron_app() {
     
     # Use perl-based timeout as timeout command is not available on macOS by default
     set +e  # Temporarily disable exit on error
-    perl -e 'alarm shift; exec @ARGV' 10 "$HEADLAMP_EXEC" list-plugins > "$OUTPUT_FILE" 2>&1
+    perl -e 'alarm shift; exec @ARGV' 10 "$K8SENSE_EXEC" list-plugins > "$OUTPUT_FILE" 2>&1
     local EXIT_CODE=$?
     set -e  # Re-enable exit on error
     
@@ -80,7 +80,7 @@ test_electron_app() {
       return 1
     fi
   else
-    echo "✗ Headlamp executable not found at $HEADLAMP_EXEC"
+    echo "✗ Headlamp executable not found at $K8SENSE_EXEC"
     return 1
   fi
 }
@@ -122,8 +122,8 @@ if [ -d "$DIST_DIR/mac" ]; then
   
   # Test Electron app
   echo "=== Verifying Electron App ==="
-  HEADLAMP_EXEC="$APP_BUNDLE/Contents/MacOS/Headlamp"
-  test_electron_app "$HEADLAMP_EXEC" || exit 1
+  K8SENSE_EXEC="$APP_BUNDLE/Contents/MacOS/Headlamp"
+  test_electron_app "$K8SENSE_EXEC" || exit 1
 else
   echo "Mac build directory not found, checking DMG contents..."
   
@@ -159,8 +159,8 @@ else
       
       # Test Electron app
       echo "=== Verifying Electron App from DMG ==="
-      HEADLAMP_EXEC="$APP_BUNDLE/Contents/MacOS/Headlamp"
-      if ! test_electron_app "$HEADLAMP_EXEC"; then
+      K8SENSE_EXEC="$APP_BUNDLE/Contents/MacOS/Headlamp"
+      if ! test_electron_app "$K8SENSE_EXEC"; then
         hdiutil detach "$MOUNT_POINT" > /dev/null 2>&1
         rm -rf "$MOUNT_POINT" || true
         exit 1

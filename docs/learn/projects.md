@@ -5,7 +5,7 @@ sidebar_position: 5
 
 # Projects
 
-Headlamp Projects makes managing Kubernetes easier by providing an application-centric view. Projects organize workloads across multiple namespaces and clusters into one logical group. This approach offers developers offers more clarity as opposed to traditional list views. The Projects feature makes collaboration, troubleshooting, and onboarding much simpler.
+K8sense Projects makes managing Kubernetes easier by providing an application-centric view. Projects organize workloads across multiple namespaces and clusters into one logical group. This approach offers developers offers more clarity as opposed to traditional list views. The Projects feature makes collaboration, troubleshooting, and onboarding much simpler.
 
 ## Why Use Projects
 
@@ -19,7 +19,7 @@ Kubernetes applications often span multiple resources and namespaces, which can 
 
 - Respecting Kubernetes RBAC so users only see resources they have permission to access
 
-Projects are built on native Kubernetes resources with no custom CRDs required. Headlamp adds a visual layer that brings these resources together, lowering the barrier to entry and making Kubernetes more approachable.
+Projects are built on native Kubernetes resources with no custom CRDs required. K8sense adds a visual layer that brings these resources together, lowering the barrier to entry and making Kubernetes more approachable.
 
 ## Creating a Project
 
@@ -77,7 +77,7 @@ Resource navigation across multiple clusters and namespaces can be slow and erro
 
 ![Project Access](https://github.com/user-attachments/assets/c0e56948-6fdd-4a4e-b678-7cb5418cb9a3)
 
-Managing permissions in Kubernetes can be confusing often making developer access unclear. The Access tab provides clarity and safety by showing who can interact with project resources. Headlamp respects Kubernetes RBAC, so users only see and manage what they are allowed to, reducing mistakes and improving security.
+Managing permissions in Kubernetes can be confusing often making developer access unclear. The Access tab provides clarity and safety by showing who can interact with project resources. K8sense respects Kubernetes RBAC, so users only see and manage what they are allowed to, reducing mistakes and improving security.
 
 ### Map Tab
 
@@ -101,6 +101,6 @@ Triage slows when logs and metrics are scattered across tools and clusters. Proj
 
 ## Get Started Today
 
-Headlamp Projects make Kubernetes simpler, and more application focused. Create a project, link resources, and give your team a clear space to collaborate.
+K8sense Projects make Kubernetes simpler, and more application focused. Create a project, link resources, and give your team a clear space to collaborate.
 
-Open Headlamp, select Projects, and start organizing your applications for faster onboarding, easier troubleshooting, and better team alignment.
+Open K8sense, select Projects, and start organizing your applications for faster onboarding, easier troubleshooting, and better team alignment.

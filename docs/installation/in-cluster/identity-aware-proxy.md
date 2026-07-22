@@ -3,18 +3,18 @@ title: Accessing using Identity-Aware Proxies
 sidebar_label: Identity-Aware Proxy
 ---
 
-Headlamp can be placed behind an identity-aware proxy (IAP) such as [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) or Google Cloud IAP. When configured, Headlamp will trust the user information provided by the proxy via HTTP headers and seamlessly bypass the internal login screen. When identity aware proxy is enabled, the proxy should be trustable. This means that the proxy should be deployed in a way that it is not exposed to the public internet and that it is not possible for an attacker to impersonate the proxy. The proxy should also be configured to inject the correct headers into the request to Headlamp. Backend does not maintain any persistent session, it relies on the headers injected. 
-**Important:** the trusted proxy or ingress must strip, reject, or overwrite any incoming client-supplied identity headers before forwarding the request to Headlamp. This includes the default `X-Forwarded-*` headers as well as any custom headers configured with `-proxy-auth-username-header`, `-proxy-auth-group-header`, `-proxy-auth-email-header`, or `-proxy-auth-token-header`. Otherwise, a client could spoof these headers and impersonate another user if Headlamp is reachable without that protection at the edge.
+K8sense can be placed behind an identity-aware proxy (IAP) such as [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) or Google Cloud IAP. When configured, K8sense will trust the user information provided by the proxy via HTTP headers and seamlessly bypass the internal login screen. When identity aware proxy is enabled, the proxy should be trustable. This means that the proxy should be deployed in a way that it is not exposed to the public internet and that it is not possible for an attacker to impersonate the proxy. The proxy should also be configured to inject the correct headers into the request to K8sense. Backend does not maintain any persistent session, it relies on the headers injected. 
+**Important:** the trusted proxy or ingress must strip, reject, or overwrite any incoming client-supplied identity headers before forwarding the request to K8sense. This includes the default `X-Forwarded-*` headers as well as any custom headers configured with `-proxy-auth-username-header`, `-proxy-auth-group-header`, `-proxy-auth-email-header`, or `-proxy-auth-token-header`. Otherwise, a client could spoof these headers and impersonate another user if K8sense is reachable without that protection at the edge.
 
 ## Configuration
 
-To enable identity-aware proxy authentication, set the following argument or environment variable on the Headlamp server:
+To enable identity-aware proxy authentication, set the following argument or environment variable on the K8sense server:
 
-- `-proxy-auth=true` or env var `HEADLAMP_CONFIG_PROXY_AUTH=true`
+- `-proxy-auth=true` or env var `K8SENSE_CONFIG_PROXY_AUTH=true`
 
-By default, Headlamp expects the proxy to pass the authenticated username in the `X-Forwarded-User` header. If a valid username is found, Headlamp backend establishes a session for that user based on the token passed in. UI treats the request as authenticated based on trusted headers and bypasses the login screen. 
+By default, K8sense expects the proxy to pass the authenticated username in the `X-Forwarded-User` header. If a valid username is found, K8sense backend establishes a session for that user based on the token passed in. UI treats the request as authenticated based on trusted headers and bypasses the login screen. 
 
-You can customize the headers Headlamp looks for using the following flags:
+You can customize the headers K8sense looks for using the following flags:
 
 - `-proxy-auth-username-header`: Header name for the username (default: `X-Forwarded-User`)
 - `-proxy-auth-group-header`: Header name for the user's groups (default: `X-Forwarded-Group`)
@@ -23,25 +23,25 @@ You can customize the headers Headlamp looks for using the following flags:
 
 ### Kubernetes API Server Authentication
 
-When using an identity-aware proxy for the Headlamp UI, Headlamp still needs a way to authenticate with the Kubernetes API Server on behalf of the user. 
+When using an identity-aware proxy for the K8sense UI, K8sense still needs a way to authenticate with the Kubernetes API Server on behalf of the user. 
 
-By default, Headlamp will use its own in-cluster Service Account (or provided kubeconfig) to talk to the API Server. The proxy handles user identification for the UI, but Headlamp handles Kubernetes authorization.
+By default, K8sense will use its own in-cluster Service Account (or provided kubeconfig) to talk to the API Server. The proxy handles user identification for the UI, but K8sense handles Kubernetes authorization.
 
-If you instead want Headlamp to forward the proxy's authentication token directly to the Kubernetes API Server (for example, if your proxy issues valid Kubernetes OIDC `id_token`s), you can specify the header containing the raw token value:
+If you instead want K8sense to forward the proxy's authentication token directly to the Kubernetes API Server (for example, if your proxy issues valid Kubernetes OIDC `id_token`s), you can specify the header containing the raw token value:
 
- - `-proxy-auth-token-header`: Header name containing the raw token only (default: `X-Forwarded-Id-Token`). Do not include the `Bearer ` prefix in the header value. If set, Headlamp will extract the token and send it as `Authorization: Bearer <token>` for requests to the Kubernetes API Server.
+ - `-proxy-auth-token-header`: Header name containing the raw token only (default: `X-Forwarded-Id-Token`). Do not include the `Bearer ` prefix in the header value. If set, K8sense will extract the token and send it as `Authorization: Bearer <token>` for requests to the Kubernetes API Server.
 
 ## Example: Traefik and oauth2-proxy Middleware
 
 A common pattern in Kubernetes is to use an Ingress Controller like Traefik alongside `oauth2-proxy` as an authentication middleware (ForwardAuth).
 
 In this setup:
-1. A user attempts to access Headlamp via Traefik.
+1. A user attempts to access K8sense via Traefik.
 2. Traefik sends the request to `oauth2-proxy` for authentication.
 3. `oauth2-proxy` authenticates the user with your designated Identity Provider (OIDC, GitHub, Google, etc.).
 4. `oauth2-proxy` returns a successful response to Traefik, injecting headers like `X-Forwarded-User` and `X-Forwarded-Email`.
-5. Traefik forwards the original request, along with the injected user headers, to Headlamp.
-6. Headlamp reads `X-Forwarded-User`, logs the user in, and serves the UI.
+5. Traefik forwards the original request, along with the injected user headers, to K8sense.
+6. K8sense reads `X-Forwarded-User`, logs the user in, and serves the UI.
 
 ### 1. Deploy OAuth2Proxy via Helm
 
@@ -125,7 +125,7 @@ Create a Traefik `Middleware` and `Ingress` that points to your `oauth2-proxy` s
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: headlamp-proxy-auth
+  name: k8sense-proxy-auth
   namespace: oauth2-proxy
 spec:
   forwardAuth:
@@ -141,7 +141,7 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: headlamp-error-redir
+  name: k8sense-error-redir
   namespace: oauth2-proxy
 spec:
   errors:
@@ -149,7 +149,7 @@ spec:
     status:
       - "401-403"
     # This sends the user to the login start page and preserves their original URL
-    query: "/oauth2/sign_in?rd=https://headlamp.example.com{url}"
+    query: "/oauth2/sign_in?rd=https://k8sense.example.com{url}"
     service:
       name: oauth2-proxy 
       port: 80
@@ -179,12 +179,12 @@ metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
     traefik.ingress.kubernetes.io/router.middlewares: oauth2-proxy-auth-headers@kubernetescrd
-  name: headlamp-oauth2
+  name: k8sense-oauth2
   namespace: oauth2-proxy
 spec:
   ingressClassName: traefik-mgmt-blue
   rules:
-  - host: headlamp.example.com
+  - host: k8sense.example.com
     http:
       paths:
       - backend:
@@ -196,38 +196,38 @@ spec:
         pathType: Prefix
 ```
 
-### 3. Configure Headlamp Ingress and Deployment
+### 3. Configure K8sense Ingress and Deployment
 
-Attach the middleware to your Headlamp `IngressRoute` and ensure the Headlamp deployment has `-proxy-auth=true` enabled:
+Attach the middleware to your K8sense `IngressRoute` and ensure the K8sense deployment has `-proxy-auth=true` enabled:
 
 ```yaml
-# Headlamp IngressRoute
+# K8sense IngressRoute
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web
-    traefik.ingress.kubernetes.io/router.middlewares: oauth2-proxy-headlamp-error-redir@kubernetescrd,oauth2-proxy-headlamp-proxy-auth@kubernetescrd
-  name: headlamp
+    traefik.ingress.kubernetes.io/router.middlewares: oauth2-proxy-k8sense-error-redir@kubernetescrd,oauth2-proxy-k8sense-proxy-auth@kubernetescrd
+  name: k8sense
   namespace: kube-system
 spec:
   ingressClassName: traefik
   rules:
-  - host: headlamp.example.com
+  - host: k8sense.example.com
     http:
       paths:
       - backend:
           service:
-            name: headlamp
+            name: k8sense
             port:
               number: 80
 ```
 
-### 4. Deploy Headlamp with the `proxy-auth` flag enabled:
+### 4. Deploy K8sense with the `proxy-auth` flag enabled:
 
 ```yaml
-# Headlamp Helm Values (values.yaml)
+# K8sense Helm Values (values.yaml)
 config:
   extraArgs:
     - "-proxy-auth=true"

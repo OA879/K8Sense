@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # Common Plugin Patterns
 
-This guide shows common patterns for Headlamp plugins with examples.
+This guide shows common patterns for K8sense plugins with examples.
 
 ## Using the Examples
 
@@ -14,9 +14,9 @@ Each pattern has a working example in the `plugins/examples/` directory. To try 
 1. Go to the example directory: `cd plugins/examples/[example-name]`
 2. Install dependencies: `npm install`
 3. Start the server: `npm start`
-4. Open Headlamp to see the plugin.
+4. Open K8sense to see the plugin.
 
-You can also find all examples on [GitHub](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples).
+You can also find all examples on [GitHub](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples).
 
 ## UI Extension Patterns
 
@@ -32,7 +32,7 @@ Show dynamic information in the top navigation bar.
 
 **Example: Pod Counter**
 
-See the [Pod Counter example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/pod-counter/). It shows how to:
+See the [Pod Counter example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/pod-counter/). It shows how to:
 - Use the K8s API to count pods.
 - Show the count in the app bar with status colors.
 - Handle loading and errors.
@@ -52,7 +52,7 @@ Add new sections to the sidebar.
 
 **Example: Sidebar Items**
 
-See the [Sidebar example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/sidebar/). It shows how to:
+See the [Sidebar example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/sidebar/). It shows how to:
 - Add top-level sidebar items.
 - Add nested items.
 - Remove sidebar items and routes.
@@ -72,7 +72,7 @@ Add custom sections to resource detail pages.
 
 **Example: Details View Enhancements**
 
-See the [Details View example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/details-view/). It shows how to:
+See the [Details View example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/details-view/). It shows how to:
 - Add custom sections to detail pages.
 - Add action buttons to the header.
 - Access and show resource data.
@@ -92,7 +92,7 @@ Add custom actions to resource tables.
 
 **Example: Table Customization**
 
-See the [Tables example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/tables/). It shows how to:
+See the [Tables example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/tables/). It shows how to:
 - Override existing table views.
 - Add context menus to rows.
 - Implement custom row actions.
@@ -110,13 +110,13 @@ Integrate with external tools and desktop app features.
 
 **Example: App Menus**
 
-See the [App Menus example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/app-menus/). It shows how to:
+See the [App Menus example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/app-menus/). It shows how to:
 - Add custom menus to the desktop app.
 - Run local commands from the app.
 - Handle app-specific functions.
 - Create desktop app integrations.
 
-The example uses `Headlamp.setAppMenu`.
+The example uses `K8sense.setAppMenu`.
 
 ### 6. Dynamic Cluster Management
 
@@ -130,7 +130,7 @@ Manage cluster connections dynamically.
 
 **Example: Dynamic Clusters**
 
-See the [Dynamic Clusters example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/dynamic-clusters/). It shows how to:
+See the [Dynamic Clusters example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/dynamic-clusters/). It shows how to:
 - Add and remove clusters dynamically.
 - Manage cluster configurations.
 - Handle cluster selection.
@@ -148,7 +148,7 @@ Create plugins with user settings.
 
 **Example: Configurable Logo**
 
-See the [Change Logo example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/change-logo/). It shows how to:
+See the [Change Logo example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/change-logo/). It shows how to:
 - Create plugin settings forms.
 - Handle user configuration.
 - Persist settings.
@@ -160,7 +160,7 @@ The example uses `registerPluginSettings`.
 
 ### 1. Custom Themes
 
-Create custom themes for Headlamp.
+Create custom themes for K8sense.
 
 **Use Cases:**
 - Corporate branding
@@ -170,7 +170,7 @@ Create custom themes for Headlamp.
 
 **Example: Custom Theme**
 
-See the [Custom Theme example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/custom-theme/). It shows how to:
+See the [Custom Theme example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/custom-theme/). It shows how to:
 - Create custom color palettes.
 - Define typography styles.
 - Register new themes.
@@ -180,7 +180,7 @@ The example uses `registerAppTheme`.
 
 ### 2. Custom App Logo
 
-Replace the default Headlamp logo.
+Replace the default K8sense logo.
 
 **Use Cases:**
 - Corporate branding
@@ -190,7 +190,7 @@ Replace the default Headlamp logo.
 
 **Example: Custom Logo**
 
-See the [Change Logo example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/change-logo/). It shows how to:
+See the [Change Logo example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/change-logo/). It shows how to:
 - Create responsive logos.
 - Handle different logo sizes.
 - Support theme-aware logos.
@@ -213,7 +213,7 @@ Create custom charts for cluster data.
 
 **Example: Resource Charts**
 
-See the [Resource Charts example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/resource-charts/). It shows how to:
+See the [Resource Charts example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/resource-charts/). It shows how to:
 - Create interactive charts.
 - Visualize Kubernetes data.
 - Implement custom dashboards.
@@ -231,7 +231,7 @@ Build custom UI panels and reusable components.
 
 **Example: UI Panels**
 
-See the [UI Panels example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/ui-panels/). It shows how to:
+See the [UI Panels example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/ui-panels/). It shows how to:
 - Create custom UI panels.
 - Build reusable components.
 - Handle complex layouts.
@@ -249,7 +249,7 @@ Customize the cluster selection UI.
 
 **Example: Cluster Chooser**
 
-See the [Cluster Chooser example](https://github.com/kubernetes-sigs/headlamp/tree/main/plugins/examples/cluster-chooser/). It shows how to:
+See the [Cluster Chooser example](https://github.com/kubernetes-sigs/k8sense/tree/main/plugins/examples/cluster-chooser/). It shows how to:
 - Customize the cluster selection UI.
 - Add custom cluster metadata.
 - Implement cluster filtering.

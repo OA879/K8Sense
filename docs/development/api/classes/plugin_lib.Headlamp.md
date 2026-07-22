@@ -1,8 +1,8 @@
-[API](../API.md) / [plugin/lib](../modules/plugin_lib.md) / Headlamp
+[API](../API.md) / [plugin/lib](../modules/plugin_lib.md) / K8sense
 
-# Class: Headlamp
+# Class: K8sense
 
-[plugin/lib](../modules/plugin_lib.md).Headlamp
+[plugin/lib](../modules/plugin_lib.md).K8sense
 
 This class is a more convenient way for plugins to call registerPlugin in
 order to register themselves.
@@ -11,7 +11,7 @@ order to register themselves.
 
 ### constructor
 
-• **new Headlamp**()
+• **new K8sense**()
 
 ## Methods
 
@@ -29,7 +29,7 @@ the name of the product.
 
 #### Defined in
 
-[plugin/lib.ts:172](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L172)
+[plugin/lib.ts:172](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L172)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 ▸ **getVersion**(): `Object`
 
-Returns the version of Headlamp as an object with a VERSION (application version) and
+Returns the version of K8sense as an object with a VERSION (application version) and
 GIT_VERSION (commit) fields. Like:
 { VERSION: 'v0.0.0', GIT_VERSION: '0000000000000}
 
@@ -45,7 +45,7 @@ GIT_VERSION (commit) fields. Like:
 
 `Object`
 
-the version of Headlamp.
+the version of K8sense.
 
 | Name | Type |
 | :------ | :------ |
@@ -54,7 +54,7 @@ the version of Headlamp.
 
 #### Defined in
 
-[plugin/lib.ts:162](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L162)
+[plugin/lib.ts:162](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L162)
 
 ___
 
@@ -62,17 +62,17 @@ ___
 
 ▸ `Static` **isRunningAsApp**(): `boolean`
 
-Returns whether Headlamp is running as a desktop app.
+Returns whether K8sense is running as a desktop app.
 
 #### Returns
 
 `boolean`
 
-true if Headlamp is running as a desktop app.
+true if K8sense is running as a desktop app.
 
 #### Defined in
 
-[plugin/lib.ts:151](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L151)
+[plugin/lib.ts:151](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L151)
 
 ___
 
@@ -93,7 +93,7 @@ const myPlugin = {
   }
 }
 
-Headlamp.registerPlugin("aPluginIdString", myPlugin)
+K8sense.registerPlugin("aPluginIdString", myPlugin)
 ```
 
 #### Parameters
@@ -109,7 +109,7 @@ Headlamp.registerPlugin("aPluginIdString", myPlugin)
 
 #### Defined in
 
-[plugin/lib.ts:106](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L106)
+[plugin/lib.ts:106](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L106)
 
 ___
 
@@ -118,7 +118,7 @@ ___
 ▸ `Static` **setAppMenu**(`appMenuFunc`): `void`
 
 Changes the app menu.
-If Headlamp is not running as a desktop app, then this method prints an error and doesn't do anything.
+If K8sense is not running as a desktop app, then this method prints an error and doesn't do anything.
 
 #### Parameters
 
@@ -132,7 +132,7 @@ If Headlamp is not running as a desktop app, then this method prints an error an
 
 #### Defined in
 
-[plugin/lib.ts:135](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L135)
+[plugin/lib.ts:135](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L135)
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 ▸ `Static` **setCluster**(`clusterReq`): `Promise`<`any`\>
 
-Configure (or update) a cluster that can then be used throughout Headlamp.
+Configure (or update) a cluster that can then be used throughout K8sense.
 If the request is successful, further calls to `K8s.useClustersConf()`
 will show the newly configured cluster.
 
@@ -157,8 +157,8 @@ bad request when running in-cluster.
 
 `Promise`<`any`\>
 
-a promise which completes to Headlamp's configuration (showing the list of configured clusters).
+a promise which completes to K8sense's configuration (showing the list of configured clusters).
 
 #### Defined in
 
-[plugin/lib.ts:123](https://github.com/kubernetes-sigs/headlamp/blob/072d2509b/frontend/src/plugin/lib.ts#L123)
+[plugin/lib.ts:123](https://github.com/kubernetes-sigs/k8sense/blob/072d2509b/frontend/src/plugin/lib.ts#L123)

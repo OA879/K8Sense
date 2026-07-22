@@ -22,7 +22,7 @@ let headlampPage: HeadlampPage;
 test.beforeEach(async ({ page }) => {
   headlampPage = new HeadlampPage(page);
 
-  await headlampPage.navigateToCluster('test', process.env.HEADLAMP_TEST_TOKEN);
+  await headlampPage.navigateToCluster('test', process.env.K8SENSE_TEST_TOKEN);
 });
 
 test('plugin settings page should have a title', async () => {
