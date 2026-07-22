@@ -34,7 +34,7 @@
     "verify-build-windows": "powershell -ExecutionPolicy Bypass -File scripts/verify-build-windows.ps1"
   },
   "build": {
-    "appId": "com.microsoft.Headlamp",
+    "appId": "io.k8sense.K8sense",
     "beforeBuild": "./scripts/build-backend.js",
     "afterPack": "./scripts/after-pack.js",
     "asar": false,
@@ -93,7 +93,7 @@
         }
       ],
       "executableName": "headlamp",
-      "maintainer": "Kinvolk <hello@kinvolk.io>",
+      "maintainer": "K8sense <support@k8sense.io>",
       "category": "Network",
       "extraResources": [
         {
@@ -102,7 +102,7 @@
       ]
     },
     "mac": {
-      "appId": "com.microsoft.Headlamp",
+      "appId": "io.k8sense.K8sense",
       "target": [
         {
           "target": "dmg",
@@ -163,15 +163,16 @@
     ],
     "publish": {
       "provider": "github",
-      "repo": "headlamp",
-      "owner": "kinvolk"
+      "owner": "OA879",
+      "repo": "K8Sense"
     },
-    "extends": null
+    "extends": null,
+    "productName": "K8sense"
   },
   "keywords": [],
   "author": {
-    "name": "Kinvolk",
-    "email": "hello@kinvolk.io"
+    "name": "K8sense",
+    "email": "support@k8sense.io"
   },
   "prettier": "@headlamp-k8s/eslint-config/prettier-config",
   "devDependencies": {
