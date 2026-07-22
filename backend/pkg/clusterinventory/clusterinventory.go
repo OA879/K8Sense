@@ -42,9 +42,9 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	inventorymetadata "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterinventory/metadata"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	inventorymetadata "github.com/OA879/K8Sense/backend/pkg/clusterinventory/metadata"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	apisv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
 	ciaclient "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned"
 	externalversions "sigs.k8s.io/cluster-inventory-api/client/informers/externalversions"

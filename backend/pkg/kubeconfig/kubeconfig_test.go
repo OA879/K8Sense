@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/config"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/config"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

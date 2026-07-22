@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 type spaHandler struct {

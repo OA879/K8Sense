@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/licence"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor/licence"
 )
 
 // GetLicence handles GET /cluster-doctor/licence — current tier, expiry,

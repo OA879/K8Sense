@@ -6,9 +6,9 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // ListRulesForCluster handles GET /cluster-doctor/rules?cluster=name. It is the

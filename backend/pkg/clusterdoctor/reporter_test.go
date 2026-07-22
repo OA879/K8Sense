@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 func sampleReport(t *testing.T) string {

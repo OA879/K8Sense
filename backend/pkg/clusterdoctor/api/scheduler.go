@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	"k8s.io/client-go/kubernetes"
 
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // schedulerTick is how often the scheduler wakes to look for due scans. The

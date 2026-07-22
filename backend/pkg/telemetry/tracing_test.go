@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	tel "github.com/kubernetes-sigs/headlamp/backend/pkg/telemetry"
+	tel "github.com/OA879/K8Sense/backend/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel"

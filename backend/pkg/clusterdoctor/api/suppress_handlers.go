@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 // suppressRequest is the body of the suppress/unsuppress/comment endpoints. A

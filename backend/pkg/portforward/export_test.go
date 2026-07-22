@@ -16,7 +16,7 @@ limitations under the License.
 
 package portforward
 
-import "github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
+import "github.com/OA879/K8Sense/backend/pkg/cache"
 
 // StorePortForwardForTest inserts a portForward entry into the cache as
 // StartPortForward would for a dynamic cluster, allowing unit tests to

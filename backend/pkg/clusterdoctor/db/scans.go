@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 // ScanSummary is one row of scan history, as shown on the HistoryPage.

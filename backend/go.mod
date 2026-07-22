@@ -1,4 +1,4 @@
-module github.com/kubernetes-sigs/headlamp/backend
+module github.com/OA879/K8Sense/backend
 
 go 1.26.0
 

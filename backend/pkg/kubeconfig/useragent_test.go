@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

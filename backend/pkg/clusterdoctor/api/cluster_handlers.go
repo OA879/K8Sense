@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 type testConnResponse struct {

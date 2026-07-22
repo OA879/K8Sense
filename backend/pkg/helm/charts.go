@@ -23,7 +23,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 
 	"helm.sh/helm/v3/cmd/helm/search"
 	"helm.sh/helm/v3/pkg/cli"

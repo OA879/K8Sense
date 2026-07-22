@@ -15,3 +15,5 @@ plugins/headlamp-plugin/headlamp-myfancy/
 plugins/examples/*/dist/
 .DS_Store
 .dev/
+backend/k8sense-server
+k8sense-server

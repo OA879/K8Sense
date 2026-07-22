@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/spa"
+	"github.com/OA879/K8Sense/backend/pkg/spa"
 )
 
 const (

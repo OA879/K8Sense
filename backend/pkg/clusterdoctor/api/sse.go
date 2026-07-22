@@ -7,7 +7,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 // ScanStatus handles GET /cluster-doctor/scan/:id/status. It's a

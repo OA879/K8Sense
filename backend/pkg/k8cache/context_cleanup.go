@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // cacheKeyBelongsToContext reports whether a k8cache entry key belongs to the

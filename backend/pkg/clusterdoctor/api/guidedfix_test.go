@@ -15,7 +15,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 func testPod(namespace, name string) *corev1.Pod {

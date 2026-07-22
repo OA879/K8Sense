@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"

@@ -22,10 +22,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/telemetry"
+	"github.com/OA879/K8Sense/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 )
 

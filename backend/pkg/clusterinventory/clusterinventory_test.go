@@ -43,8 +43,8 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	clientcmdv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 
-	inventorymetadata "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterinventory/metadata"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	inventorymetadata "github.com/OA879/K8Sense/backend/pkg/clusterinventory/metadata"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	apisv1alpha1 "sigs.k8s.io/cluster-inventory-api/apis/v1alpha1"
 	ciaclient "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned"
 	ciafake "sigs.k8s.io/cluster-inventory-api/client/clientset/versioned/fake"

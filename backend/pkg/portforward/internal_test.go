@@ -30,8 +30,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/rest"

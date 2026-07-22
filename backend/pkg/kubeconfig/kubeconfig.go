@@ -17,9 +17,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
 
-	inventorymetadata "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterinventory/metadata"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/exec"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	inventorymetadata "github.com/OA879/K8Sense/backend/pkg/clusterinventory/metadata"
+	"github.com/OA879/K8Sense/backend/pkg/exec"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/apis/clientauthentication"
 	rest "k8s.io/client-go/rest"

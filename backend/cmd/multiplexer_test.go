@@ -30,8 +30,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/client-go/tools/clientcmd/api"

@@ -19,7 +19,7 @@ package auth_test
 import (
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/auth"
 )
 
 // FuzzDecodeBase64JSON tests DecodeBase64JSON with various inputs.

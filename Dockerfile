@@ -24,7 +24,7 @@ COPY ./backend /headlamp/backend
 
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
-    cd ./backend && go build -o ./headlamp-server ./cmd/
+    cd ./backend && go build -o ./k8sense-server ./cmd/
 
 FROM --platform=${BUILDPLATFORM} node:22@sha256:e0d149b4727ac0c20d9774e801e423d7a946a0bffced886f42cfe9cd3c67820a AS frontend-build
 
@@ -83,7 +83,7 @@ RUN if command -v apt-get > /dev/null; then \
     addgroup -S headlamp && adduser -S headlamp -G headlamp; \
     fi
 
-COPY --from=backend-build --link /headlamp/backend/headlamp-server /headlamp/headlamp-server
+COPY --from=backend-build --link /headlamp/backend/k8sense-server /headlamp/k8sense-server
 COPY --from=frontend --link /headlamp/frontend/build /headlamp/frontend
 COPY --from=frontend --link /headlamp/plugins /headlamp/plugins
 COPY --from=static-plugins --link /plugins /headlamp/static-plugins
@@ -101,4 +101,4 @@ EXPOSE 4466
 
 ENV HEADLAMP_STATIC_PLUGINS_DIR=/headlamp/static-plugins
 ENV K8SENSE_RULES_DIR=/headlamp/rules
-ENTRYPOINT ["/headlamp/headlamp-server", "-html-static-dir", "/headlamp/frontend", "-plugins-dir", "/headlamp/plugins"]
+ENTRYPOINT ["/headlamp/k8sense-server", "-html-static-dir", "/headlamp/frontend", "-plugins-dir", "/headlamp/plugins"]

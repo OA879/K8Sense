@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 )

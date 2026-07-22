@@ -18,8 +18,8 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/k8cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/k8cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd/api"

@@ -17,10 +17,10 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/licence"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor/licence"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // scanTimeout bounds how long a single scan is allowed to run before its

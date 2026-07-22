@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/serviceproxy"
+	"github.com/OA879/K8Sense/backend/pkg/serviceproxy"
 )
 
 //nolint:funlen

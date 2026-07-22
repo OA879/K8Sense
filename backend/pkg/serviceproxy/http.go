@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // HTTPGetStream sends an HTTP GET request to the specified URI and forwards the

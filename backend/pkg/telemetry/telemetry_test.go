@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	cfg "github.com/kubernetes-sigs/headlamp/backend/pkg/config"
-	tel "github.com/kubernetes-sigs/headlamp/backend/pkg/telemetry"
+	cfg "github.com/OA879/K8Sense/backend/pkg/config"
+	tel "github.com/OA879/K8Sense/backend/pkg/telemetry"
 	"github.com/stretchr/testify/assert"
 )
 

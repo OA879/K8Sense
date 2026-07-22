@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 // gatedEndpoint describes one request and the gate it is expected to enforce.

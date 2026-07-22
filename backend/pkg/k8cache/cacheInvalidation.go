@@ -28,9 +28,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"

@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 // runCheck looks up a registered check by name and runs it against a fake

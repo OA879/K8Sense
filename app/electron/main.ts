@@ -115,7 +115,7 @@ const args = yargs(hideBin(process.argv))
     () => {},
     () => {
       try {
-        const backendPath = path.join(process.resourcesPath, 'headlamp-server');
+        const backendPath = path.join(process.resourcesPath, 'k8sense-server');
         const stdout = execSync(`${backendPath} list-plugins`);
         process.stdout.write(stdout);
         process.exit(0);
@@ -770,8 +770,8 @@ async function findAvailablePort(startPort: number): Promise<number> {
 
 async function startServer(flags: string[] = []): Promise<ChildProcessWithoutNullStreams> {
   const serverFilePath = isDev
-    ? path.resolve('../backend/headlamp-server')
-    : path.join(process.resourcesPath, './headlamp-server');
+    ? path.resolve('../backend/k8sense-server')
+    : path.join(process.resourcesPath, './k8sense-server');
 
   actualPort = await findAvailablePort(defaultPort);
 
@@ -1281,7 +1281,7 @@ function menusToTemplate(mainWindow: BrowserWindow | null, menusFromPlugins: App
 }
 
 async function getRunningHeadlampPIDs() {
-  const processes = await find_process('name', 'headlamp-server.*');
+  const processes = await find_process('name', 'k8sense-server.*');
   if (processes.length === 0) {
     return null;
   }
@@ -1296,7 +1296,7 @@ async function getRunningHeadlampPIDs() {
 async function getHeadlampPIDsOnPort(port: number): Promise<number[] | null> {
   try {
     // Get all Headlamp processes
-    const headlampProcesses = await find_process('name', 'headlamp-server');
+    const headlampProcesses = await find_process('name', 'k8sense-server');
     if (headlampProcesses.length === 0) {
       return null;
     }
@@ -1498,7 +1498,7 @@ function startElectron() {
               } catch (e: unknown) {
                 const killMessage = e instanceof Error ? e.message : String(e);
                 console.error(
-                  `Failed to kill headlamp-server process with PID ${pid}: ${killMessage}`
+                  `Failed to kill k8sense-server process with PID ${pid}: ${killMessage}`
                 );
               }
             });

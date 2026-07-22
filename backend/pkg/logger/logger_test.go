@@ -21,7 +21,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 )

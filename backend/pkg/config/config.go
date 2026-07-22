@@ -15,9 +15,9 @@ import (
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/providers/basicflag"
 	"github.com/knadh/koanf/providers/env"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterinventory"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/spa"
+	"github.com/OA879/K8Sense/backend/pkg/clusterinventory"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/spa"
 	"k8s.io/apimachinery/pkg/labels"
 	"sigs.k8s.io/cluster-inventory-api/pkg/access"
 )

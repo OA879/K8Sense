@@ -47,19 +47,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	auth "github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterinventory"
-	cfg "github.com/kubernetes-sigs/headlamp/backend/pkg/config"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/headlampconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/helm"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/plugins"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/portforward"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/serviceproxy"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/spa"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/telemetry"
+	auth "github.com/OA879/K8Sense/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/clusterinventory"
+	cfg "github.com/OA879/K8Sense/backend/pkg/config"
+	"github.com/OA879/K8Sense/backend/pkg/headlampconfig"
+	"github.com/OA879/K8Sense/backend/pkg/helm"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/plugins"
+	"github.com/OA879/K8Sense/backend/pkg/portforward"
+	"github.com/OA879/K8Sense/backend/pkg/serviceproxy"
+	"github.com/OA879/K8Sense/backend/pkg/spa"
+	"github.com/OA879/K8Sense/backend/pkg/telemetry"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -1400,7 +1400,7 @@ func StartHeadlampServer(config *HeadlampConfig) {
 	router := mux.NewRouter()
 
 	if config.Telemetry != nil && config.Metrics != nil {
-		router.Use(telemetry.TracingMiddleware("headlamp-server"))
+		router.Use(telemetry.TracingMiddleware("k8sense-server"))
 		router.Use(config.Metrics.RequestCounterMiddleware)
 	}
 
@@ -1544,7 +1544,7 @@ func getHelmHandler(c *HeadlampConfig, w http.ResponseWriter, r *http.Request) (
 	ctx := r.Context()
 	start := time.Now()
 
-	_, span := telemetry.CreateSpan(ctx, r, "headlamp-server", "getHelmHandler")
+	_, span := telemetry.CreateSpan(ctx, r, "k8sense-server", "getHelmHandler")
 	c.TelemetryHandler.RecordEvent(span, "Get helm handler started")
 
 	defer span.End()

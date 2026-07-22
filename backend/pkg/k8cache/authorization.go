@@ -28,10 +28,10 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	authorizationv1 "k8s.io/api/authorization/v1"

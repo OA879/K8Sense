@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // embeddedSpaHandler serves the static files embedded in the binary.

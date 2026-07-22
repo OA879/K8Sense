@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 
-	cfg "github.com/kubernetes-sigs/headlamp/backend/pkg/config"
+	cfg "github.com/OA879/K8Sense/backend/pkg/config"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"

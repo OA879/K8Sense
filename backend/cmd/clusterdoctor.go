@@ -12,11 +12,11 @@ import (
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cdapi "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/api"
-	_ "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/checks" // registers check_fn implementations
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cdapi "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/api"
+	_ "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/checks" // registers check_fn implementations
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // resolveRulesDir finds the rules/ directory: an explicit override, then the

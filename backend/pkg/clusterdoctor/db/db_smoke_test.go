@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 func TestOpenMigrateSaveAndReadScan(t *testing.T) {

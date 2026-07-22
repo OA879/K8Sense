@@ -26,7 +26,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"

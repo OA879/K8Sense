@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 // GetNotifyConfig handles GET /cluster-doctor/notifications?cluster=name,

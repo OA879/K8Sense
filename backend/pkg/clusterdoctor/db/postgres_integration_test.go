@@ -9,8 +9,8 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 func openRawPostgres(dsn string) (*sql.DB, error) {

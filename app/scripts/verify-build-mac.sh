@@ -116,7 +116,7 @@ if [ -d "$DIST_DIR/mac" ]; then
   echo "Found app bundle at: $APP_BUNDLE"
   
   # Test backend binary
-  BACKEND_PATH="$APP_BUNDLE/Contents/Resources/headlamp-server"
+  BACKEND_PATH="$APP_BUNDLE/Contents/Resources/k8sense-server"
   test_backend "$BACKEND_PATH" || exit 1
   echo ""
   
@@ -149,7 +149,7 @@ else
       echo "Found app in DMG: $APP_BUNDLE"
       
       # Test backend binary
-      BACKEND_PATH="$APP_BUNDLE/Contents/Resources/headlamp-server"
+      BACKEND_PATH="$APP_BUNDLE/Contents/Resources/k8sense-server"
       if ! test_backend "$BACKEND_PATH"; then
         hdiutil detach "$MOUNT_POINT" > /dev/null 2>&1
         rm -rf "$MOUNT_POINT" || true
@@ -201,7 +201,7 @@ test_server_cleanup() {
   local ALL_APP_PIDS
   local REMAINING_SERVER_PIDS
 
-  EXISTING_SERVER_PIDS=$(pgrep -f headlamp-server 2>/dev/null || true)
+  EXISTING_SERVER_PIDS=$(pgrep -f k8sense-server 2>/dev/null || true)
   EXISTING_APP_PIDS=$(pgrep -x Headlamp 2>/dev/null || true)
 
   # Launch the app using macOS 'open' command so it properly registers with
@@ -233,11 +233,11 @@ test_server_cleanup() {
   fi
   echo "Electron app started with PID: $ELECTRON_PID"
 
-  # Wait for headlamp-server to appear (up to 30 seconds)
-  echo "Waiting for headlamp-server to start..."
+  # Wait for k8sense-server to appear (up to 30 seconds)
+  echo "Waiting for k8sense-server to start..."
   SERVER_PID=""
   for i in $(seq 1 30); do
-    ALL_SERVER_PIDS=$(pgrep -f headlamp-server 2>/dev/null || true)
+    ALL_SERVER_PIDS=$(pgrep -f k8sense-server 2>/dev/null || true)
     for pid in $ALL_SERVER_PIDS; do
       if [ -z "$EXISTING_SERVER_PIDS" ] || ! echo "$EXISTING_SERVER_PIDS" | grep -qw "$pid"; then
         SERVER_PID="$pid"
@@ -245,14 +245,14 @@ test_server_cleanup() {
       fi
     done
     if [ -n "$SERVER_PID" ]; then
-      echo "headlamp-server started with PID: $SERVER_PID"
+      echo "k8sense-server started with PID: $SERVER_PID"
       break
     fi
     sleep 1
   done
 
   if [ -z "$SERVER_PID" ]; then
-    echo "⚠ headlamp-server did not start within 30 seconds, skipping cleanup test"
+    echo "⚠ k8sense-server did not start within 30 seconds, skipping cleanup test"
     kill -TERM "$ELECTRON_PID" 2>/dev/null || true
     # Bounded wait for process to exit (up to 10 seconds)
     for i in $(seq 1 10); do
@@ -280,10 +280,10 @@ test_server_cleanup() {
   fi
 
   # Wait for all new server processes to exit (up to 10 seconds)
-  echo "Waiting for headlamp-server to exit..."
+  echo "Waiting for k8sense-server to exit..."
   for i in $(seq 1 10); do
     REMAINING_SERVER_PIDS=""
-    ALL_SERVER_PIDS=$(pgrep -f headlamp-server 2>/dev/null || true)
+    ALL_SERVER_PIDS=$(pgrep -f k8sense-server 2>/dev/null || true)
     for pid in $ALL_SERVER_PIDS; do
       if [ -z "$EXISTING_SERVER_PIDS" ] || ! echo "$EXISTING_SERVER_PIDS" | grep -qw "$pid"; then
         REMAINING_SERVER_PIDS="$REMAINING_SERVER_PIDS $pid"
@@ -295,9 +295,9 @@ test_server_cleanup() {
     sleep 1
   done
 
-  # Final check: are any new headlamp-server processes still running?
+  # Final check: are any new k8sense-server processes still running?
   REMAINING_SERVER_PIDS=""
-  ALL_SERVER_PIDS=$(pgrep -f headlamp-server 2>/dev/null || true)
+  ALL_SERVER_PIDS=$(pgrep -f k8sense-server 2>/dev/null || true)
   for pid in $ALL_SERVER_PIDS; do
     if [ -z "$EXISTING_SERVER_PIDS" ] || ! echo "$EXISTING_SERVER_PIDS" | grep -qw "$pid"; then
       REMAINING_SERVER_PIDS="$REMAINING_SERVER_PIDS $pid"
@@ -305,13 +305,13 @@ test_server_cleanup() {
   done
 
   if [ -n "$REMAINING_SERVER_PIDS" ]; then
-    echo "✗ headlamp-server process(es) still running after app close: $REMAINING_SERVER_PIDS"
+    echo "✗ k8sense-server process(es) still running after app close: $REMAINING_SERVER_PIDS"
     for pid in $REMAINING_SERVER_PIDS; do
       kill -9 "$pid" 2>/dev/null || true
     done
     return 1
   else
-    echo "✓ headlamp-server properly terminated after app close"
+    echo "✓ k8sense-server properly terminated after app close"
     return 0
   fi
 }

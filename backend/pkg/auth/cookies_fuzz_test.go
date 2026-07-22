@@ -21,7 +21,7 @@ import (
 	"testing"
 	"unicode/utf8"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/auth"
+	"github.com/OA879/K8Sense/backend/pkg/auth"
 )
 
 // FuzzSanitizeClusterName tests the SanitizeClusterName function with various inputs

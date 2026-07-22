@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/serviceproxy"
+	"github.com/OA879/K8Sense/backend/pkg/serviceproxy"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"

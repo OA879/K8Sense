@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/logger"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
 // ContextChangeListener is a function that is called when contexts change.

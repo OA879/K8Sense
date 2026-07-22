@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/cache"
+	"github.com/OA879/K8Sense/backend/pkg/cache"
 )
 
 // newTestCache returns an in-memory cache usable in tests.

@@ -97,7 +97,7 @@
       "category": "Network",
       "extraResources": [
         {
-          "from": "../backend/headlamp-server"
+          "from": "../backend/k8sense-server"
         }
       ]
     },
@@ -118,7 +118,7 @@
       "entitlementsInherit": "mac/entitlements.mac.plist",
       "extraResources": [
         {
-          "from": "../backend/headlamp-server"
+          "from": "../backend/k8sense-server"
         }
       ]
     },
@@ -131,7 +131,7 @@
       },
       "extraResources": [
         {
-          "from": "../backend/headlamp-server.exe"
+          "from": "../backend/k8sense-server.exe"
         }
       ]
     },

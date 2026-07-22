@@ -18,9 +18,9 @@ import (
 	"k8s.io/client-go/kubernetes"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
-	cdapi "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/api"
-	cddb "github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	cdapi "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/api"
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 const testCluster = "test-cluster"

@@ -18,7 +18,7 @@ import (
 	"net/url"
 	"testing"
 
-	k8cache "github.com/kubernetes-sigs/headlamp/backend/pkg/k8cache"
+	k8cache "github.com/OA879/K8Sense/backend/pkg/k8cache"
 )
 
 // BenchmarkStoreK8sResponseInCache measures the allocation overhead of storing

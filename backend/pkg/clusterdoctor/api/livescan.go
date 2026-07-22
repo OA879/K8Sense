@@ -3,7 +3,7 @@ package api
 import (
 	"sync"
 
-	"github.com/kubernetes-sigs/headlamp/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 )
 
 // liveScan buffers every progress event a running scan has emitted so far
