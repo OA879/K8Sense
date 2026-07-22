@@ -76,9 +76,10 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 4d. SSO / team sharing | 🚫 Blocked | Needs a real IdP + Postgres (your infra) |
 | 4e. Web-app (in-cluster) mode | 🟡 Mostly | Container + manifests done; single-replica only |
 | 4f. Audit actor identity | ✅ Done | Derived from bearer-token claims (OIDC / service account) |
-| 4g. PDF export | ✅ Done | Print stylesheet — browser renders the PDF, no bundled engine |
-| 4h. Postgres backend (HA) | 🟡 Groundwork | Dialect layer tested; migrations not yet ported |
-| 5. Distribution | ⬜ Not started | Deliberately deferred until features are complete |
+| 4g. PDF export | ✅ Done | Print stylesheet + UI button; verified via headless Chrome |
+| 4h. Postgres backend (HA) | ✅ Done | Wired + proven end-to-end vs real PG; SQLite default |
+| 5a. Packaging identity | ✅ Done | appId/author/publish now K8sense/OA879, not Microsoft/Kinvolk |
+| 5b. Signed installers | 🚫 Blocked | Needs Apple + Windows EV certs (your accounts) |
 
 ---
 
@@ -279,13 +280,19 @@ These are choices made during the build that deviate from or refine
    built or launched, so the tray-label rebrand is untested at runtime. The
    *container* image, by contrast, now builds and is the basis of web mode.
 
-5. **Web mode is single-replica only.** SQLite is a single-writer store, so two
-   pods sharing the volume would corrupt it. `deploy/k8sense-web.yaml` pins
-   replicas to 1 and uses the Recreate strategy for exactly this reason.
-   Multi-replica HA needs the Postgres backend (groundwork only — see
-   `db/dialect.go`).
+5. **Web mode single-replica by default, multi-replica with Postgres.** The
+   default SQLite backend is single-writer, so `deploy/k8sense-web.yaml` pins
+   replicas to 1. For HA, point `K8SENSE_DB_DSN` at Postgres and raise
+   replicas — the Postgres path is verified end-to-end in
+   `db.TestPostgresBackendEndToEnd`.
 
-6. **Web mode shares one ServiceAccount.** Every browser user acts with the
+6. **The container image has not been run.** The Dockerfile fix (shipping
+   rules/) is correct and unit-guarded (`clusterdoctor.TestRuleLibraryLoadsFromRepo`),
+   but a full image build + in-cluster deploy has not been executed to completion
+   — the dev VM is memory-saturated by other workloads, and a heavy build risks
+   OOMing them. Run it on a machine with headroom before shipping.
+
+7. **Web mode shares one ServiceAccount.** Every browser user acts with the
    same cluster permissions, so the ClusterRole must be scoped to what you'd
    grant everyone, and the Service should sit behind an authenticating proxy.
    The audit log now records real per-user identity from the request token, so
@@ -377,9 +384,10 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 4d. SSO / team sharing | 🚫 Blocked | Needs a real IdP + Postgres (your infra) |
 | 4e. Web-app (in-cluster) mode | 🟡 Mostly | Container + manifests done; single-replica only |
 | 4f. Audit actor identity | ✅ Done | Derived from bearer-token claims (OIDC / service account) |
-| 4g. PDF export | ✅ Done | Print stylesheet — browser renders the PDF, no bundled engine |
-| 4h. Postgres backend (HA) | 🟡 Groundwork | Dialect layer tested; migrations not yet ported |
-| 5. Distribution | ⬜ Not started | Deliberately deferred until features are complete |
+| 4g. PDF export | ✅ Done | Print stylesheet + UI button; verified via headless Chrome |
+| 4h. Postgres backend (HA) | ✅ Done | Wired + proven end-to-end vs real PG; SQLite default |
+| 5a. Packaging identity | ✅ Done | appId/author/publish now K8sense/OA879, not Microsoft/Kinvolk |
+| 5b. Signed installers | 🚫 Blocked | Needs Apple + Windows EV certs (your accounts) |
 
 ---
 
@@ -580,11 +588,11 @@ These are choices made during the build that deviate from or refine
    built or launched, so the tray-label rebrand is untested at runtime. The
    *container* image, by contrast, now builds and is the basis of web mode.
 
-5. **Web mode is single-replica only.** SQLite is a single-writer store, so two
-   pods sharing the volume would corrupt it. `deploy/k8sense-web.yaml` pins
-   replicas to 1 and uses the Recreate strategy for exactly this reason.
-   Multi-replica HA needs the Postgres backend (groundwork only — see
-   `db/dialect.go`).
+5. **Web mode single-replica by default, multi-replica with Postgres.** The
+   default SQLite backend is single-writer, so `deploy/k8sense-web.yaml` pins
+   replicas to 1. For HA, point `K8SENSE_DB_DSN` at Postgres and raise
+   replicas — the Postgres path is verified end-to-end in
+   `db.TestPostgresBackendEndToEnd`.
 
 6. **Web mode shares one ServiceAccount.** Every browser user acts with the
    same cluster permissions, so the ClusterRole must be scoped to what you'd
