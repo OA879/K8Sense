@@ -199,7 +199,7 @@ export async function fetchReportHTML(scanId: string): Promise<string> {
 
 /**
  * Downloads a scan's report by fetching it with the backend auth header (a
- * plain anchor href can't send X-K8SENSE_BACKEND-TOKEN) and triggering a
+ * plain anchor href can't send X-K8SENSE-BACKEND-TOKEN) and triggering a
  * browser save via a temporary object URL.
  */
 export async function downloadReport(scanId: string, format: 'html' | 'json'): Promise<void> {

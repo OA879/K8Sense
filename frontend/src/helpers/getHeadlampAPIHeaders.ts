@@ -46,6 +46,6 @@ export function getHeadlampAPIHeaders(): { [key: string]: string } {
   }
 
   return {
-    'X-K8SENSE_BACKEND-TOKEN': backendToken,
+    'X-K8SENSE-BACKEND-TOKEN': backendToken,
   };
 }

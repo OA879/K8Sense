@@ -1146,7 +1146,7 @@ func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Han
 	// On dev mode we're loose about where connections come from
 	if config.DevMode {
 		headers := handlers.AllowedHeaders([]string{
-			"X-K8SENSE_BACKEND-TOKEN", "X-Requested-With", "Content-Type",
+			"X-K8SENSE-BACKEND-TOKEN", "X-Requested-With", "Content-Type",
 			"Authorization", "Forward-To",
 			"KUBECONFIG", "X-K8SENSE-USER-ID",
 		})
@@ -1572,7 +1572,7 @@ func getHelmHandler(c *HeadlampConfig, w http.ResponseWriter, r *http.Request) (
 	return helmHandler, nil
 }
 
-// Check request for header "X-K8SENSE_BACKEND-TOKEN" matches K8SENSE_BACKEND_TOKEN env
+// Check request for header "X-K8SENSE-BACKEND-TOKEN" matches K8SENSE_BACKEND_TOKEN env
 // This check is to prevent access except for from the app.
 // The app sets K8SENSE_BACKEND_TOKEN, and gives the token to the frontend.
 func (c *HeadlampConfig) checkHeadlampBackendToken(w http.ResponseWriter, r *http.Request) error {
@@ -1580,12 +1580,12 @@ func (c *HeadlampConfig) checkHeadlampBackendToken(w http.ResponseWriter, r *htt
 		return nil
 	}
 
-	backendToken := r.Header.Get("X-K8SENSE_BACKEND-TOKEN")
+	backendToken := r.Header.Get("X-K8SENSE-BACKEND-TOKEN")
 	backendTokenEnv := os.Getenv("K8SENSE_BACKEND_TOKEN")
 
 	if backendToken != backendTokenEnv || backendTokenEnv == "" {
 		http.Error(w, "access denied", http.StatusForbidden)
-		return errors.New("X-K8SENSE_BACKEND-TOKEN does not match K8SENSE_BACKEND_TOKEN")
+		return errors.New("X-K8SENSE-BACKEND-TOKEN does not match K8SENSE_BACKEND_TOKEN")
 	}
 
 	return nil

@@ -27,7 +27,7 @@ vi.mock('../../../../helpers/addBackstageAuthHeaders', () => ({
 
 vi.mock('../../../../helpers/getHeadlampAPIHeaders', () => ({
   getHeadlampAPIHeaders: vi.fn(() => ({
-    'X-K8SENSE_BACKEND-TOKEN': 'backend-token',
+    'X-K8SENSE-BACKEND-TOKEN': 'backend-token',
   })),
 }));
 
@@ -76,7 +76,7 @@ describe('setCluster', () => {
         method: 'POST',
         body: JSON.stringify({ kubeconfigs: [kubeconfig] }),
         headers: expect.objectContaining({
-          'X-K8SENSE_BACKEND-TOKEN': 'backend-token',
+          'X-K8SENSE-BACKEND-TOKEN': 'backend-token',
         }),
       }),
       false,

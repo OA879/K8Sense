@@ -141,7 +141,7 @@ func TestParseKubeConfigInvalidJSONReturnsBadRequest(t *testing.T) {
 		"/parseKubeConfig",
 		strings.NewReader("{"),
 	)
-	req.Header.Set("X-K8SENSE_BACKEND-TOKEN", token)
+	req.Header.Set("X-K8SENSE-BACKEND-TOKEN", token)
 
 	resp := &writeCountingResponseRecorder{ResponseRecorder: httptest.NewRecorder()}
 	handler.ServeHTTP(resp, req)

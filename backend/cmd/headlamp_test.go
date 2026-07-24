@@ -146,7 +146,7 @@ func getResponseFromRestrictedEndpoint(handler http.Handler, method, url string,
 		return nil, err
 	}
 
-	req.Header.Set("X-K8SENSE_BACKEND-TOKEN", token)
+	req.Header.Set("X-K8SENSE-BACKEND-TOKEN", token)
 
 	rr := httptest.NewRecorder()
 
@@ -1371,7 +1371,7 @@ func assertRouteRequiresBackendToken(t *testing.T, method, path string, body int
 			require.NoError(t, err)
 
 			if av.setHeader {
-				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", av.headerValue)
+				req.Header.Set("X-K8SENSE-BACKEND-TOKEN", av.headerValue)
 			}
 
 			rr := httptest.NewRecorder()
@@ -1430,7 +1430,7 @@ func TestRestrictedEndpointsRejectEmptyEnvToken(t *testing.T) {
 				req, err := makeJSONReq(route.method, route.path, nil)
 				require.NoError(t, err)
 
-				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", headerValue)
+				req.Header.Set("X-K8SENSE-BACKEND-TOKEN", headerValue)
 
 				rr := httptest.NewRecorder()
 				handler.ServeHTTP(rr, req)
@@ -1481,7 +1481,7 @@ func TestRestrictedEndpointsBypassedInCluster(t *testing.T) {
 		t.Run(route.method+" "+route.path, func(t *testing.T) {
 			req, err := makeJSONReq(route.method, route.path, nil)
 			require.NoError(t, err)
-			// No X-K8SENSE_BACKEND-TOKEN header on purpose.
+			// No X-K8SENSE-BACKEND-TOKEN header on purpose.
 
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
@@ -2547,7 +2547,7 @@ func TestHandleClusterHelm(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			req := httptest.NewRequestWithContext(context.Background(), tc.method, tc.path, nil)
 			if tc.token != "" {
-				req.Header.Set("X-K8SENSE_BACKEND-TOKEN", tc.token)
+				req.Header.Set("X-K8SENSE-BACKEND-TOKEN", tc.token)
 			}
 
 			w := httptest.NewRecorder()
