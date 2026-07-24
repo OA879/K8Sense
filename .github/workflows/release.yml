@@ -1,0 +1,154 @@
+# Build UNSIGNED K8sense desktop installers for macOS, Linux and Windows and
+# attach them to a GitHub Release.
+#
+# Trigger:
+#   - push a version tag:  git tag v0.1.0 && git push origin v0.1.0
+#   - or run manually from the Actions tab (workflow_dispatch) with a tag input.
+#
+# These builds are NOT code-signed or notarized, so:
+#   - macOS shows "K8sense can't be opened because Apple cannot check it" —
+#     right-click the app > Open, or run: xattr -dr com.apple.quarantine /Applications/K8sense.app
+#   - Windows SmartScreen shows "Windows protected your PC" — More info > Run anyway.
+# Add signing later by supplying certs (see app-artifacts-*.yml, which already
+# have the signed path gated behind secrets).
+name: Release (unsigned installers)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build (e.g. v0.1.0). Must exist or will be created as a pre-release.'
+        required: true
+
+permissions:
+  contents: write # create the release and upload assets
+
+env:
+  NODE_VERSION: '22.x'
+  GO_VERSION: '1.26.*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create (or reuse) the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "K8sense $TAG" \
+              --prerelease \
+              --notes "Unsigned desktop builds. macOS/Windows will warn about an unidentified developer — see release.yml for how to open them. For production, sign the builds (see app-artifacts-*.yml)."
+          fi
+
+  macos:
+    needs: create-release
+    runs-on: macos-latest
+    env:
+      # Force an unsigned build — no cert in the runner keychain to auto-discover.
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            app/package-lock.json
+            frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      - name: Build backend + frontend
+        run: make
+      - name: Package unsigned .dmg (arm64 + x64)
+        run: make app-mac
+      - name: Upload installers to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ needs.create-release.outputs.tag }}" \
+            app/dist/*.dmg --repo "$GITHUB_REPOSITORY" --clobber
+
+  linux:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            app/package-lock.json
+            frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      - name: Build backend + frontend
+        run: make
+      - name: Package .AppImage / .deb / .tar.gz
+        run: make app-linux
+      - name: Upload installers to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ needs.create-release.outputs.tag }}" \
+            app/dist/*.AppImage app/dist/*.deb app/dist/*.tar.gz \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: |
+            app/package-lock.json
+            frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+      - name: Build backend (k8sense-server.exe)
+        working-directory: backend
+        run: go build -o k8sense-server.exe ./cmd
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Package unsigned .exe installer
+        working-directory: app
+        run: |
+          npm ci
+          node scripts/setup-plugins.js
+          npm run package -- --win --x64
+      - name: Upload installer to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release upload "${{ needs.create-release.outputs.tag }}" \
+            app/dist/*.exe --repo "$GITHUB_REPOSITORY" --clobber

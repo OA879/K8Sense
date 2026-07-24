@@ -4,9 +4,9 @@ export GO111MODULE
 SERVER_EXE_EXT ?=
 DOCKER_CMD ?= docker
 DOCKER_BUILDX_CMD ?= buildx
-DOCKER_REPO ?= ghcr.io/headlamp-k8s
-DOCKER_EXT_REPO ?= docker.io/headlamp
-DOCKER_IMAGE_NAME ?= headlamp
+DOCKER_REPO ?= ghcr.io/oa879
+DOCKER_EXT_REPO ?= docker.io/oa879
+DOCKER_IMAGE_NAME ?= k8sense
 DOCKER_PLUGINS_IMAGE_NAME ?= plugins
 DOCKER_IMAGE_VERSION ?= $(shell git describe --tags --match 'v*' --always --dirty)
 DOCKER_IMAGE_EXTRA_TAG ?=
@@ -27,14 +27,14 @@ else
     endif
 endif
 DOCKER_PUSH ?= false
-EMBED_BINARY_NAME := headlamp_app
+EMBED_BINARY_NAME := k8sense_app
 # Get version and app name from app/package.json
 APP_VERSION ?= $(shell node -p "require('./app/package.json').version" 2>/dev/null || echo "unknown")
-APP_NAME ?= $(shell node -p "require('./app/package.json').productName" 2>/dev/null || echo "Headlamp")
+APP_NAME ?= $(shell node -p "require('./app/package.json').productName" 2>/dev/null || echo "K8sense")
 # Build flags with version and app name
-BUILD_VERSION_FLAGS := -ldflags="-X github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig.Version=$(APP_VERSION) -X 'github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig.AppName=$(APP_NAME)'"
+BUILD_VERSION_FLAGS := -ldflags="-X github.com/OA879/K8Sense/backend/pkg/kubeconfig.Version=$(APP_VERSION) -X 'github.com/OA879/K8Sense/backend/pkg/kubeconfig.AppName=$(APP_NAME)'"
 # embed build flags
-EMBED_BUILD_FLAGS := -trimpath -ldflags="-s -w -X github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig.Version=$(APP_VERSION) -X 'github.com/kubernetes-sigs/headlamp/backend/pkg/kubeconfig.AppName=$(APP_NAME)'" -tags embed
+EMBED_BUILD_FLAGS := -trimpath -ldflags="-s -w -X github.com/OA879/K8Sense/backend/pkg/kubeconfig.Version=$(APP_VERSION) -X 'github.com/OA879/K8Sense/backend/pkg/kubeconfig.AppName=$(APP_NAME)'" -tags embed
 
 ifeq ($(OS), Windows_NT)
 	SERVER_EXE_EXT = .exe
@@ -117,18 +117,18 @@ app-i18n-check: app/node_modules/.package-lock.json
 
 .PHONY: backend
 backend:
-	cd backend && go build $(BUILD_VERSION_FLAGS) -o ./headlamp-server${SERVER_EXE_EXT} ./cmd
+	cd backend && go build $(BUILD_VERSION_FLAGS) -o ./k8sense-server${SERVER_EXE_EXT} ./cmd
 
 .PHONY: backend-embed
 backend-embed:
-	REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN=false $(MAKE) frontend-build
+	REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN=false $(MAKE) frontend-build
 	$(MAKE) backend-embed-prepare
-	cd backend && go build $(EMBED_BUILD_FLAGS) -o ./headlamp-server${SERVER_EXE_EXT} ./cmd
+	cd backend && go build $(EMBED_BUILD_FLAGS) -o ./k8sense-server${SERVER_EXE_EXT} ./cmd
 
 # New multi-platform build targets
 .PHONY: backend-embed-all
 backend-embed-all:
-	REACT_APP_HEADLAMP_SIDEBAR_DEFAULT_OPEN=false $(MAKE) frontend-build
+	REACT_APP_K8SENSE_SIDEBAR_DEFAULT_OPEN=false $(MAKE) frontend-build
 	$(MAKE) backend-embed-prepare
 	$(MAKE) backend-embed-clean
 	@echo "Building all platforms with version: $(VERSION)"
@@ -283,42 +283,42 @@ run-backend:
 	@echo "**** Warning: Running with Helm and dynamic-clusters endpoints enabled. ****"
 
 ifeq ($(UNIXSHELL),true)
-	HEADLAMP_BACKEND_TOKEN=headlamp HEADLAMP_CONFIG_ENABLE_HELM=true HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true ./backend/headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
+	K8SENSE_BACKEND_TOKEN=k8sense K8SENSE_CONFIG_ENABLE_HELM=true K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true ./backend/k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
 else
 	@echo "**** Running on Windows without bash or zsh. ****"
-	@cmd /c "set HEADLAMP_BACKEND_TOKEN=headlamp&& set HEADLAMP_CONFIG_ENABLE_HELM=true&& set HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
+	@cmd /c "set K8SENSE_BACKEND_TOKEN=k8sense&& set K8SENSE_CONFIG_ENABLE_HELM=true&& set K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
 endif
 
 run-dev:
-	@echo "Starting Headlamp backend in dev mode with Air..."
+	@echo "Starting K8sense backend in dev mode with Air..."
 	cd backend && air
 
 run-backend-with-metrics:
 	@echo "**** Running backend with Prometheus metrics enabled ****"
 ifeq ($(UNIXSHELL),true)
-	HEADLAMP_BACKEND_TOKEN=headlamp \
-    HEADLAMP_CONFIG_METRICS_ENABLED=true \
-    HEADLAMP_CONFIG_ENABLE_HELM=true \
-    HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
-    HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true \
-    ./backend/headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
+	K8SENSE_BACKEND_TOKEN=k8sense \
+    K8SENSE_CONFIG_METRICS_ENABLED=true \
+    K8SENSE_CONFIG_ENABLE_HELM=true \
+    K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
+    K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true \
+    ./backend/k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
 else
 	@echo "**** Running on Windows without bash or zsh. ****"
-	@cmd /c "set HEADLAMP_BACKEND_TOKEN=headlamp&& set HEADLAMP_CONFIG_METRICS_ENABLED=true&& set HEADLAMP_CONFIG_ENABLE_HELM=true&& set HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
+	@cmd /c "set K8SENSE_BACKEND_TOKEN=k8sense&& set K8SENSE_CONFIG_METRICS_ENABLED=true&& set K8SENSE_CONFIG_ENABLE_HELM=true&& set K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
 endif
 
 run-backend-with-traces:
 	@echo "**** Running backend with distributed tracing enabled ****"
 ifeq ($(UNIXSHELL),true)
-	HEADLAMP_BACKEND_TOKEN=headlamp \
-    HEADLAMP_CONFIG_TRACING_ENABLED=true \
-    HEADLAMP_CONFIG_ENABLE_HELM=true \
-    HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
-    HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true \
-    ./backend/headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
+	K8SENSE_BACKEND_TOKEN=k8sense \
+    K8SENSE_CONFIG_TRACING_ENABLED=true \
+    K8SENSE_CONFIG_ENABLE_HELM=true \
+    K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true \
+    K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true \
+    ./backend/k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost
 else
 	@echo "**** Running on Windows without bash or zsh. ****"
-	@cmd /c "set HEADLAMP_BACKEND_TOKEN=headlamp&& set HEADLAMP_CONFIG_TRACING_ENABLED=true&& set HEADLAMP_CONFIG_ENABLE_HELM=true&& set HEADLAMP_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set HEADLAMP_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\headlamp-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
+	@cmd /c "set K8SENSE_BACKEND_TOKEN=k8sense&& set K8SENSE_CONFIG_TRACING_ENABLED=true&& set K8SENSE_CONFIG_ENABLE_HELM=true&& set K8SENSE_CONFIG_ENABLE_DYNAMIC_CLUSTERS=true&& set K8SENSE_CONFIG_ALLOW_KUBECONFIG_CHANGES=true&& backend\k8sense-server -dev -proxy-urls https://artifacthub.io/* -listen-addr=localhost"
 endif
 
 run-frontend:
@@ -442,11 +442,11 @@ helm-chart-push: helm-chart-package
 
 .PHONY: helm-template-test
 helm-template-test:
-	charts/headlamp/tests/test.sh
+	charts/k8sense/tests/test.sh
 
 .PHONY: helm-update-template-version
 helm-update-template-version:
-	charts/headlamp/tests/update-version.sh
+	charts/k8sense/tests/update-version.sh
 
 # TODO: add windows compatibility
 .PHONY: run-jaeger

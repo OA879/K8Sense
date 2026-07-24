@@ -159,6 +159,10 @@
       {
         "from": "./app-build-manifest.json",
         "to": "app-build-manifest.json"
+      },
+      {
+        "from": "../rules",
+        "to": "rules"
       }
     ],
     "publish": {
