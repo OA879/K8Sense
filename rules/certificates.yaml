@@ -43,3 +43,36 @@
     warning: ""
   references:
     - "https://kubernetes.io/docs/tasks/administer-cluster/certificates/"
+
+- id: CERT-003
+  name: Ingress TLS Cert Expiring Within 30 Days
+  severity: WARNING
+  category: certificates
+  check_fn: check_ingress_cert_expiring
+  description: >
+    The TLS certificate backing an Ingress expires within 30 days. Renew it
+    before expiry to avoid HTTPS failures for that Ingress.
+  remediation: |
+    1. Identify the Ingress and its TLS secret:
+       kubectl describe ingress <name> -n <namespace>
+    2. Renew the referenced Secret's certificate (or its cert-manager
+       Certificate) before it expires.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/ingress/#tls"
+
+- id: CERT-004
+  name: Ingress TLS Cert Already Expired
+  severity: CRITICAL
+  category: certificates
+  check_fn: check_ingress_cert_expired
+  description: >
+    The TLS certificate backing an Ingress has already expired. HTTPS clients
+    are now failing the TLS handshake for that Ingress.
+  remediation: |
+    1. Identify the Ingress and its TLS secret:
+       kubectl describe ingress <name> -n <namespace>
+    2. Reissue and update the referenced Secret immediately.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/ingress/#tls"

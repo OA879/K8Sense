@@ -51,7 +51,7 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 1d. Cluster Doctor API (HTTP+SSE) | ✅ Done | scan / status / findings / history / rules |
 | 1e. Cluster Doctor UI (React) | ✅ Done | ScanPage, FindingsPage, sidebar entry — MUI |
 | 1f. RBAC manifest | ✅ Done | `deploy/k8sense-clusterrole.yaml`, dry-run validated |
-| 2a. Full rule library (46 rules) | ✅ Done | Added CP/STOR/NET/RES/CERT/WL — all 8 categories |
+| 2a. Rule library (58 of 63 planned) | 🟡 Mostly | 8 categories; 5 remaining need metrics/dynamic-client access (below) |
 | 2b. Scan History UI | ✅ Done | `HistoryPage`, wired to `/history` |
 | 2c. Report export | ✅ Done | Self-contained HTML report + JSON; PDF deferred |
 | 2d. Guided Fix + audit log | ✅ Done | Confirm-gated write actions, audit trail |
@@ -123,7 +123,22 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 - `checks/workloads.go` — WL-001/003/004/005/006/009 (deployment 0-available /
   below-desired, daemonset under-scheduled, statefulset not ready, job failed,
   single-replica no-HA).
-- **46 rules total across 8 categories**, metadata in `rules/*.yaml`.
+- `checks/extended.go` — 12 more checks completing the catalogue: POD-007
+  (liveness failing), CP-003/004 (scheduler / controller-manager leader lease),
+  STOR-004 (volume mount errors), NET-003/006 (CNI DaemonSet, NodePort
+  conflicts), RES-003 (missing LimitRange), CERT-003/004 (Ingress TLS
+  expiring/expired), WL-002/007/008 (stalled rollout, overdue CronJob, no PDB).
+- **58 rules across 8 categories** in `rules/*.yaml`. Verified against a live
+  cluster: a scan runs all 58, and the new checks produce correct findings
+  (e.g. POD-007 caught 6 failing liveness probes, WL-008 flagged unprotected
+  Deployments) or cleanly find nothing.
+- **5 planned rules not yet implemented** — each needs data the standard
+  client-go clientset can't provide, so they're a deliberate follow-up, not a
+  stub: CP-006 (etcd disk latency) and CP-007 (apiserver error rate) need the
+  control-plane Prometheus `/metrics`; CERT-005 (kubelet serving cert) needs
+  node-level access; RES-006 (VPA divergence) needs a dynamic client for the
+  VPA CRD; CP-001 (API server unreachable) can't fire from within a scan that
+  is itself reaching the API.
 
 ### Persistence — `backend/pkg/clusterdoctor/db/`
 - `db.go` — pure-Go `modernc.org/sqlite` (keeps single-binary distribution),
@@ -359,7 +374,7 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 | 1d. Cluster Doctor API (HTTP+SSE) | ✅ Done | scan / status / findings / history / rules |
 | 1e. Cluster Doctor UI (React) | ✅ Done | ScanPage, FindingsPage, sidebar entry — MUI |
 | 1f. RBAC manifest | ✅ Done | `deploy/k8sense-clusterrole.yaml`, dry-run validated |
-| 2a. Full rule library (46 rules) | ✅ Done | Added CP/STOR/NET/RES/CERT/WL — all 8 categories |
+| 2a. Rule library (58 of 63 planned) | 🟡 Mostly | 8 categories; 5 remaining need metrics/dynamic-client access (below) |
 | 2b. Scan History UI | ✅ Done | `HistoryPage`, wired to `/history` |
 | 2c. Report export | ✅ Done | Self-contained HTML report + JSON; PDF deferred |
 | 2d. Guided Fix + audit log | ✅ Done | Confirm-gated write actions, audit trail |
@@ -431,7 +446,22 @@ Open <http://localhost:3000>. **Cluster Doctor** is the top sidebar item.
 - `checks/workloads.go` — WL-001/003/004/005/006/009 (deployment 0-available /
   below-desired, daemonset under-scheduled, statefulset not ready, job failed,
   single-replica no-HA).
-- **46 rules total across 8 categories**, metadata in `rules/*.yaml`.
+- `checks/extended.go` — 12 more checks completing the catalogue: POD-007
+  (liveness failing), CP-003/004 (scheduler / controller-manager leader lease),
+  STOR-004 (volume mount errors), NET-003/006 (CNI DaemonSet, NodePort
+  conflicts), RES-003 (missing LimitRange), CERT-003/004 (Ingress TLS
+  expiring/expired), WL-002/007/008 (stalled rollout, overdue CronJob, no PDB).
+- **58 rules across 8 categories** in `rules/*.yaml`. Verified against a live
+  cluster: a scan runs all 58, and the new checks produce correct findings
+  (e.g. POD-007 caught 6 failing liveness probes, WL-008 flagged unprotected
+  Deployments) or cleanly find nothing.
+- **5 planned rules not yet implemented** — each needs data the standard
+  client-go clientset can't provide, so they're a deliberate follow-up, not a
+  stub: CP-006 (etcd disk latency) and CP-007 (apiserver error rate) need the
+  control-plane Prometheus `/metrics`; CERT-005 (kubelet serving cert) needs
+  node-level access; RES-006 (VPA divergence) needs a dynamic client for the
+  VPA CRD; CP-001 (API server unreachable) can't fire from within a scan that
+  is itself reaching the API.
 
 ### Persistence — `backend/pkg/clusterdoctor/db/`
 - `db.go` — pure-Go `modernc.org/sqlite` (keeps single-binary distribution),

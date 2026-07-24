@@ -243,3 +243,22 @@
     action: ""
     warning: ""
   references: []
+
+- id: POD-007
+  name: Liveness Probe Failing Repeatedly
+  severity: WARNING
+  category: pods
+  check_fn: check_liveness_probe_failing
+  description: >
+    A container's liveness probe is failing repeatedly, so the kubelet keeps
+    restarting it. The app is either genuinely unhealthy or the probe is
+    mis-tuned.
+  remediation: |
+    1. See the probe failures:
+       kubectl describe pod <name> -n <namespace>
+    2. If the app is healthy but slow to start, raise initialDelaySeconds /
+       failureThreshold or add a startupProbe. Otherwise fix the underlying
+       health issue.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"

@@ -77,3 +77,22 @@
     warning: ""
   references:
     - "https://kubernetes.io/docs/concepts/storage/storage-classes/#default-storageclass"
+
+- id: STOR-004
+  name: Volume Mount Errors
+  severity: CRITICAL
+  category: storage
+  check_fn: check_volume_mount_errors
+  description: >
+    A pod is failing to mount or attach a volume (FailedMount /
+    FailedAttachVolume). The pod cannot start until the volume is available.
+  remediation: |
+    1. See the exact error on the pod:
+       kubectl describe pod <name> -n <namespace>
+    2. Common causes: the PVC is unbound (see STOR-001), the node can't reach
+       the storage backend, or a subPath/secret/configMap reference is wrong.
+    3. Verify the PVC and its PV are Bound:
+       kubectl get pvc,pv -n <namespace>
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"

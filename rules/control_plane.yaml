@@ -46,3 +46,40 @@
     warning: ""
   references:
     - "https://kubernetes.io/docs/tasks/debug/debug-cluster/"
+
+- id: CP-003
+  name: Scheduler Not Leader-Elected
+  severity: CRITICAL
+  category: control_plane
+  check_fn: check_scheduler_not_leader
+  description: >
+    The kube-scheduler leader Lease has no fresh holder. With no active
+    scheduler, newly-created pods will stay Pending indefinitely.
+  remediation: |
+    1. Check the scheduler lease:
+       kubectl get lease kube-scheduler -n kube-system -o yaml
+    2. Inspect the scheduler pods/logs:
+       kubectl -n kube-system get pods -l component=kube-scheduler
+       kubectl -n kube-system logs -l component=kube-scheduler --tail=100
+    3. On managed control planes this is handled by the provider — verify via
+       the provider console.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/"
+
+- id: CP-004
+  name: Controller-Manager Not Leader-Elected
+  severity: CRITICAL
+  category: control_plane
+  check_fn: check_controller_manager_not_leader
+  description: >
+    The kube-controller-manager leader Lease has no fresh holder. Core control
+    loops (replicaset, node, endpoint, etc.) are not running.
+  remediation: |
+    1. Check the lease:
+       kubectl get lease kube-controller-manager -n kube-system -o yaml
+    2. Inspect the controller-manager pods/logs:
+       kubectl -n kube-system logs -l component=kube-controller-manager --tail=100
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/"

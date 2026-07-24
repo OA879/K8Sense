@@ -82,3 +82,39 @@
     warning: ""
   references:
     - "https://kubernetes.io/docs/concepts/services-networking/ingress/"
+
+- id: NET-003
+  name: CNI DaemonSet Not Fully Available
+  severity: CRITICAL
+  category: network
+  check_fn: check_cni_daemonset_not_available
+  description: >
+    A CNI DaemonSet (e.g. kindnet, calico, cilium, flannel, aws-node) has pods
+    that are not all ready. Pod networking is degraded or down on the affected
+    nodes.
+  remediation: |
+    1. Identify the unready pods:
+       kubectl -n kube-system get pods -o wide | grep -Ei 'calico|cilium|flannel|kindnet|aws-node|weave'
+    2. Inspect a failing pod:
+       kubectl -n kube-system describe pod <cni-pod>
+       kubectl -n kube-system logs <cni-pod>
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/"
+
+- id: NET-006
+  name: Service NodePort Conflicts
+  severity: WARNING
+  category: network
+  check_fn: check_nodeport_conflicts
+  description: >
+    Two or more Services are configured with the same NodePort. Only one can
+    actually serve on that port per node; the others are unreachable via NodePort.
+  remediation: |
+    1. Find the conflicting Services:
+       kubectl get svc -A -o json | jq -r '.items[]|select(.spec.type=="NodePort")|"\(.metadata.namespace)/\(.metadata.name) \(.spec.ports[].nodePort)"'
+    2. Reassign one of them to a free NodePort (or let Kubernetes allocate one
+       by removing the explicit nodePort).
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"

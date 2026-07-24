@@ -114,3 +114,62 @@
     warning: ""
   references:
     - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+
+- id: WL-002
+  name: Deployment Has Stalled Rollout
+  severity: WARNING
+  category: workloads
+  check_fn: check_deployment_stalled_rollout
+  description: >
+    A Deployment's rollout has stalled (ProgressDeadlineExceeded) — new pods
+    aren't becoming available within the progress deadline.
+  remediation: |
+    1. Check rollout status and the newest ReplicaSet's pods:
+       kubectl rollout status deployment/<name> -n <namespace>
+       kubectl describe deployment <name> -n <namespace>
+    2. Drill into failing pods (image/crash/scheduling) to find the blocker,
+       then either fix and re-apply or roll back:
+       kubectl rollout undo deployment/<name> -n <namespace>
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds"
+
+- id: WL-007
+  name: CronJob Overdue
+  severity: WARNING
+  category: workloads
+  check_fn: check_cronjob_overdue
+  description: >
+    A CronJob has not run in more than twice its schedule interval, which
+    usually means it is stuck (missed schedules, a failing controller, or
+    concurrencyPolicy blocking runs).
+  remediation: |
+    1. Inspect the CronJob:
+       kubectl describe cronjob <name> -n <namespace>
+    2. Check for missed-schedule events and whether the last Job hung:
+       kubectl get jobs -n <namespace> -l job-name
+    3. If startingDeadlineSeconds/concurrencyPolicy is blocking runs, adjust it.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/"
+
+- id: WL-008
+  name: Deployment Has No PodDisruptionBudget
+  severity: INFO
+  category: workloads
+  check_fn: check_deployment_no_pdb
+  description: >
+    A multi-replica Deployment has no PodDisruptionBudget. A node drain or
+    other voluntary disruption could evict all its pods at once, causing an
+    avoidable outage.
+  remediation: |
+    1. Add a PDB so at least one replica is always kept available, e.g.:
+       apiVersion: policy/v1
+       kind: PodDisruptionBudget
+       metadata: { name: <name>, namespace: <namespace> }
+       spec:
+         minAvailable: 1
+         selector: { matchLabels: <deployment pod labels> }
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
