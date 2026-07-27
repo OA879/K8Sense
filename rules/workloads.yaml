@@ -14,8 +14,8 @@
     2. Drill into failing pods (CrashLoopBackOff/ImagePullBackOff — see
        POD-001/POD-005) to find the root cause.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "restart_deployment"
+    warning: "Triggers a rolling restart of the deployment: new pods start and old ones terminate. Ensure you have spare capacity for the rollout. This cannot be undone — the rollout has already occurred."
   references:
     - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
 
@@ -92,8 +92,8 @@
     2. Fix the underlying error and re-run the job (delete + reapply, since
        completed/failed Jobs are immutable).
   guided_fix:
-    action: ""
-    warning: ""
+    action: "delete_job"
+    warning: "Deletes the failed Job and its pods so it can be re-run. The Job's history and pod logs are lost. This cannot be undone."
   references:
     - "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
 
@@ -110,8 +110,8 @@
     at least 2 and add a PodDisruptionBudget. Single replicas are fine for
     dev/stateless-singleton workloads — suppress this finding if intentional.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "scale_deployment"
+    warning: "Scales the deployment to the replica count you choose (2+ for high availability). This increases resource usage. You can undo this (restore the previous replica count) from the Audit Log."
   references:
     - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/"
 
@@ -130,7 +130,7 @@
     2. Drill into failing pods (image/crash/scheduling) to find the blocker,
        then either fix and re-apply or roll back:
        kubectl rollout undo deployment/<name> -n <namespace>
-  guided_fix: { action: "", warning: "" }
+  guided_fix: { action: "restart_deployment", warning: "Rolls the deployment to clear a stalled rollout. Causes a brief rolling replacement of pods. This cannot be undone." }
   references:
     - "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds"
 

@@ -18,8 +18,8 @@
        crashing on startup, failing liveness probe. Only the owning team can
        tell which — this requires human judgment.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "delete_pod"
+    warning: "Deletes this pod to force a fresh start. If it is managed by a Deployment, DaemonSet, StatefulSet, or Job it is recreated automatically; a standalone pod is removed permanently. In-flight work is lost. This cannot be undone."
   references:
     - "Debug Pods | Kubernetes"
     - "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
@@ -39,8 +39,8 @@
     2. Raise the container's memory limit if it's genuinely under-sized,
        or investigate a memory leak if usage grows unbounded over time.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "delete_pod"
+    warning: "Deletes this OOMKilled pod so its controller recreates it. Fix the memory limit too, or it will be killed again. A standalone pod is removed permanently. This cannot be undone."
   references:
     - "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/"
 
@@ -80,7 +80,7 @@
       -o name | xargs kubectl delete -n <namespace>
   guided_fix:
     action: delete_pod
-    warning: ""
+    warning: "Removes this evicted pod object. Evicted pods hold no resources; this just cleans them up. This cannot be undone."
   references: []
 
 - id: POD-005
@@ -98,8 +98,8 @@
     3. If it's a private registry, check imagePullSecrets on the pod/
        ServiceAccount.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "delete_pod"
+    warning: "Deletes the pod so the image pull is retried. Fix the image name / registry credentials first, or the new pod fails the same way. This cannot be undone."
   references:
     - "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
 
@@ -240,8 +240,8 @@
        kubectl logs <pod-name> -n <namespace> --previous
     2. See POD-001 (CrashLoopBackOff) if it's currently in a restart loop.
   guided_fix:
-    action: ""
-    warning: ""
+    action: "delete_pod"
+    warning: "Deletes the pod to reset its restart count and get a clean container. Recreated by its controller if managed. This cannot be undone."
   references: []
 
 - id: POD-007
@@ -259,6 +259,6 @@
     2. If the app is healthy but slow to start, raise initialDelaySeconds /
        failureThreshold or add a startupProbe. Otherwise fix the underlying
        health issue.
-  guided_fix: { action: "", warning: "" }
+  guided_fix: { action: "delete_pod", warning: "Deletes the pod so its controller recreates it. If the liveness probe itself is misconfigured, fix the probe too. This cannot be undone." }
   references:
     - "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"

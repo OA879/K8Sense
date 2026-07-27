@@ -318,3 +318,63 @@ func TestGuidedFixRecordsRealActorInAudit(t *testing.T) {
 		t.Error("audit entry leaked the bearer token")
 	}
 }
+
+// TestRevertScaleRestoresReplicas exercises the full un-fix path: scale a
+// deployment, then revert and confirm the prior replica count is restored, the
+// original entry is marked reverted, and a second revert is refused.
+func TestRevertScaleRestoresReplicas(t *testing.T) {
+	env := newTestEnv(t, testDeployment("default", "api")) // fixture starts at 1 replica
+	env.grantPro()
+
+	rec := env.do(http.MethodPost, "/cluster-doctor/guided-fix", map[string]any{
+		"cluster": testCluster, "action": "scale_deployment",
+		"namespace": "default", "resourceName": "api", "confirmed": true, "replicas": 3,
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("scale: got %d, body %s", rec.Code, rec.Body.String())
+	}
+
+	entries, err := cddb.ListAudit(context.Background(), env.db, testCluster, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var auditID string
+
+	for _, e := range entries {
+		if e.Action == "scale_deployment" {
+			if e.RevertAction != "scale_deployment" {
+				t.Fatalf("revertAction = %q, want scale_deployment", e.RevertAction)
+			}
+
+			auditID = e.ID
+		}
+	}
+
+	if auditID == "" {
+		t.Fatal("no scale_deployment audit entry found")
+	}
+
+	rec = env.do(http.MethodPost, "/cluster-doctor/guided-fix/revert",
+		map[string]any{"auditId": auditID, "confirmed": true})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("revert: got %d, body %s", rec.Code, rec.Body.String())
+	}
+
+	dep, err := env.clientset().AppsV1().Deployments("default").
+		Get(context.Background(), "api", metav1.GetOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if dep.Spec.Replicas == nil || *dep.Spec.Replicas != 1 {
+		t.Fatalf("replicas after revert = %v, want 1 (restored)", dep.Spec.Replicas)
+	}
+
+	// A second revert of the same action must be refused.
+	rec = env.do(http.MethodPost, "/cluster-doctor/guided-fix/revert",
+		map[string]any{"auditId": auditID, "confirmed": true})
+	if rec.Code != http.StatusConflict {
+		t.Fatalf("double revert: got %d, want 409 Conflict", rec.Code)
+	}
+}

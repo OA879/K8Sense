@@ -7,6 +7,11 @@ import "github.com/gorilla/mux"
 // table the binary serves — no risk of the test router drifting from the real
 // one as endpoints are added.
 func (s *Server) RegisterRoutes(r *mux.Router) {
+	// Record every cluster-doctor mutation/export in the audit log. The
+	// middleware self-scopes to /cluster-doctor paths, so sharing Headlamp's
+	// router is safe (see auditMiddleware).
+	r.Use(s.auditMiddleware)
+
 	r.HandleFunc("/cluster-doctor/scan", s.StartScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/multi", s.StartMultiScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/{id}/status", s.ScanStatus).Methods("GET")
@@ -22,6 +27,7 @@ func (s *Server) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/cluster-doctor/rules/{id}/toggle", s.ToggleRule).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/rules/{id}/severity", s.SetRuleSeverity).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/guided-fix", s.GuidedFix).Methods("POST")
+	r.HandleFunc("/cluster-doctor/guided-fix/revert", s.RevertGuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/suppress", s.SuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/unsuppress", s.UnsuppressFinding).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/comment", s.CommentFinding).Methods("PUT")

@@ -27,7 +27,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { AuditEntry, downloadAuditCSV, listAuditLog } from '../../lib/cluster-doctor-audit-api';
+import {
+  AuditEntry,
+  canRevert,
+  downloadAuditCSV,
+  listAuditLog,
+  revertGuidedFix,
+} from '../../lib/cluster-doctor-audit-api';
 import { useCluster } from '../../lib/k8s';
 
 function formatTimestamp(unixSeconds: number): string {
@@ -44,24 +50,51 @@ export default function AuditLogPage() {
   const cluster = useCluster();
   const [entries, setEntries] = React.useState<AuditEntry[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const [reverting, setReverting] = React.useState<string | null>(null);
+
+  const load = React.useCallback(() => {
+    if (!cluster) return Promise.resolve();
+
+    return listAuditLog(cluster)
+      .then(setEntries)
+      .catch(e => setError(e instanceof Error ? e.message : String(e)));
+  }, [cluster]);
 
   React.useEffect(() => {
-    if (!cluster) return;
-
     let cancelled = false;
-
-    listAuditLog(cluster)
-      .then(result => {
-        if (!cancelled) setEntries(result);
-      })
-      .catch(e => {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-      });
+    if (cluster) {
+      listAuditLog(cluster)
+        .then(result => !cancelled && setEntries(result))
+        .catch(e => !cancelled && setError(e instanceof Error ? e.message : String(e)));
+    }
 
     return () => {
       cancelled = true;
     };
   }, [cluster]);
+
+  async function handleUndo(entry: AuditEntry) {
+    const target = [entry.namespace, entry.resourceName].filter(Boolean).join('/');
+    if (
+      !window.confirm(
+        `Undo "${entry.action}" on ${target}?\n\nThis reverses the fix by restoring the previous state, and is itself recorded in the audit log.`
+      )
+    ) {
+      return;
+    }
+
+    setReverting(entry.id);
+    setError(null);
+
+    try {
+      await revertGuidedFix(entry.id);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setReverting(null);
+    }
+  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -77,7 +110,8 @@ export default function AuditLogPage() {
         </Button>
       </Box>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Guided Fix actions recorded for <strong>{cluster}</strong>.
+        Every action recorded for <strong>{cluster}</strong> — scans, rule and licence changes,
+        exports, and guided fixes. Reversible fixes can be undone here.
       </Typography>
 
       {error && <Alert severity="error">{error}</Alert>}
@@ -103,6 +137,7 @@ export default function AuditLogPage() {
                 <TableCell>Resource</TableCell>
                 <TableCell>Result</TableCell>
                 <TableCell>Error</TableCell>
+                <TableCell align="right">Undo</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -118,6 +153,21 @@ export default function AuditLogPage() {
                     <ResultChip result={entry.result} />
                   </TableCell>
                   <TableCell>{entry.error}</TableCell>
+                  <TableCell align="right">
+                    {entry.revertedAt ? (
+                      <Chip size="small" label="reverted" variant="outlined" />
+                    ) : canRevert(entry) ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="warning"
+                        disabled={reverting === entry.id}
+                        onClick={() => handleUndo(entry)}
+                      >
+                        {reverting === entry.id ? 'Undoing…' : 'Undo'}
+                      </Button>
+                    ) : null}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

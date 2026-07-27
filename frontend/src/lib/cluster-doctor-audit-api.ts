@@ -33,11 +33,33 @@ export interface AuditEntry {
   result: string;
   error?: string;
   performedAt: number;
+  /** Present on a reversible guided fix; names the inverse action. */
+  revertAction?: string;
+  /** Unix seconds this entry was undone; set once it has been reverted. */
+  revertedAt?: number;
+  /** On a revert entry, the id of the original action it reversed. */
+  revertOf?: string;
 }
 
 /** Lists Guided Fix audit entries for a cluster, most recent first. */
 export function listAuditLog(cluster: string): Promise<AuditEntry[]> {
   return apiFetch(`/audit-log?cluster=${encodeURIComponent(cluster)}`);
+}
+
+/** True when this entry is a reversible fix that has not yet been undone. */
+export function canRevert(entry: AuditEntry): boolean {
+  return (
+    entry.result === 'success' && !!entry.revertAction && !entry.revertedAt && !entry.revertOf
+  );
+}
+
+/** Undoes a previously-applied reversible guided fix (scale / uncordon). */
+export function revertGuidedFix(auditId: string): Promise<{ result: string; message: string }> {
+  return apiFetch('/guided-fix/revert', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ auditId, confirmed: true }),
+  });
 }
 
 /** Downloads the full audit log for a cluster as a CSV file. */
