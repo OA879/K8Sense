@@ -69,33 +69,33 @@ function FindingRow({
         <TableCell>{finding.resourceKind}</TableCell>
         <TableCell>{finding.namespace || '—'}</TableCell>
         <TableCell>{finding.resourceName}</TableCell>
-        <TableCell padding="checkbox">
-          <Box sx={{ display: 'flex', gap: 0.5 }}>
-            {onApplyFix && finding.guidedFixAvailable && (
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={e => {
-                  e.stopPropagation();
-                  onApplyFix(finding);
-                }}
-              >
-                Apply Fix
-              </Button>
-            )}
-            {onSuppress && (
-              <IconButton
-                size="small"
-                aria-label="Suppress finding"
-                onClick={e => {
-                  e.stopPropagation();
-                  onSuppress(finding);
-                }}
-              >
-                <Icon icon="mdi:bell-off-outline" />
-              </IconButton>
-            )}
-          </Box>
+        <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+          {onApplyFix && finding.guidedFixAvailable && (
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={e => {
+                e.stopPropagation();
+                onApplyFix(finding);
+              }}
+            >
+              Apply Fix
+            </Button>
+          )}
+        </TableCell>
+        <TableCell padding="checkbox" align="center">
+          {onSuppress && (
+            <IconButton
+              size="small"
+              aria-label="Suppress finding"
+              onClick={e => {
+                e.stopPropagation();
+                onSuppress(finding);
+              }}
+            >
+              <Icon icon="mdi:bell-off-outline" />
+            </IconButton>
+          )}
         </TableCell>
         <TableCell padding="checkbox">
           <IconButton size="small" aria-label={open ? 'Collapse' : 'Expand'}>
@@ -104,7 +104,7 @@ function FindingRow({
         </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell colSpan={8} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
+        <TableCell colSpan={9} sx={{ py: 0, borderBottom: open ? undefined : 'none' }}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ py: 2, px: 1 }}>
               {finding.comment && (
@@ -167,7 +167,8 @@ export function FindingsTable({ findings, onApplyFix, onSuppress }: FindingsTabl
           <TableCell>Kind</TableCell>
           <TableCell>Namespace</TableCell>
           <TableCell>Resource</TableCell>
-          <TableCell padding="checkbox" />
+          <TableCell align="center">Fix</TableCell>
+          <TableCell align="center">Mute</TableCell>
           <TableCell padding="checkbox" />
         </TableRow>
       </TableHead>
