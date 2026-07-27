@@ -98,3 +98,24 @@
   guided_fix: { action: "", warning: "" }
   references:
     - "https://kubernetes.io/docs/concepts/policy/limit-range/"
+
+- id: RES-006
+  name: VPA Recommendation Divergence
+  severity: INFO
+  category: resources
+  check_fn: check_vpa_divergence
+  description: >
+    A VerticalPodAutoscaler's recommendation differs from the target
+    Deployment's configured requests by more than 1.5x. The workload is
+    materially over- or under-provisioned versus its observed usage, wasting
+    capacity or risking throttling/OOM.
+  remediation: |
+    1. Compare the recommendation to current requests:
+       kubectl describe vpa <name> -n <namespace>
+    2. If the VPA is trusted (updateMode Off/Initial), align the Deployment's
+       resource requests with the recommended target.
+    3. Or set updateMode to Auto to let the VPA apply recommendations
+       (note: Auto restarts pods to resize them).
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler"

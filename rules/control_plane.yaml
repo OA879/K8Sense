@@ -83,3 +83,61 @@
   guided_fix: { action: "", warning: "" }
   references:
     - "https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/"
+
+- id: CP-001
+  name: API Server Health Degraded
+  severity: CRITICAL
+  category: control_plane
+  check_fn: check_apiserver_readyz_degraded
+  description: >
+    The API server's /readyz endpoint reports one or more failing subsystems
+    (etcd, informer-sync, post-start hooks, ...). The API server is reachable
+    but not fully healthy, which can cause intermittent request failures.
+  remediation: |
+    1. See the full readiness report:
+       kubectl get --raw='/readyz?verbose'
+    2. Investigate the specific check(s) listed with a [-] prefix.
+    3. Common causes: etcd unreachable/slow, an unfinished post-start hook, or
+       informers not yet synced after a restart. Check the apiserver logs:
+       kubectl -n kube-system logs -l component=kube-apiserver --tail=100
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/reference/using-api/health-checks/"
+
+- id: CP-006
+  name: etcd Responding Slowly
+  severity: WARNING
+  category: control_plane
+  check_fn: check_etcd_slow
+  description: >
+    More than 1% of etcd requests, as observed by the API server, are taking
+    longer than 1s. Slow etcd (usually disk I/O or network) degrades every
+    write and leader election across the cluster.
+  remediation: |
+    1. Confirm from the API server's perspective:
+       kubectl get --raw=/metrics | grep etcd_request_duration_seconds
+    2. Check etcd disk latency (fsync) and CPU on control-plane nodes; etcd
+       needs low-latency SSD storage.
+    3. Verify network round-trip between the API server and etcd members.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://etcd.io/docs/latest/op-guide/hardware/"
+
+- id: CP-007
+  name: API Server High Error Rate
+  severity: WARNING
+  category: control_plane
+  check_fn: check_apiserver_error_rate
+  description: >
+    Over 5% of the API server's responses are 5xx server errors. This points
+    to an overloaded or failing control plane (etcd problems, failing
+    admission webhooks, or resource exhaustion).
+  remediation: |
+    1. Break errors down by resource and verb:
+       kubectl get --raw=/metrics | grep 'apiserver_request_total{.*code="5'
+    2. Check for failing or slow admission / conversion webhooks.
+    3. Inspect API server logs and node resource pressure:
+       kubectl -n kube-system logs -l component=kube-apiserver --tail=100
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/cluster-administration/monitoring/"

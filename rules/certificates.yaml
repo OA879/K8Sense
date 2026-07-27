@@ -76,3 +76,24 @@
   guided_fix: { action: "", warning: "" }
   references:
     - "https://kubernetes.io/docs/concepts/services-networking/ingress/#tls"
+
+- id: CERT-005
+  name: Client Certificate Expiring Soon
+  severity: WARNING
+  category: certificates
+  check_fn: check_client_cert_expiring
+  description: >
+    The API server is being presented client certificates that expire within
+    30 days (typically kubelet, controller-manager, scheduler, or admin
+    kubeconfig certificates). Expired client certs break component
+    authentication and can lock you out of the cluster.
+  remediation: |
+    1. Check control-plane certificate expiry (kubeadm clusters):
+       kubeadm certs check-expiration
+    2. Renew before expiry, then restart the control-plane pods:
+       kubeadm certs renew all
+    3. For kubelets, ensure certificate rotation is enabled
+       (--rotate-certificates) so client certs renew automatically.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/"

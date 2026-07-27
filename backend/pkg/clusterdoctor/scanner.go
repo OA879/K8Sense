@@ -2,6 +2,7 @@ package clusterdoctor
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -97,7 +98,7 @@ func (s *Scanner) Run(
 				continue
 			}
 
-			raws, err := fn(ctx, clientset)
+			raws, err := runCheckSafely(ctx, clientset, fn)
 			if err != nil {
 				result.SkippedChecks++
 				continue
@@ -175,4 +176,22 @@ func emit(ctx context.Context, ch chan<- ScanProgressEvent, ev ScanProgressEvent
 	case ch <- ev:
 	case <-ctx.Done():
 	}
+}
+
+// runCheckSafely invokes a check function, converting a panic into an error so
+// one misbehaving check (e.g. parsing unexpected external metric text) is
+// counted as a skipped check rather than crashing the entire scan. The
+// CheckFunc contract still says checks should not panic; this is defence in
+// depth around untrusted cluster data.
+func runCheckSafely(
+	ctx context.Context, clientset kubernetes.Interface, fn CheckFunc,
+) (raws []RawFinding, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			raws = nil
+			err = fmt.Errorf("check panicked: %v", r)
+		}
+	}()
+
+	return fn(ctx, clientset)
 }
