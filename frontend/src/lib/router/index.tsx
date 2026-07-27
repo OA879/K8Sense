@@ -125,6 +125,7 @@ import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
+import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
 import CDSettingsPage from '../../pages/cluster-doctor/SettingsPage';
 import ScanDiffPage from '../../pages/cluster-doctor/ScanDiffPage';
@@ -271,6 +272,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <RulesPage />,
+  },
+  clusterDoctorNetworkMap: {
+    path: '/cluster-doctor/network-map',
+    name: 'Network Map',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <NetworkMapPage />,
   },
   clusterDoctorAuditLog: {
     path: '/cluster-doctor/audit-log',

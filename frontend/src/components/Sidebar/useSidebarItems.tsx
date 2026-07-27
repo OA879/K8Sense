@@ -225,6 +225,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Rule Library'),
           },
           {
+            name: 'clusterDoctorNetworkMap',
+            label: t('Network Map'),
+          },
+          {
             name: 'clusterDoctorHistory',
             label: t('History'),
           },

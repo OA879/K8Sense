@@ -118,3 +118,40 @@
   guided_fix: { action: "", warning: "" }
   references:
     - "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
+
+- id: NET-007
+  name: Workload Has No NetworkPolicy
+  severity: WARNING
+  category: network
+  check_fn: check_workload_no_networkpolicy
+  description: >
+    This workload's pods are not selected by any ingress NetworkPolicy, so any
+    pod in the cluster can open connections to them (Kubernetes default-allow).
+    In a zero-trust or regulated environment every workload should be covered.
+  remediation: |
+    1. See what can currently reach it in the Network Map (exposure: open).
+    2. Add a NetworkPolicy selecting this workload that allows only its real
+       clients — e.g. ingress from the frontend on the app port.
+    3. Combine with a namespace default-deny (NET-008) for defence in depth.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+
+- id: NET-008
+  name: Namespace Has No Default-Deny NetworkPolicy
+  severity: INFO
+  category: network
+  check_fn: check_namespace_no_default_deny
+  description: >
+    This namespace runs workloads but has no default-deny ingress NetworkPolicy,
+    so pods accept traffic from anywhere unless individually restricted. A
+    default-deny baseline is the recommended zero-trust starting point.
+  remediation: |
+    1. Apply a default-deny ingress policy to the namespace:
+         apiVersion: networking.k8s.io/v1
+         kind: NetworkPolicy
+         spec: { podSelector: {}, policyTypes: [Ingress] }
+    2. Then add explicit allow policies for the connections you do want.
+  guided_fix: { action: "", warning: "" }
+  references:
+    - "https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-traffic"
