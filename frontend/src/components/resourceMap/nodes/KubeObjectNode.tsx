@@ -142,6 +142,61 @@ const Title = styled('div')({
 
 const EXPAND_DELAY = 450;
 
+// Lightweight database detection for the resource map, mirroring the Network
+// Map's backend heuristics: engine by container image, then by listening port.
+const DB_IMAGE_SIGNATURES: [string, string][] = [
+  ['postgres', 'postgres'],
+  ['timescale', 'postgres'],
+  ['mysql', 'mysql'],
+  ['mariadb', 'mysql'],
+  ['percona', 'mysql'],
+  ['mongo', 'mongodb'],
+  ['redis', 'redis'],
+  ['valkey', 'redis'],
+  ['cassandra', 'cassandra'],
+  ['scylla', 'cassandra'],
+  ['cockroach', 'cockroachdb'],
+  ['elasticsearch', 'elasticsearch'],
+  ['opensearch', 'elasticsearch'],
+  ['clickhouse', 'clickhouse'],
+  ['memcached', 'memcached'],
+  ['rabbitmq', 'rabbitmq'],
+  ['neo4j', 'neo4j'],
+];
+
+const DB_PORT_ENGINES: Record<number, string> = {
+  5432: 'postgres',
+  3306: 'mysql',
+  27017: 'mongodb',
+  6379: 'redis',
+  9042: 'cassandra',
+  26257: 'cockroachdb',
+  9200: 'elasticsearch',
+  8123: 'clickhouse',
+  11211: 'memcached',
+  5672: 'rabbitmq',
+  7687: 'neo4j',
+};
+
+function detectDbEngine(jsonData: any): string | undefined {
+  const spec = jsonData?.spec ?? {};
+  const containers = spec?.template?.spec?.containers ?? spec?.containers ?? [];
+
+  for (const c of containers) {
+    const img = String(c?.image ?? '').toLowerCase();
+    if (img.includes('exporter')) continue;
+    const hit = DB_IMAGE_SIGNATURES.find(([sub]) => img.includes(sub));
+    if (hit) return hit[1];
+  }
+  for (const c of containers) {
+    for (const p of c?.ports ?? []) {
+      const eng = DB_PORT_ENGINES[p?.containerPort];
+      if (eng) return eng;
+    }
+  }
+  return undefined;
+}
+
 export const KubeObjectNodeComponent = memo(({ id }: NodeProps) => {
   const node = useNode(id);
   const [isHovered, setHovered] = useState(false);
@@ -215,7 +270,9 @@ export const KubeObjectNodeComponent = memo(({ id }: NodeProps) => {
   };
 
   const label = node?.label ?? kubeObject?.metadata?.name;
-  const subtitle = node?.subtitle ?? kubeObject?.kind;
+  const dbEngine = detectDbEngine(kubeObject?.jsonData);
+  const baseSubtitle = node?.subtitle ?? kubeObject?.kind ?? '';
+  const subtitle = dbEngine ? `${baseSubtitle} · 🗄️ ${dbEngine}` : baseSubtitle;
 
   if (!node) {
     return null;

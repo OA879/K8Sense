@@ -27,6 +27,10 @@ export interface NetNode {
   kind: string;
   exposure: Exposure;
   protected: boolean;
+  /** True when this workload / external service is a datastore. */
+  database?: boolean;
+  /** Detected engine (postgres, mysql, redis, …) when database is true. */
+  dbEngine?: string;
 }
 
 /** A policy-allowed connection (source -> target). */

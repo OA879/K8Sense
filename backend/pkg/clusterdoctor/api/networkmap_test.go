@@ -106,3 +106,98 @@ func TestBuildNetworkMap_IsolatedAndDefaultAllow(t *testing.T) {
 		t.Errorf("web exposure = %q, want open (no policy in its namespace)", exposure["web"])
 	}
 }
+
+func TestClassifyDB(t *testing.T) {
+	cases := []struct {
+		name       string
+		containers []corev1.Container
+		want       string
+	}{
+		{"postgres image", []corev1.Container{{Image: "postgres:16"}}, "postgres"},
+		{"mariadb image -> mysql", []corev1.Container{{Image: "docker.io/mariadb:11"}}, "mysql"},
+		{"redis by port", []corev1.Container{{Image: "some/app", Ports: []corev1.ContainerPort{{ContainerPort: 6379}}}}, "redis"},
+		{"exporter is not a db", []corev1.Container{{Image: "prometheuscommunity/postgres-exporter"}}, ""},
+		{"plain app", []corev1.Container{{Image: "nginx:alpine", Ports: []corev1.ContainerPort{{ContainerPort: 80}}}}, ""},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := classifyDB(c.containers); got != c.want {
+				t.Fatalf("classifyDB = %q, want %q", got, c.want)
+			}
+		})
+	}
+}
+
+func TestBuildNetworkMap_DetectsDatabase(t *testing.T) {
+	db := &appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "data", Name: "orders-db"},
+		Spec: appsv1.StatefulSetSpec{
+			Template: corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{Containers: []corev1.Container{{Image: "postgres:16"}}},
+			},
+		},
+	}
+	app := deployWithLabels("data", "orders", map[string]string{"app": "orders"})
+
+	m, err := buildNetworkMap(context.Background(), k8sfake.NewSimpleClientset(db, app), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var dbNode, appNode *netNode
+	for i := range m.Nodes {
+		switch m.Nodes[i].Name {
+		case "orders-db":
+			dbNode = &m.Nodes[i]
+		case "orders":
+			appNode = &m.Nodes[i]
+		}
+	}
+
+	if dbNode == nil || !dbNode.Database || dbNode.DBEngine != "postgres" {
+		t.Fatalf("orders-db node = %+v, want database postgres", dbNode)
+	}
+	if appNode == nil || appNode.Database {
+		t.Fatalf("orders app should not be flagged as a database: %+v", appNode)
+	}
+}
+
+func TestExternalDBNodes(t *testing.T) {
+	extName := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "data", Name: "rds-postgres"},
+		Spec: corev1.ServiceSpec{
+			Type:         corev1.ServiceTypeExternalName,
+			ExternalName: "prod.abc123.eu-west-1.rds.amazonaws.com",
+			Ports:        []corev1.ServicePort{{Port: 5432}},
+		},
+	}
+	selectorless := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "data", Name: "external-redis"},
+		Spec: corev1.ServiceSpec{
+			Type:  corev1.ServiceTypeClusterIP,
+			Ports: []corev1.ServicePort{{Port: 6379}},
+		},
+	}
+
+	nodes, err := externalDBNodes(context.Background(),
+		k8sfake.NewSimpleClientset(extName, selectorless), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	engines := map[string]string{}
+	for _, n := range nodes {
+		if n.Kind != "External" || !n.Database {
+			t.Errorf("node %s should be an external database: %+v", n.ID, n)
+		}
+		engines[n.ID] = n.DBEngine
+	}
+
+	if engines["External/data/rds-postgres"] != "postgres" {
+		t.Errorf("rds-postgres engine = %q, want postgres", engines["External/data/rds-postgres"])
+	}
+	if engines["External/data/external-redis"] != "redis" {
+		t.Errorf("external-redis engine = %q, want redis", engines["External/data/external-redis"])
+	}
+}

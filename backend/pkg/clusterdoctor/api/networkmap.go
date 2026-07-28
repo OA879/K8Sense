@@ -33,6 +33,10 @@ type netNode struct {
 	Exposure string `json:"exposure"`
 	// Protected is true when at least one ingress NetworkPolicy selects it.
 	Protected bool `json:"protected"`
+	// Database is set when the workload (or external service) looks like a
+	// datastore; DBEngine names the detected engine (postgres, redis, ...).
+	Database bool   `json:"database,omitempty"`
+	DBEngine string `json:"dbEngine,omitempty"`
 }
 
 // netEdge is one allowed ingress connection (source workload -> target workload).
@@ -61,6 +65,7 @@ type workload struct {
 	name      string
 	kind      string
 	labels    map[string]string
+	dbEngine  string // non-empty when the workload looks like a database
 }
 
 func (w workload) id() string { return w.kind + "/" + w.namespace + "/" + w.name }
@@ -114,6 +119,7 @@ func buildNetworkMap(ctx context.Context, clientset kubernetes.Interface, namesp
 		node := netNode{
 			ID: wl.id(), Namespace: wl.namespace, Name: wl.name,
 			Kind: wl.kind, Exposure: "open",
+			Database: wl.dbEngine != "", DBEngine: wl.dbEngine,
 		}
 
 		selecting := selectingIngressPolicies(wl, policies.Items)
@@ -137,6 +143,16 @@ func buildNetworkMap(ctx context.Context, clientset kubernetes.Interface, namesp
 
 	for _, n := range extraNodes {
 		nsSet[n.Namespace] = true
+	}
+
+	// External databases (ExternalName / selector-less Services) — the cluster's
+	// off-cluster data dependencies.
+	if extDBs, dbErr := externalDBNodes(ctx, clientset, ns); dbErr == nil {
+		nodes = append(nodes, extDBs...)
+
+		for _, n := range extDBs {
+			nsSet[n.Namespace] = true
+		}
 	}
 
 	namespaces := make([]string, 0, len(nsSet))
@@ -163,7 +179,10 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, d := range deploys.Items {
-		out = append(out, workload{d.Namespace, d.Name, "Deployment", d.Spec.Template.Labels})
+		out = append(out, workload{
+			d.Namespace, d.Name, "Deployment", d.Spec.Template.Labels,
+			classifyDB(d.Spec.Template.Spec.Containers),
+		})
 	}
 
 	stateful, err := clientset.AppsV1().StatefulSets(ns).List(ctx, metav1.ListOptions{})
@@ -172,7 +191,10 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, s := range stateful.Items {
-		out = append(out, workload{s.Namespace, s.Name, "StatefulSet", s.Spec.Template.Labels})
+		out = append(out, workload{
+			s.Namespace, s.Name, "StatefulSet", s.Spec.Template.Labels,
+			classifyDB(s.Spec.Template.Spec.Containers),
+		})
 	}
 
 	daemon, err := clientset.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
@@ -181,7 +203,10 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, d := range daemon.Items {
-		out = append(out, workload{d.Namespace, d.Name, "DaemonSet", d.Spec.Template.Labels})
+		out = append(out, workload{
+			d.Namespace, d.Name, "DaemonSet", d.Spec.Template.Labels,
+			classifyDB(d.Spec.Template.Spec.Containers),
+		})
 	}
 
 	return out, nil

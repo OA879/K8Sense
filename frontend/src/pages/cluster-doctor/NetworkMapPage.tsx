@@ -14,21 +14,34 @@
  * limitations under the License.
  */
 
-import { Background, Controls, Edge, MarkerType, MiniMap, Node, ReactFlow } from '@xyflow/react';
+import { Icon } from '@iconify/react';
+import {
+  Background,
+  Controls,
+  Edge,
+  MarkerType,
+  MiniMap,
+  Node,
+  NodeMouseHandler,
+  ReactFlow,
+} from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-import { Exposure, getNetworkMap, NetworkMap } from '../../lib/cluster-doctor-network-api';
+import { Exposure, getNetworkMap, NetNode, NetworkMap } from '../../lib/cluster-doctor-network-api';
 import { useCluster } from '../../lib/k8s';
 
 // Exposure colours: red = reachable by anything (a security concern),
@@ -68,19 +81,24 @@ function useGraph(map: NetworkMap | null, showAllowed: boolean, showLive: boolea
       rowOf.set(n.namespace, row + 1);
 
       const color = EXPOSURE_COLOR[n.exposure];
+      const label = n.database
+        ? `🗄️ ${n.name}\n${n.dbEngine} · ${n.namespace}`
+        : `${n.name}\n${n.namespace} · ${n.kind}`;
 
       return {
         id: n.id,
         position: { x: col * COL_WIDTH, y: row * ROW_HEIGHT },
-        data: { label: `${n.name}\n${n.namespace} · ${n.kind}` },
+        data: { label },
         style: {
           border: `2px solid ${color}`,
-          borderRadius: 8,
+          // Databases get a distinct rounded, tinted look so the datastores
+          // stand out from application workloads at a glance.
+          borderRadius: n.database ? 20 : 8,
           padding: 6,
           fontSize: 11,
           whiteSpace: 'pre-line',
           width: COL_WIDTH - 60,
-          background: 'var(--xy-node-background-color, #1e293b)',
+          background: n.database ? '#312e81' : 'var(--xy-node-background-color, #1e293b)',
         },
       };
     });
@@ -118,6 +136,110 @@ function useGraph(map: NetworkMap | null, showAllowed: boolean, showLive: boolea
   }, [map, showAllowed, showLive]);
 }
 
+/** Side panel shown when a workload node is clicked: its live and policy neighbours. */
+function NodeDetail({ node, map, onClose }: { node: NetNode; map: NetworkMap; onClose: () => void }) {
+  const nameOf = (id: string) => {
+    const n = map.nodes.find(x => x.id === id);
+    return n ? `${n.namespace}/${n.name}` : id;
+  };
+
+  const allowedFrom = map.edges.filter(e => e.target === node.id);
+  const allowedTo = map.edges.filter(e => e.source === node.id);
+  const liveFrom = map.traffic.filter(t => t.target === node.id);
+  const liveTo = map.traffic.filter(t => t.source === node.id);
+
+  const section = (title: string, rows: React.ReactNode[]) => (
+    <Box sx={{ mb: 1.5 }}>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}
+      >
+        {title}
+      </Typography>
+      {rows.length === 0 ? (
+        <Typography variant="body2" color="text.disabled">
+          —
+        </Typography>
+      ) : (
+        rows
+      )}
+    </Box>
+  );
+
+  return (
+    <Paper
+      elevation={6}
+      sx={{ position: 'absolute', top: 8, right: 8, width: 300, p: 2, zIndex: 5, maxHeight: '92%', overflow: 'auto' }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          {node.name}
+        </Typography>
+        <IconButton size="small" onClick={onClose} aria-label="Close">
+          <Icon icon="mdi:close" />
+        </IconButton>
+      </Box>
+      <Typography variant="body2" color="text.secondary">
+        {node.namespace} · {node.kind}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mt: 0.75, mb: 1.5 }}>
+        <Chip
+          size="small"
+          variant="outlined"
+          label={node.exposure}
+          sx={{ borderColor: EXPOSURE_COLOR[node.exposure], color: EXPOSURE_COLOR[node.exposure] }}
+        />
+        {node.database && (
+          <Chip size="small" color="secondary" label={`🗄️ ${node.dbEngine || 'database'}`} />
+        )}
+      </Box>
+      <Divider sx={{ mb: 1.5 }} />
+
+      {map.mesh.enabled && (
+        <>
+          {section(
+            'Live traffic in',
+            liveFrom.map(t => (
+              <Typography key={t.id} variant="body2">
+                ← {nameOf(t.source)} · {t.rps.toFixed(1)} req/s
+              </Typography>
+            ))
+          )}
+          {section(
+            'Live traffic out',
+            liveTo.map(t => (
+              <Typography key={t.id} variant="body2">
+                → {nameOf(t.target)} · {t.rps.toFixed(1)} req/s
+              </Typography>
+            ))
+          )}
+          <Divider sx={{ mb: 1.5 }} />
+        </>
+      )}
+
+      {section(
+        'Allowed to reach it',
+        allowedFrom.map(e => (
+          <Typography key={e.id} variant="body2">
+            ← {nameOf(e.source)}
+            {e.ports ? ` · ${e.ports}` : ''}
+          </Typography>
+        ))
+      )}
+      {section(
+        'It may reach',
+        allowedTo.map(e => (
+          <Typography key={e.id} variant="body2">
+            → {nameOf(e.target)}
+            {e.ports ? ` · ${e.ports}` : ''}
+          </Typography>
+        ))
+      )}
+    </Paper>
+  );
+}
+
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
@@ -135,6 +257,12 @@ export default function NetworkMapPage() {
   const [loading, setLoading] = React.useState(false);
   const [showAllowed, setShowAllowed] = React.useState(true);
   const [showLive, setShowLive] = React.useState(true);
+  const [selected, setSelected] = React.useState<NetNode | null>(null);
+
+  const onNodeClick = React.useCallback<NodeMouseHandler>(
+    (_, node) => setSelected(map?.nodes.find(n => n.id === node.id) ?? null),
+    [map]
+  );
 
   React.useEffect(() => {
     if (!cluster) return;
@@ -225,10 +353,20 @@ export default function NetworkMapPage() {
           {(['open', 'restricted', 'isolated', 'external'] as Exposure[]).map(k => (
             <LegendDot key={k} color={EXPOSURE_COLOR[k]} label={EXPOSURE_LABEL[k]} />
           ))}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Typography variant="caption">🗄️ Database</Typography>
+          </Box>
         </Box>
       </Box>
 
-      <Box sx={{ flex: 1, minHeight: 400, border: theme => `1px solid ${theme.palette.divider}` }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 400,
+          position: 'relative',
+          border: theme => `1px solid ${theme.palette.divider}`,
+        }}
+      >
         {loading && !map ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
             <CircularProgress />
@@ -240,11 +378,23 @@ export default function NetworkMapPage() {
             </Typography>
           </Box>
         ) : (
-          <ReactFlow nodes={nodes} edges={edges} fitView minZoom={0.1}>
-            <Background />
-            <Controls showInteractive={false} />
-            <MiniMap pannable zoomable />
-          </ReactFlow>
+          <>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodeClick={onNodeClick}
+              onPaneClick={() => setSelected(null)}
+              fitView
+              minZoom={0.1}
+            >
+              <Background />
+              <Controls showInteractive={false} />
+              <MiniMap pannable zoomable />
+            </ReactFlow>
+            {selected && map && (
+              <NodeDetail node={selected} map={map} onClose={() => setSelected(null)} />
+            )}
+          </>
         )}
       </Box>
 
