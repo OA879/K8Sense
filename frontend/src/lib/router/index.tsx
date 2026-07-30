@@ -125,6 +125,7 @@ import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
+import CostPage from '../../pages/cluster-doctor/CostPage';
 import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import TimelinePage from '../../pages/cluster-doctor/TimelinePage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
@@ -287,6 +288,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <TimelinePage />,
+  },
+  clusterDoctorCost: {
+    path: '/cluster-doctor/cost',
+    name: 'Cost & Waste',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <CostPage />,
   },
   clusterDoctorAuditLog: {
     path: '/cluster-doctor/audit-log',

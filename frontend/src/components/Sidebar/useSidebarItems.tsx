@@ -233,6 +233,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('What changed?'),
           },
           {
+            name: 'clusterDoctorCost',
+            label: t('Cost & Waste'),
+          },
+          {
             name: 'clusterDoctorHistory',
             label: t('History'),
           },
