@@ -64,7 +64,12 @@ const COL_WIDTH = 300;
 const ROW_HEIGHT = 80;
 
 /** Lays out nodes in one column per namespace so cross-namespace edges read left-to-right. */
-function useGraph(map: NetworkMap | null, showAllowed: boolean, showLive: boolean) {
+function useGraph(
+  map: NetworkMap | null,
+  showAllowed: boolean,
+  showLive: boolean,
+  showInferred: boolean
+) {
   return React.useMemo(() => {
     if (!map) {
       return { nodes: [] as Node[], edges: [] as Edge[] };
@@ -132,8 +137,21 @@ function useGraph(map: NetworkMap | null, showAllowed: boolean, showLive: boolea
       });
     }
 
+    if (showInferred) {
+      (map.inferred ?? []).forEach(e => {
+        edges.push({
+          id: e.id,
+          source: e.source,
+          target: e.target,
+          // Dashed teal = "configured to talk to", distinct from policy/mesh.
+          style: { stroke: '#14b8a6', strokeWidth: 1.5, strokeDasharray: '5 4' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: '#14b8a6' },
+        });
+      });
+    }
+
     return { nodes, edges };
-  }, [map, showAllowed, showLive]);
+  }, [map, showAllowed, showLive, showInferred]);
 }
 
 /** Side panel shown when a workload node is clicked: its live and policy neighbours. */
@@ -147,6 +165,8 @@ function NodeDetail({ node, map, onClose }: { node: NetNode; map: NetworkMap; on
   const allowedTo = map.edges.filter(e => e.source === node.id);
   const liveFrom = map.traffic.filter(t => t.target === node.id);
   const liveTo = map.traffic.filter(t => t.source === node.id);
+  const wiresTo = (map.inferred ?? []).filter(e => e.source === node.id);
+  const wiredFrom = (map.inferred ?? []).filter(e => e.target === node.id);
 
   const section = (title: string, rows: React.ReactNode[]) => (
     <Box sx={{ mb: 1.5 }}>
@@ -236,6 +256,26 @@ function NodeDetail({ node, map, onClose }: { node: NetNode; map: NetworkMap; on
           </Typography>
         ))
       )}
+
+      {(wiresTo.length > 0 || wiredFrom.length > 0) && <Divider sx={{ mb: 1.5 }} />}
+      {wiresTo.length > 0 &&
+        section(
+          'Wires to (from config)',
+          wiresTo.map(e => (
+            <Typography key={e.id} variant="body2" sx={{ color: '#14b8a6' }}>
+              ⇢ {nameOf(e.target)} · via {e.via}
+            </Typography>
+          ))
+        )}
+      {wiredFrom.length > 0 &&
+        section(
+          'Wired from (from config)',
+          wiredFrom.map(e => (
+            <Typography key={e.id} variant="body2" sx={{ color: '#14b8a6' }}>
+              ⇠ {nameOf(e.source)}
+            </Typography>
+          ))
+        )}
     </Paper>
   );
 }
@@ -257,6 +297,7 @@ export default function NetworkMapPage() {
   const [loading, setLoading] = React.useState(false);
   const [showAllowed, setShowAllowed] = React.useState(true);
   const [showLive, setShowLive] = React.useState(true);
+  const [showInferred, setShowInferred] = React.useState(true);
   const [selected, setSelected] = React.useState<NetNode | null>(null);
 
   const onNodeClick = React.useCallback<NodeMouseHandler>(
@@ -287,14 +328,15 @@ export default function NetworkMapPage() {
     };
   }, [cluster, namespace]);
 
-  const { nodes, edges } = useGraph(map, showAllowed, showLive);
+  const { nodes, edges } = useGraph(map, showAllowed, showLive, showInferred);
 
   return (
     <Box sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4">Network Map</Typography>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
-        What can reach what in <strong>{cluster}</strong>, derived from NetworkPolicies. Node colour
-        shows ingress exposure; grey arrows are policy-allowed connections.
+        How your workloads connect in <strong>{cluster}</strong>. Node colour shows ingress exposure;
+        grey arrows are policy-allowed connections, and dashed teal arrows are connections inferred
+        from app config (env / args / ConfigMaps).
       </Typography>
 
       {/* Mesh status banner */}
@@ -348,6 +390,10 @@ export default function NetworkMapPage() {
           }
           label="Live traffic"
         />
+        <FormControlLabel
+          control={<Switch checked={showInferred} onChange={e => setShowInferred(e.target.checked)} />}
+          label="Inferred (config)"
+        />
         <Box sx={{ flex: 1 }} />
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           {(['open', 'restricted', 'isolated', 'external'] as Exposure[]).map(k => (
@@ -355,6 +401,10 @@ export default function NetworkMapPage() {
           ))}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
             <Typography variant="caption">🗄️ Database</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Box sx={{ width: 18, borderTop: '2px dashed #14b8a6' }} />
+            <Typography variant="caption">Inferred (from config)</Typography>
           </Box>
         </Box>
       </Box>
@@ -402,6 +452,7 @@ export default function NetworkMapPage() {
         <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
           <Chip size="small" label={`${map.nodes.length} workloads`} sx={{ mr: 1 }} />
           <Chip size="small" label={`${map.edges.length} allowed connections`} sx={{ mr: 1 }} />
+          <Chip size="small" label={`${(map.inferred ?? []).length} inferred`} sx={{ mr: 1 }} />
           {map.mesh.enabled && <Chip size="small" label={`${map.traffic.length} live flows`} />}
         </Typography>
       )}

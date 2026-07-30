@@ -51,21 +51,24 @@ type netEdge struct {
 // Edges are policy-allowed connections; Traffic (present only when a mesh is
 // detected) are live observed flows.
 type netMap struct {
-	Nodes      []netNode     `json:"nodes"`
-	Edges      []netEdge     `json:"edges"`
-	Traffic    []trafficEdge `json:"traffic"`
-	Mesh       meshInfo      `json:"mesh"`
-	Namespaces []string      `json:"namespaces"`
+	Nodes      []netNode      `json:"nodes"`
+	Edges      []netEdge      `json:"edges"`
+	Traffic    []trafficEdge  `json:"traffic"`
+	Inferred   []inferredEdge `json:"inferred"`
+	Mesh       meshInfo       `json:"mesh"`
+	Namespaces []string       `json:"namespaces"`
 }
 
 // workload is the internal unit the analyzer reasons about — a controller whose
 // pod template labels are what NetworkPolicies select on.
 type workload struct {
-	namespace string
-	name      string
-	kind      string
-	labels    map[string]string
-	dbEngine  string // non-empty when the workload looks like a database
+	namespace  string
+	name       string
+	kind       string
+	labels     map[string]string
+	dbEngine   string   // non-empty when the workload looks like a database
+	configText string   // env values + args/command, for connection inference
+	configMaps []string // ConfigMaps referenced (envFrom / volumes), by name
 }
 
 func (w workload) id() string { return w.kind + "/" + w.namespace + "/" + w.name }
@@ -133,6 +136,10 @@ func buildNetworkMap(ctx context.Context, clientset kubernetes.Interface, namesp
 		nodes = append(nodes, node)
 	}
 
+	// Inferred connections — who is *configured* to talk to whom (env/args/
+	// ConfigMap references to a Service), independent of policy or mesh.
+	inferred := inferredConnections(ctx, clientset, workloads, ns)
+
 	// Live-traffic overlay — present only when a mesh's Prometheus is reachable.
 	mesh, traffic, extraNodes := meshTraffic(ctx, clientset, namespace, workloads)
 	if traffic == nil {
@@ -163,7 +170,7 @@ func buildNetworkMap(ctx context.Context, clientset kubernetes.Interface, namesp
 	sort.Strings(namespaces)
 
 	return netMap{
-		Nodes: nodes, Edges: edges, Traffic: traffic,
+		Nodes: nodes, Edges: edges, Traffic: traffic, Inferred: inferred,
 		Mesh: mesh, Namespaces: namespaces,
 	}, nil
 }
@@ -179,10 +186,7 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, d := range deploys.Items {
-		out = append(out, workload{
-			d.Namespace, d.Name, "Deployment", d.Spec.Template.Labels,
-			classifyDB(d.Spec.Template.Spec.Containers),
-		})
+		out = append(out, makeWorkload(d.Namespace, d.Name, "Deployment", d.Spec.Template))
 	}
 
 	stateful, err := clientset.AppsV1().StatefulSets(ns).List(ctx, metav1.ListOptions{})
@@ -191,10 +195,7 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, s := range stateful.Items {
-		out = append(out, workload{
-			s.Namespace, s.Name, "StatefulSet", s.Spec.Template.Labels,
-			classifyDB(s.Spec.Template.Spec.Containers),
-		})
+		out = append(out, makeWorkload(s.Namespace, s.Name, "StatefulSet", s.Spec.Template))
 	}
 
 	daemon, err := clientset.AppsV1().DaemonSets(ns).List(ctx, metav1.ListOptions{})
@@ -203,10 +204,7 @@ func listWorkloads(ctx context.Context, clientset kubernetes.Interface, ns strin
 	}
 
 	for _, d := range daemon.Items {
-		out = append(out, workload{
-			d.Namespace, d.Name, "DaemonSet", d.Spec.Template.Labels,
-			classifyDB(d.Spec.Template.Spec.Containers),
-		})
+		out = append(out, makeWorkload(d.Namespace, d.Name, "DaemonSet", d.Spec.Template))
 	}
 
 	return out, nil

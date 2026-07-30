@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -199,5 +200,62 @@ func TestExternalDBNodes(t *testing.T) {
 	}
 	if engines["External/data/external-redis"] != "redis" {
 		t.Errorf("external-redis engine = %q, want redis", engines["External/data/external-redis"])
+	}
+}
+
+func TestReferencesService(t *testing.T) {
+	tok := serviceRefTokens("orders-db", "shop")
+	cases := []struct {
+		text string
+		want bool
+	}{
+		{"postgres://orders-db:5432/orders", true},   // bare name, host-like
+		{"host: orders-db.shop.svc.cluster.local", true}, // fqdn
+		{"myorders-dbx=1", false},                    // substring, not a token
+		{"orders-db-replica:5432", false},            // different service (dash after)
+		{"nothing relevant here", false},
+	}
+	for _, c := range cases {
+		if got := referencesService(strings.ToLower(c.text), "orders-db", tok); got != c.want {
+			t.Errorf("referencesService(%q) = %v, want %v", c.text, got, c.want)
+		}
+	}
+
+	// Short names are not matched bare (avoid noise); only FQDN would.
+	if referencesService("db db db", "db", serviceRefTokens("db", "x")) {
+		t.Error("short bare name 'db' should not match")
+	}
+}
+
+func TestInferredConnections_AppToDB(t *testing.T) {
+	ordersTmpl := corev1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "orders"}},
+		Spec: corev1.PodSpec{Containers: []corev1.Container{{
+			Image: "orders:1",
+			Env:   []corev1.EnvVar{{Name: "DATABASE_URL", Value: "postgres://orders-db:5432/orders"}},
+		}}},
+	}
+	dbTmpl := corev1.PodTemplateSpec{
+		ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"app": "orders-db"}},
+		Spec:       corev1.PodSpec{Containers: []corev1.Container{{Image: "postgres:16"}}},
+	}
+
+	orders := makeWorkload("shop", "orders", "Deployment", ordersTmpl)
+	db := makeWorkload("shop", "orders-db", "StatefulSet", dbTmpl)
+
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "shop", Name: "orders-db"},
+		Spec:       corev1.ServiceSpec{Selector: map[string]string{"app": "orders-db"}},
+	}
+
+	edges := inferredConnections(context.Background(), k8sfake.NewSimpleClientset(svc),
+		[]workload{orders, db}, "")
+
+	if len(edges) != 1 {
+		t.Fatalf("got %d inferred edges, want 1: %+v", len(edges), edges)
+	}
+	e := edges[0]
+	if e.Source != "Deployment/shop/orders" || e.Target != "StatefulSet/shop/orders-db" || e.Via != "orders-db" {
+		t.Fatalf("edge = %+v, want orders -> orders-db via orders-db", e)
 	}
 }

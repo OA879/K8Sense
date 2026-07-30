@@ -49,6 +49,14 @@ export interface TrafficEdge {
   rps: number;
 }
 
+/** A configured (not observed) connection inferred from env/args/ConfigMap. */
+export interface InferredEdge {
+  id: string;
+  source: string;
+  target: string;
+  via: string;
+}
+
 export interface MeshInfo {
   enabled: boolean;
   source?: string;
@@ -58,6 +66,7 @@ export interface NetworkMap {
   nodes: NetNode[];
   edges: NetEdge[];
   traffic: TrafficEdge[];
+  inferred: InferredEdge[];
   mesh: MeshInfo;
   namespaces: string[];
 }
