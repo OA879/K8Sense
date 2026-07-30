@@ -229,6 +229,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Network Map'),
           },
           {
+            name: 'clusterDoctorTimeline',
+            label: t('What changed?'),
+          },
+          {
             name: 'clusterDoctorHistory',
             label: t('History'),
           },
