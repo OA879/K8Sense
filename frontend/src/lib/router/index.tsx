@@ -128,6 +128,7 @@ import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
 import CostPage from '../../pages/cluster-doctor/CostPage';
 import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import TimelinePage from '../../pages/cluster-doctor/TimelinePage';
+import UpgradePage from '../../pages/cluster-doctor/UpgradePage';
 import RulesPage from '../../pages/cluster-doctor/RulesPage';
 import CDSettingsPage from '../../pages/cluster-doctor/SettingsPage';
 import ScanDiffPage from '../../pages/cluster-doctor/ScanDiffPage';
@@ -295,6 +296,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <CostPage />,
+  },
+  clusterDoctorUpgrade: {
+    path: '/cluster-doctor/upgrade',
+    name: 'Upgrade Readiness',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <UpgradePage />,
   },
   clusterDoctorAuditLog: {
     path: '/cluster-doctor/audit-log',

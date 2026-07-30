@@ -237,6 +237,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Cost & Waste'),
           },
           {
+            name: 'clusterDoctorUpgrade',
+            label: t('Upgrade Readiness'),
+          },
+          {
             name: 'clusterDoctorHistory',
             label: t('History'),
           },

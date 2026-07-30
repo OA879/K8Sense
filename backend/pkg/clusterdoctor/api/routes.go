@@ -29,6 +29,7 @@ func (s *Server) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/cluster-doctor/network-map", s.NetworkMap).Methods("GET")
 	r.HandleFunc("/cluster-doctor/timeline", s.Timeline).Methods("GET")
 	r.HandleFunc("/cluster-doctor/cost", s.Cost).Methods("GET")
+	r.HandleFunc("/cluster-doctor/upgrade", s.UpgradeReadiness).Methods("GET")
 	r.HandleFunc("/cluster-doctor/guided-fix", s.GuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/guided-fix/revert", s.RevertGuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/suppress", s.SuppressFinding).Methods("POST")
