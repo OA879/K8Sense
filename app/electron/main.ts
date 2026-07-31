@@ -1342,7 +1342,7 @@ function killProcess(pid: number) {
   }
 }
 
-const ZOOM_FILE_PATH = path.join(app.getPath('userData'), 'headlamp-config.json');
+const ZOOM_FILE_PATH = path.join(app.getPath('userData'), 'k8sense-config.json');
 let cachedZoom: number = 1.0;
 
 function saveZoomFactor(factor: number) {

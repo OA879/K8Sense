@@ -474,11 +474,11 @@ func Parse(args []string) (*Config, error) {
 func MakeHeadlampKubeConfigsDir() (string, error) {
 	userConfigDir, err := os.UserConfigDir()
 	if err == nil {
-		kubeConfigDir := filepath.Join(userConfigDir, "Headlamp", "kubeconfigs")
+		kubeConfigDir := filepath.Join(userConfigDir, "K8sense", "kubeconfigs")
 		if runtime.GOOS == osWindows {
 			// golang is wrong for config folder on windows.
 			// This matches env-paths and headlamp-plugin.
-			kubeConfigDir = filepath.Join(userConfigDir, "Headlamp", "Config", "kubeconfigs")
+			kubeConfigDir = filepath.Join(userConfigDir, "K8sense", "Config", "kubeconfigs")
 		}
 
 		// Create the directory if it doesn't exist.
@@ -654,11 +654,11 @@ func defaultPluginDir() string {
 		return ""
 	}
 
-	pluginsConfigDir := filepath.Join(userConfigDir, "Headlamp", "plugins")
+	pluginsConfigDir := filepath.Join(userConfigDir, "K8sense", "plugins")
 	if runtime.GOOS == osWindows {
 		// golang is wrong for config folder on windows.
 		// This matches env-paths and headlamp-plugin.
-		pluginsConfigDir = filepath.Join(userConfigDir, "Headlamp", "Config", "plugins")
+		pluginsConfigDir = filepath.Join(userConfigDir, "K8sense", "Config", "plugins")
 	}
 
 	fileMode := 0o755
@@ -688,11 +688,11 @@ func defaultUserPluginDir() string {
 		return ""
 	}
 
-	userPluginsConfigDir := filepath.Join(userConfigDir, "Headlamp", "user-plugins")
+	userPluginsConfigDir := filepath.Join(userConfigDir, "K8sense", "user-plugins")
 	if runtime.GOOS == osWindows {
 		// golang is wrong for config folder on windows.
 		// This matches env-paths and headlamp-plugin.
-		userPluginsConfigDir = filepath.Join(userConfigDir, "Headlamp", "Config", "user-plugins")
+		userPluginsConfigDir = filepath.Join(userConfigDir, "K8sense", "Config", "user-plugins")
 	}
 
 	fileMode := 0o755

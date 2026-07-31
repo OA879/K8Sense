@@ -28,7 +28,7 @@ import (
 
 var (
 	Version = "unknown"
-	AppName = "Headlamp"
+	AppName = "K8sense"
 )
 
 // userAgentRoundTripper wraps an http.RoundTripper and adds a Headlamp User-Agent header.
