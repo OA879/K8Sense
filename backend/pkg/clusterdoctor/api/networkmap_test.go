@@ -209,10 +209,13 @@ func TestReferencesService(t *testing.T) {
 		text string
 		want bool
 	}{
-		{"postgres://orders-db:5432/orders", true},   // bare name, host-like
+		{"postgres://orders-db:5432/orders", true},       // url + port
+		{"db_host=orders-db", true},                      // env assignment value
+		{"database: orders-db", true},                    // yaml value
 		{"host: orders-db.shop.svc.cluster.local", true}, // fqdn
-		{"myorders-dbx=1", false},                    // substring, not a token
-		{"orders-db-replica:5432", false},            // different service (dash after)
+		{"myorders-dbx=1", false},                        // substring, not a token
+		{"orders-db-replica:5432", false},                // different service (dash after)
+		{"the orders-db is nice", false},                 // bare mention, not host-like
 		{"nothing relevant here", false},
 	}
 	for _, c := range cases {
@@ -221,8 +224,14 @@ func TestReferencesService(t *testing.T) {
 		}
 	}
 
+	// CoreDNS-style false positive: a Corefile "prometheus :9153" directive must
+	// NOT match a prometheus Service (space before the colon = not host-like).
+	if referencesService("prometheus :9153\n cache 30", "prometheus", serviceRefTokens("prometheus", "kube-system")) {
+		t.Error("CoreDNS 'prometheus :9153' directive should not match a prometheus service")
+	}
+
 	// Short names are not matched bare (avoid noise); only FQDN would.
-	if referencesService("db db db", "db", serviceRefTokens("db", "x")) {
+	if referencesService("db=db db", "db", serviceRefTokens("db", "x")) {
 		t.Error("short bare name 'db' should not match")
 	}
 }

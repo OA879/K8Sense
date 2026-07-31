@@ -203,7 +203,10 @@ func serviceRefTokens(name, ns string) []string {
 }
 
 // referencesService reports whether text refers to the Service: any FQDN form as
-// a substring, or the bare name as a whole token (guarded against short names).
+// a substring, or the bare name as a whole token in a *host-like* position.
+// The host-like requirement is what stops false positives such as CoreDNS's
+// Corefile mentioning "prometheus" (its metrics plugin) matching a prometheus
+// Service — that's not a connection.
 func referencesService(text, name string, tokens []string) bool {
 	for _, tok := range tokens {
 		if strings.Contains(text, tok) {
@@ -211,12 +214,13 @@ func referencesService(text, name string, tokens []string) bool {
 		}
 	}
 
-	return len(name) >= 3 && boundedContains(text, strings.ToLower(name))
+	return len(name) >= 3 && hostLikeToken(text, strings.ToLower(name))
 }
 
-// boundedContains matches word as a whole token, where a token boundary is any
-// character that isn't part of a DNS label (a-z, 0-9, or '-').
-func boundedContains(text, word string) bool {
+// hostLikeToken matches word as a whole DNS-label token that appears where a
+// host would: as a URL host (scheme://word or user@word), an assignment value
+// (KEY=word, "key: word"), or with a port (word:1234).
+func hostLikeToken(text, word string) bool {
 	from := 0
 
 	for {
@@ -226,21 +230,46 @@ func boundedContains(text, word string) bool {
 		}
 
 		pos := from + i
+		end := pos + len(word)
 
 		var before, after byte = ' ', ' '
 		if pos > 0 {
 			before = text[pos-1]
 		}
 
-		if pos+len(word) < len(text) {
-			after = text[pos+len(word)]
+		if end < len(text) {
+			after = text[end]
 		}
 
-		if !isLabelChar(before) && !isLabelChar(after) {
+		if !isLabelChar(before) && !isLabelChar(after) && hostLikeContext(text, pos, end) {
 			return true
 		}
 
 		from = pos + 1
+	}
+}
+
+// hostLikeContext checks that the token at [pos:end] sits in a connection-like
+// position.
+func hostLikeContext(text string, pos, end int) bool {
+	// word:<digit>  — a port follows.
+	if end+1 < len(text) && text[end] == ':' && text[end+1] >= '0' && text[end+1] <= '9' {
+		return true
+	}
+
+	before := text[:pos]
+
+	switch {
+	case strings.HasSuffix(before, "://"): // scheme://host
+		return true
+	case strings.HasSuffix(before, "@"): // user@host
+		return true
+	case strings.HasSuffix(before, "="): // KEY=host
+		return true
+	case strings.HasSuffix(strings.TrimRight(before, " "), ":"): // "key: host"
+		return true
+	default:
+		return false
 	}
 }
 
