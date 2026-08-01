@@ -66,7 +66,7 @@ export default function ReleaseNotes() {
               setFetchingRelease(true);
             }, 5000);
 
-            const githubReleaseURL = `https://api.github.com/repos/kinvolk/headlamp/releases`;
+            const githubReleaseURL = `https://api.github.com/repos/OA879/K8Sense/releases`;
 
             try {
               // get all the releases -> default decreasing order of releases
@@ -84,20 +84,20 @@ export default function ReleaseNotes() {
 
               type GithubRelease = {
                 name: string;
+                tag_name: string;
                 html_url: string;
                 body: string;
+                prerelease: boolean;
               };
 
               const releases: GithubRelease[] = await response.json();
 
-              // Get the latest release that is not headlamp-plugin or headlamp-helm.
-              const latestRelease = releases.find(
-                release => !release.name?.startsWith('headlamp-')
-              );
+              // Latest published release with a semver-valid tag (e.g. v0.1.2).
+              const latestRelease = releases.find(release => !!semver.valid(release.tag_name));
 
               if (
                 latestRelease &&
-                semver.gt(latestRelease.name, currentBuildAppVersion) &&
+                semver.gt(latestRelease.tag_name, currentBuildAppVersion) &&
                 !import.meta.env.FLATPAK_ID
               ) {
                 setReleaseDownloadURL(latestRelease.html_url);
@@ -110,7 +110,7 @@ export default function ReleaseNotes() {
 
               if (storedAppVersion && semver.lt(storedAppVersion, currentBuildAppVersion)) {
                 // get the release notes for the version with which the app was built
-                const tagReleaseURL = `https://api.github.com/repos/kinvolk/headlamp/releases/tags/v${currentBuildAppVersion}`;
+                const tagReleaseURL = `https://api.github.com/repos/OA879/K8Sense/releases/tags/v${currentBuildAppVersion}`;
 
                 try {
                   const tagResponse = await fetch(tagReleaseURL, {
