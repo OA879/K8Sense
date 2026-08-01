@@ -125,6 +125,7 @@ import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
+import CompliancePage from '../../pages/cluster-doctor/CompliancePage';
 import CostPage from '../../pages/cluster-doctor/CostPage';
 import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import TimelinePage from '../../pages/cluster-doctor/TimelinePage';
@@ -303,6 +304,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <UpgradePage />,
+  },
+  clusterDoctorCompliance: {
+    path: '/cluster-doctor/compliance',
+    name: 'Compliance & CIS Benchmark',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <CompliancePage />,
   },
   clusterDoctorAuditLog: {
     path: '/cluster-doctor/audit-log',

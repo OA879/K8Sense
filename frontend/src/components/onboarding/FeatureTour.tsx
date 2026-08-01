@@ -61,6 +61,11 @@ const STEPS: TourStep[] = [
     body: 'Know exactly what will break before a Kubernetes upgrade — deprecated and removed APIs, listed per resource with the replacement. Turns the scariest chore into a checklist.',
   },
   {
+    icon: 'mdi:shield-check-outline',
+    title: 'Compliance & CIS Benchmark',
+    body: 'One-click audit against the CIS Kubernetes Benchmark — Pod Security, RBAC wildcards, cluster-admin bindings, Network Policies. A pass/fail score with per-control findings, evaluated live and fully offline.',
+  },
+  {
     icon: 'mdi:clipboard-list-outline',
     title: 'Full audit trail',
     body: 'Every action is recorded — who did what, when, and the result. Exportable to CSV. Built for regulated, air-gapped environments where nothing leaves the perimeter.',

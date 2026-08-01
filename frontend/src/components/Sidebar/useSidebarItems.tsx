@@ -241,6 +241,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Upgrade Readiness'),
           },
           {
+            name: 'clusterDoctorCompliance',
+            label: t('Compliance / CIS'),
+          },
+          {
             name: 'clusterDoctorHistory',
             label: t('History'),
           },
