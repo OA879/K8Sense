@@ -37,6 +37,7 @@
     "appId": "io.k8sense.K8sense",
     "beforeBuild": "./scripts/build-backend.js",
     "afterPack": "./scripts/after-pack.js",
+    "afterSign": "./scripts/after-sign.js",
     "asar": false,
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "protocols": {
@@ -103,6 +104,7 @@
     },
     "mac": {
       "appId": "io.k8sense.K8sense",
+      "identity": null,
       "target": [
         {
           "target": "dmg",
@@ -113,7 +115,7 @@
         }
       ],
       "gatekeeperAssess": false,
-      "hardenedRuntime": true,
+      "hardenedRuntime": false,
       "entitlements": "mac/entitlements.mac.plist",
       "entitlementsInherit": "mac/entitlements.mac.plist",
       "extraResources": [
