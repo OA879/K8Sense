@@ -35,10 +35,10 @@ import {
 import { useCluster } from '../../lib/k8s';
 
 const SUGGESTIONS = [
-  'What are the most critical issues on this cluster right now?',
-  'Walk me through fixing the top finding.',
+  'What is crashing or unhealthy right now?',
+  'What are the most critical findings, and how do I fix the top one?',
+  'Any recent warning events I should worry about?',
   'Is this cluster safe to upgrade?',
-  'Summarise the security posture in plain English.',
 ];
 
 function StatusDot({ status }: { status: AIStatus | null }) {
@@ -170,7 +170,8 @@ export default function CopilotPage() {
       </Box>
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         An offline AI assistant grounded in <strong>{cluster || 'your cluster'}</strong>&apos;s latest
-        scan — runs on your own hardware, no data leaves your network.
+        scan <em>and</em> its live state (unhealthy pods, warning events, node health) — runs on your
+        own hardware, no data leaves your network.
       </Typography>
 
       {status && status.enabled && !status.reachable && <OfflineHelp status={status} />}

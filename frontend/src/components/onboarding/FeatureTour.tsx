@@ -63,7 +63,7 @@ const STEPS: TourStep[] = [
   {
     icon: 'mdi:robot-happy-outline',
     title: 'Copilot (offline AI)',
-    body: 'An AI assistant grounded in your cluster\'s own findings — ask what\'s critical, how to fix it, or whether it\'s safe to upgrade. Runs entirely on your hardware with a local model: no API key, no cloud, nothing leaves your network.',
+    body: 'An AI assistant grounded in your cluster\'s findings and its live state — ask what\'s crashing right now, how to fix the top issue, or whether it\'s safe to upgrade. Runs entirely on your hardware with a local model: no API key, no cloud, nothing leaves your network.',
   },
   {
     icon: 'mdi:shield-check-outline',

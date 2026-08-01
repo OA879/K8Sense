@@ -91,8 +91,18 @@ func (s *Server) AIChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	grounding := renderGroundingPrompt(req.Cluster, s.groundingFindings(r.Context(), req.Cluster, req.ScanID))
-	system := ai.Message{Role: "system", Content: grounding}
+	// Best-effort live snapshot: if the cluster is reachable, ground the model in
+	// its current state too. A failure here (cluster offline, RBAC) simply falls
+	// back to findings-only grounding rather than blocking the chat.
+	var live *liveSnapshot
+	if req.Cluster != "" {
+		if clientset, err := s.getClient(r, req.Cluster); err == nil {
+			live = gatherLiveSnapshot(r.Context(), clientset, "")
+		}
+	}
+
+	findings := s.groundingFindings(r.Context(), req.Cluster, req.ScanID)
+	system := ai.Message{Role: "system", Content: renderGroundingPrompt(req.Cluster, findings, live)}
 	messages := append([]ai.Message{system}, req.Messages...)
 
 	reply, err := client.Chat(r.Context(), messages)
@@ -110,16 +120,17 @@ func (s *Server) AIChat(w http.ResponseWriter, r *http.Request) {
 // renderGroundingPrompt builds the system prompt: the Copilot's role plus a
 // compact, severity-sorted summary of the cluster's current findings. Pure and
 // deterministic given its inputs, so it can be tested without a database.
-func renderGroundingPrompt(cluster string, findings []clusterdoctor.Finding) string {
+func renderGroundingPrompt(cluster string, findings []clusterdoctor.Finding, live *liveSnapshot) string {
 	var b strings.Builder
 
 	b.WriteString(
 		"You are K8sense Copilot, an expert Kubernetes SRE assistant embedded in an " +
 			"air-gapped cluster-operations tool. Answer concisely and practically. Base your " +
-			"answers on the CLUSTER FINDINGS below and on sound general Kubernetes knowledge. " +
-			"Never invent resource names, namespaces, or findings that are not present in the " +
-			"context. When you suggest a fix, prefer kubectl commands or manifest changes and " +
-			"call out anything risky. If the context does not contain the answer, say so plainly.\n\n")
+			"answers on the CLUSTER FINDINGS and LIVE CLUSTER STATE below and on sound general " +
+			"Kubernetes knowledge. Never invent resource names, namespaces, or findings that are " +
+			"not present in the context. When you suggest a fix, prefer kubectl commands or " +
+			"manifest changes and call out anything risky. If the context does not contain the " +
+			"answer, say so plainly.\n\n")
 
 	if cluster == "" {
 		b.WriteString("No specific cluster is selected.\n")
@@ -135,31 +146,32 @@ func renderGroundingPrompt(cluster string, findings []clusterdoctor.Finding) str
 
 	if len(findings) == 0 {
 		b.WriteString("CLUSTER FINDINGS: none available (no recent scan, or the last scan was clean).\n")
-		return b.String()
-	}
+	} else {
+		fmt.Fprintf(&b, "CLUSTER FINDINGS (%s, most severe first):\n", severitySummary(findings))
 
-	fmt.Fprintf(&b, "CLUSTER FINDINGS (%s, most severe first):\n", severitySummary(findings))
-
-	shown := findings
-	if len(shown) > maxGroundingFindings {
-		shown = shown[:maxGroundingFindings]
-	}
-
-	for _, f := range shown {
-		resource := strings.TrimPrefix(f.Namespace+"/"+f.ResourceName, "/")
-		fmt.Fprintf(&b, "- [%s] %s — %s %q: %s",
-			strings.ToUpper(f.Severity), f.RuleName, f.ResourceKind, resource, f.Description)
-
-		if f.Remediation != "" {
-			fmt.Fprintf(&b, " (remediation: %s)", f.Remediation)
+		shown := findings
+		if len(shown) > maxGroundingFindings {
+			shown = shown[:maxGroundingFindings]
 		}
 
-		b.WriteByte('\n')
+		for _, f := range shown {
+			resource := strings.TrimPrefix(f.Namespace+"/"+f.ResourceName, "/")
+			fmt.Fprintf(&b, "- [%s] %s — %s %q: %s",
+				strings.ToUpper(f.Severity), f.RuleName, f.ResourceKind, resource, f.Description)
+
+			if f.Remediation != "" {
+				fmt.Fprintf(&b, " (remediation: %s)", f.Remediation)
+			}
+
+			b.WriteByte('\n')
+		}
+
+		if len(findings) > len(shown) {
+			fmt.Fprintf(&b, "...and %d more lower-severity findings.\n", len(findings)-len(shown))
+		}
 	}
 
-	if len(findings) > len(shown) {
-		fmt.Fprintf(&b, "...and %d more lower-severity findings.\n", len(findings)-len(shown))
-	}
+	renderLiveSnapshot(&b, live)
 
 	return b.String()
 }
