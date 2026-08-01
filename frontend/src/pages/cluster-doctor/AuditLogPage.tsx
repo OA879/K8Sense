@@ -87,7 +87,7 @@ export default function AuditLogPage() {
     setError(null);
 
     try {
-      await revertGuidedFix(entry.id);
+      await revertGuidedFix(entry.id, entry.clusterId);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));

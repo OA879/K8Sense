@@ -104,7 +104,27 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 	getClient := func(req *http.Request, clusterName string) (kubernetes.Interface, error) {
 		ctxtProxy, err := config.KubeConfigStore.GetContext(clusterName)
 		if err != nil {
-			return nil, err
+			// The plain-name lookup only sees clusters loaded from disk at startup.
+			// A cluster added live in the browser is "stateless": its kubeconfig is
+			// not on the server but arrives per-request in the KUBECONFIG header and
+			// is cached under a per-user composite key. Mirror the main proxy's
+			// resolution so Cluster Doctor works for those clusters too.
+			kubeConfig := req.Header.Get("KUBECONFIG")
+			if kubeConfig == "" || !config.EnableDynamicClusters {
+				return nil, err
+			}
+
+			userID := req.Header.Get("X-K8SENSE-USER-ID")
+
+			key, sErr := config.cacheStatelessContext(kubeConfig, clusterName, userID)
+			if sErr != nil {
+				return nil, sErr
+			}
+
+			ctxtProxy, err = config.KubeConfigStore.GetContext(key)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		token := config.requestTokenForContext(req, clusterName, ctxtProxy)

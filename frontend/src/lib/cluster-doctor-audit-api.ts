@@ -53,13 +53,21 @@ export function canRevert(entry: AuditEntry): boolean {
   );
 }
 
-/** Undoes a previously-applied reversible guided fix (scale / uncordon). */
-export function revertGuidedFix(auditId: string): Promise<{ result: string; message: string }> {
-  return apiFetch('/guided-fix/revert', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ auditId, confirmed: true }),
-  });
+/** Undoes a previously-applied reversible guided fix (scale / uncordon). Pass the
+ *  entry's cluster so the undo reaches stateless (browser-added) clusters too. */
+export function revertGuidedFix(
+  auditId: string,
+  cluster?: string
+): Promise<{ result: string; message: string }> {
+  return apiFetch(
+    '/guided-fix/revert',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auditId, confirmed: true }),
+    },
+    cluster
+  );
 }
 
 /** Downloads the full audit log for a cluster as a CSV file. */

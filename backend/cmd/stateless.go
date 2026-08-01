@@ -23,9 +23,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gorilla/mux"
 	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/OA879/K8Sense/backend/pkg/logger"
+	"github.com/gorilla/mux"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -93,10 +93,19 @@ func (c *HeadlampConfig) setKeyInCache(key string, context kubeconfig.Context) e
 // Handles stateless cluster requests if kubeconfig is set and dynamic clusters are enabled.
 // It returns context key which is used to store the context in the cache.
 func (c *HeadlampConfig) handleStatelessReq(r *http.Request, kubeConfig string) (string, error) {
-	var contextKey string
-
 	userID := r.Header.Get("X-K8SENSE-USER-ID")
 	targetClusterName := mux.Vars(r)["clusterName"]
+
+	return c.cacheStatelessContext(kubeConfig, targetClusterName, userID)
+}
+
+// cacheStatelessContext loads the base64 kubeConfig, caches the context matching
+// targetClusterName under a per-user key, and returns that key. It's the reusable
+// core of handleStatelessReq: callers whose cluster name doesn't come from the
+// {clusterName} route var (e.g. Cluster Doctor, which passes it as a query param)
+// call this directly.
+func (c *HeadlampConfig) cacheStatelessContext(kubeConfig, targetClusterName, userID string) (string, error) {
+	var contextKey string
 
 	contexts, contextLoadErrors, err := kubeconfig.LoadContextsFromBase64String(kubeConfig, kubeconfig.DynamicCluster)
 	if len(contextLoadErrors) > 0 {

@@ -21,6 +21,8 @@
  */
 import { getAppUrl } from '../helpers/getAppUrl';
 import { getHeadlampAPIHeaders } from '../helpers/getHeadlampAPIHeaders';
+import { findKubeconfigByClusterName } from '../stateless/findKubeconfigByClusterName';
+import { getUserIdFromLocalStorage } from '../stateless/getUserIdFromLocalStorage';
 
 export type Severity = 'CRITICAL' | 'WARNING' | 'INFO';
 
@@ -83,12 +85,50 @@ export function apiUrl(path: string): string {
   return getAppUrl() + 'cluster-doctor/' + path.replace(/^\//, '');
 }
 
+/** Reads the target cluster from a /cluster-doctor/* path's `?cluster=` query,
+ *  so stateless-cluster headers can be attached without every caller passing it
+ *  explicitly. GET endpoints all carry the cluster this way. */
+function clusterFromPath(path: string): string | undefined {
+  const q = path.indexOf('?');
+  if (q === -1) {
+    return undefined;
+  }
+
+  const cluster = new URLSearchParams(path.slice(q + 1)).get('cluster');
+  return cluster || undefined;
+}
+
+/**
+ * Headers that carry a stateless (browser-added) cluster's kubeconfig to the
+ * backend. For clusters loaded from disk this returns {} — the backend already
+ * knows them. Without these, Cluster Doctor gets "cluster not found" for any
+ * cluster added live in the UI, because its kubeconfig lives only in the browser.
+ */
+async function statelessHeaders(cluster?: string): Promise<Record<string, string>> {
+  if (!cluster) {
+    return {};
+  }
+
+  const kubeconfig = await findKubeconfigByClusterName(cluster);
+  if (kubeconfig === null) {
+    return {};
+  }
+
+  return {
+    KUBECONFIG: kubeconfig,
+    'X-K8SENSE-USER-ID': getUserIdFromLocalStorage(),
+  };
+}
+
 /** Authenticated JSON fetch against a /cluster-doctor/* endpoint. Exported for
- *  per-feature API modules to reuse. */
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+ *  per-feature API modules to reuse. Pass `cluster` for POST calls that carry the
+ *  cluster in the body; GET calls are auto-detected from the `?cluster=` query. */
+export async function apiFetch<T>(path: string, init?: RequestInit, cluster?: string): Promise<T> {
+  const stateless = await statelessHeaders(cluster ?? clusterFromPath(path));
+
   const response = await fetch(apiUrl(path), {
     ...init,
-    headers: { ...getHeadlampAPIHeaders(), ...(init?.headers ?? {}) },
+    headers: { ...getHeadlampAPIHeaders(), ...stateless, ...(init?.headers ?? {}) },
   });
 
   if (!response.ok) {
@@ -101,11 +141,15 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
 /** Starts a scan on the given cluster context and returns its scan id. */
 export function startScan(cluster: string): Promise<{ scanId: string }> {
-  return apiFetch('/scan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cluster }),
-  });
+  return apiFetch(
+    '/scan',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cluster }),
+    },
+    cluster
+  );
 }
 
 export interface MultiScanEntry {
@@ -162,11 +206,15 @@ export interface GuidedFixResponse {
  * confirmed: true.
  */
 export function applyGuidedFix(req: GuidedFixRequest): Promise<GuidedFixResponse> {
-  return apiFetch('/guided-fix', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(req),
-  });
+  return apiFetch(
+    '/guided-fix',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req),
+    },
+    req.cluster
+  );
 }
 
 /** Full URL for the SSE progress stream of one scan — see sse-client.ts. */

@@ -50,11 +50,15 @@ export async function aiChat(
     body.scanId = scanId;
   }
 
-  const res = await apiFetch(`/ai/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  const res = await apiFetch(
+    `/ai/chat`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    cluster
+  );
 
   return (res as { reply: string }).reply;
 }
