@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
+	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor/ai"
 	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor/licence"
 	"github.com/OA879/K8Sense/backend/pkg/logger"
@@ -45,6 +46,10 @@ type Server struct {
 	licenceMu   sync.RWMutex
 	licenceInfo licence.Info
 	licencePath string
+
+	// aiOverride, when set, replaces the env-derived Copilot client. Tests point
+	// this at a fake OpenAI-compatible server; production leaves it nil.
+	aiOverride *ai.Client
 }
 
 // NewServer builds a Server. rules is the fully loaded rule set (built-in +

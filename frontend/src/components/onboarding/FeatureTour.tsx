@@ -61,6 +61,11 @@ const STEPS: TourStep[] = [
     body: 'Know exactly what will break before a Kubernetes upgrade — deprecated and removed APIs, listed per resource with the replacement. Turns the scariest chore into a checklist.',
   },
   {
+    icon: 'mdi:robot-happy-outline',
+    title: 'Copilot (offline AI)',
+    body: 'An AI assistant grounded in your cluster\'s own findings — ask what\'s critical, how to fix it, or whether it\'s safe to upgrade. Runs entirely on your hardware with a local model: no API key, no cloud, nothing leaves your network.',
+  },
+  {
     icon: 'mdi:shield-check-outline',
     title: 'Compliance & CIS Benchmark',
     body: 'One-click audit against the CIS Kubernetes Benchmark — Pod Security, RBAC wildcards, cluster-admin bindings, Network Policies. A pass/fail score with per-control findings, evaluated live and fully offline.',
