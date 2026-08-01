@@ -23,7 +23,7 @@ import Link from '@mui/material/Link';
 import { styled } from '@mui/material/styles';
 import { Dispatch, UnknownAction } from '@reduxjs/toolkit';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { getCluster } from '../../lib/cluster';
@@ -45,6 +45,7 @@ import ActionsNotifier from '../common/ActionsNotifier';
 import AlertNotification from '../common/AlertNotification';
 import DetailsDrawer from '../common/Resource/DetailsDrawer';
 import Sidebar, { NavigationTabs } from '../Sidebar';
+import WelcomeScreen from '../onboarding/WelcomeScreen';
 import RouteSwitcher from './RouteSwitcher';
 import ShortcutsSettings from './Settings/ShortcutsSettings';
 import { applyBackendThemeConfig } from './themeSlice';
@@ -205,6 +206,15 @@ export default function Layout({}: LayoutProps) {
   const { t } = useTranslation();
   const allClusters = useClustersConf();
 
+  // First-launch welcome/onboarding gate (shown once; dismissed to localStorage).
+  const [onboarded, setOnboarded] = useState(() => {
+    try {
+      return localStorage.getItem('k8sense.onboarded') === '1';
+    } catch {
+      return true;
+    }
+  });
+
   /** This fetches the cluster config from the backend and updates the redux store on an interval.
    * When stateless clusters are enabled, it also fetches the stateless cluster config from the
    * indexDB and then sends the backend to parse it and then updates the parsed value into redux
@@ -247,6 +257,21 @@ export default function Layout({}: LayoutProps) {
   const MAXIMUM_NUM_ALERTS = 2;
 
   const panels = useUIPanelsGroupedBySide();
+
+  if (!onboarded) {
+    return (
+      <WelcomeScreen
+        onGetStarted={() => {
+          try {
+            localStorage.setItem('k8sense.onboarded', '1');
+          } catch {
+            /* ignore storage errors */
+          }
+          setOnboarded(true);
+        }}
+      />
+    );
+  }
 
   if (!disableBackendLoader) {
     if (error && !config) {
