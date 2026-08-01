@@ -81,6 +81,11 @@ type HeadlampConfig struct {
 	proxyURLMu        sync.Mutex
 	compiledProxyURLs []glob.Glob
 	oidcStateReader   io.Reader
+	// AirGapped, when true (K8SENSE_AIRGAPPED=1), makes the backend contact
+	// nothing but the Kubernetes API: no telemetry exporters and no external
+	// URL proxying (e.g. the ArtifactHub plugin catalog). For regulated /
+	// on-prem deployments where nothing may leave the perimeter.
+	AirGapped bool
 }
 
 func compileProxyURLPatterns(patterns []string) ([]glob.Glob, error) {
@@ -183,6 +188,7 @@ type clientConfig struct {
 	DefaultLightTheme         string    `json:"defaultLightTheme,omitempty"`
 	DefaultDarkTheme          string    `json:"defaultDarkTheme,omitempty"`
 	ForceTheme                string    `json:"forceTheme,omitempty"`
+	AirGapped                 bool      `json:"airGapped"`
 }
 
 type OauthConfig struct {
@@ -569,11 +575,39 @@ func setupInClusterContext(config *HeadlampConfig) {
 }
 
 //nolint:gocognit,funlen,gocyclo
+// applyAirGappedMode enforces "nothing leaves the perimeter" when
+// K8SENSE_AIRGAPPED=1 (or true): it drops the external-proxy allowlist (so the
+// backend won't proxy to the ArtifactHub plugin catalog or any other URL) and
+// forces telemetry tracing/metrics off (no exporters). It returns whether
+// air-gapped mode was applied. On-prem OIDC and the target cluster's API are
+// unaffected — those are inside the perimeter.
+func applyAirGappedMode(config *HeadlampConfig) bool {
+	if v := os.Getenv("K8SENSE_AIRGAPPED"); v != "1" && v != "true" {
+		return false
+	}
+
+	config.AirGapped = true
+	config.ProxyURLs = nil
+	config.compiledProxyURLs = nil
+
+	disabled := false
+	config.TelemetryConfig.TracingEnabled = &disabled
+	config.TelemetryConfig.MetricsEnabled = &disabled
+
+	return true
+}
+
 func createHeadlampHandler(ctx context.Context, config *HeadlampConfig) http.Handler {
 	kubeConfigPath := config.KubeConfigPath
 
 	config.ServerCtx = ctx
 	config.StaticPluginDir = os.Getenv("K8SENSE_STATIC_PLUGINS_DIR")
+
+	if applyAirGappedMode(config) {
+		logger.Log(logger.LevelInfo, nil, nil,
+			"AIR-GAPPED MODE: outbound network disabled — only the Kubernetes API is contacted "+
+				"(no telemetry, no external proxy). On-prem OIDC, if configured, is still reached.")
+	}
 
 	logger.Log(logger.LevelInfo, nil, nil, "Creating Headlamp handler")
 	logger.Log(logger.LevelInfo, nil, nil, "Listen address: "+fmt.Sprintf("%s:%d", config.ListenAddr, config.Port))
@@ -2157,6 +2191,7 @@ func (c *HeadlampConfig) getConfig(w http.ResponseWriter, r *http.Request) {
 		DefaultLightTheme:         c.DefaultLightTheme,
 		DefaultDarkTheme:          c.DefaultDarkTheme,
 		ForceTheme:                c.ForceTheme,
+		AirGapped:                 c.AirGapped,
 	}
 
 	if err := json.NewEncoder(w).Encode(&clientConfig); err != nil {

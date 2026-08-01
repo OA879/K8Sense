@@ -74,6 +74,16 @@ from the sidebar.
 - **Container / in-cluster**: build the image with `make image` and deploy with
   [`deploy/k8sense-web.yaml`](./deploy/k8sense-web.yaml).
 
+
+## Air-gapped mode
+
+For regulated / on-prem deployments where nothing may leave the perimeter, set
+`K8SENSE_AIRGAPPED=1`. The backend then contacts **only the Kubernetes API** you
+point it at: no telemetry exporters, no external URL proxying (the plugin
+catalog), and the desktop app skips update checks and MCP. On-prem OIDC (your
+own identity provider) still works, since it's inside the perimeter. Verifiable
+with a network monitor — the only egress is to the cluster API.
+
 ## Built on Headlamp
 
 K8sense is built on [Headlamp](https://github.com/kubernetes-sigs/headlamp)

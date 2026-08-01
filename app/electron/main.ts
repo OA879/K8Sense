@@ -79,8 +79,13 @@ if (process.env.K8SENSE_RUN_SCRIPT) {
   runScript();
 }
 
+// Air-gapped mode (K8SENSE_AIRGAPPED=1): the app must not reach the internet.
+// Forces update checks and MCP off; the backend it spawns honors the same env.
+const isAirGapped =
+  process.env.K8SENSE_AIRGAPPED === '1' || process.env.K8SENSE_AIRGAPPED === 'true';
+
 // Enabled by default, set K8SENSE_MCP_ENABLE=false to disable MCP features
-const ENABLE_MCP = process.env.K8SENSE_MCP_ENABLE !== 'false';
+const ENABLE_MCP = process.env.K8SENSE_MCP_ENABLE !== 'false' && !isAirGapped;
 
 dotenv.config({ path: path.join(process.resourcesPath, '.env') });
 
@@ -175,7 +180,8 @@ let actualPort = defaultPort; // Will be updated when backend starts
 const MAX_PORT_ATTEMPTS = Math.abs(Number(process.env.K8SENSE_MAX_PORT_ATTEMPTS) || 100); // Maximum number of ports to try
 
 const useExternalServer = process.env.EXTERNAL_SERVER || false;
-const shouldCheckForUpdates = process.env.K8SENSE_CHECK_FOR_UPDATES !== 'false';
+const shouldCheckForUpdates =
+  process.env.K8SENSE_CHECK_FOR_UPDATES !== 'false' && !isAirGapped;
 
 // make it global so that it doesn't get garbage collected
 let mainWindow: BrowserWindow | null;
