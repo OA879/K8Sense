@@ -45,6 +45,7 @@ import ActionsNotifier from '../common/ActionsNotifier';
 import AlertNotification from '../common/AlertNotification';
 import DetailsDrawer from '../common/Resource/DetailsDrawer';
 import Sidebar, { NavigationTabs } from '../Sidebar';
+import FeatureTour from '../onboarding/FeatureTour';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
 import RouteSwitcher from './RouteSwitcher';
 import ShortcutsSettings from './Settings/ShortcutsSettings';
@@ -206,14 +207,25 @@ export default function Layout({}: LayoutProps) {
   const { t } = useTranslation();
   const allClusters = useClustersConf();
 
-  // First-launch welcome/onboarding gate (shown once; dismissed to localStorage).
-  const [onboarded, setOnboarded] = useState(() => {
+  // First-launch onboarding: welcome screen, then a feature tour. Both shown
+  // once and dismissed to localStorage.
+  const readFlag = (key: string) => {
     try {
-      return localStorage.getItem('k8sense.onboarded') === '1';
+      return localStorage.getItem(key) === '1';
     } catch {
       return true;
     }
-  });
+  };
+  const setFlag = (key: string) => {
+    try {
+      localStorage.setItem(key, '1');
+    } catch {
+      /* ignore storage errors */
+    }
+  };
+
+  const [onboarded, setOnboarded] = useState(() => readFlag('k8sense.onboarded'));
+  const [tourDone, setTourDone] = useState(() => readFlag('k8sense.tourDone'));
 
   /** This fetches the cluster config from the backend and updates the redux store on an interval.
    * When stateless clusters are enabled, it also fetches the stateless cluster config from the
@@ -262,12 +274,19 @@ export default function Layout({}: LayoutProps) {
     return (
       <WelcomeScreen
         onGetStarted={() => {
-          try {
-            localStorage.setItem('k8sense.onboarded', '1');
-          } catch {
-            /* ignore storage errors */
-          }
+          setFlag('k8sense.onboarded');
           setOnboarded(true);
+        }}
+      />
+    );
+  }
+
+  if (!tourDone) {
+    return (
+      <FeatureTour
+        onDone={() => {
+          setFlag('k8sense.tourDone');
+          setTourDone(true);
         }}
       />
     );
