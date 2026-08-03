@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor/ai"
@@ -32,6 +33,12 @@ const scanTimeout = 120 * time.Second
 // ClientProvider resolves an authenticated clientset for clusterName, using
 // whatever request context (auth token, etc.) the caller's HTTP layer needs.
 type ClientProvider func(r *http.Request, clusterName string) (kubernetes.Interface, error)
+
+// ClientConfigProvider resolves a clientcmd.ClientConfig for clusterName. The
+// App Catalog needs this (not just a clientset) because Helm's action engine is
+// built on a REST-config getter. Resolved through the same stateless-aware path
+// as ClientProvider, so it works for browser-added clusters too.
+type ClientConfigProvider func(r *http.Request, clusterName string) (clientcmd.ClientConfig, error)
 
 // Server holds everything the /cluster-doctor/* handlers need.
 type Server struct {
@@ -50,6 +57,17 @@ type Server struct {
 	// aiOverride, when set, replaces the env-derived Copilot client. Tests point
 	// this at a fake OpenAI-compatible server; production leaves it nil.
 	aiOverride *ai.Client
+
+	// getClientConfig resolves a clientcmd.ClientConfig for the App Catalog's
+	// Helm operations. Set via SetClientConfigProvider after construction so the
+	// NewServer signature (and its many call sites/tests) stays unchanged. Nil
+	// when the host didn't wire it — the catalog then reports itself unavailable.
+	getClientConfig ClientConfigProvider
+}
+
+// SetClientConfigProvider wires the Helm/App-Catalog cluster resolver.
+func (s *Server) SetClientConfigProvider(p ClientConfigProvider) {
+	s.getClientConfig = p
 }
 
 // NewServer builds a Server. rules is the fully loaded rule set (built-in +

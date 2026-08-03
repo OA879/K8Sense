@@ -20,6 +20,11 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
@@ -30,7 +35,9 @@ import {
   AIStatus,
   aiChat,
   ChatMessage,
+  getAIConfig,
   getAIStatus,
+  setAIConfig,
 } from '../../lib/cluster-doctor-ai-api';
 import { useCluster } from '../../lib/k8s';
 
@@ -93,6 +100,86 @@ ollama serve                  # exposes ${status.endpoint}`}
   );
 }
 
+function SettingsDialog({
+  open,
+  onClose,
+  onSaved,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [endpoint, setEndpoint] = React.useState('');
+  const [model, setModel] = React.useState('');
+  const [saving, setSaving] = React.useState(false);
+  const [err, setErr] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setErr(null);
+    getAIConfig()
+      .then(c => {
+        setEndpoint(c.endpoint);
+        setModel(c.model);
+      })
+      .catch(() => {});
+  }, [open]);
+
+  async function save() {
+    setSaving(true);
+    setErr(null);
+    try {
+      await setAIConfig({ endpoint: endpoint.trim(), model: model.trim() });
+      onSaved();
+      onClose();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Copilot model</DialogTitle>
+      <DialogContent>
+        <DialogContentText sx={{ mb: 2 }}>
+          Point the Copilot at any OpenAI-compatible model server — your local Ollama, a shared GPU
+          box, or one running inside the cluster. It never needs an API key or internet.
+        </DialogContentText>
+        {err && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {err}
+          </Alert>
+        )}
+        <TextField
+          fullWidth
+          label="Endpoint"
+          placeholder="http://localhost:11434/v1"
+          value={endpoint}
+          onChange={e => setEndpoint(e.target.value)}
+          sx={{ mb: 2 }}
+          helperText="Base URL of the OpenAI-compatible API (Ollama, vLLM, llama.cpp…)."
+        />
+        <TextField
+          fullWidth
+          label="Model"
+          placeholder="qwen2.5"
+          value={model}
+          onChange={e => setModel(e.target.value)}
+          helperText="Model name/tag to request."
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={save} disabled={saving || !endpoint.trim()}>
+          {saving ? 'Saving…' : 'Save'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function Bubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
 
@@ -123,17 +210,22 @@ export default function CopilotPage() {
   const [input, setInput] = React.useState('');
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  const refreshStatus = React.useCallback(() => {
     let cancelled = false;
     getAIStatus()
       .then(s => !cancelled && setStatus(s))
-      .catch(() => !cancelled && setStatus({ enabled: false, reachable: false, endpoint: '', model: '' }));
+      .catch(
+        () => !cancelled && setStatus({ enabled: false, reachable: false, endpoint: '', model: '' })
+      );
     return () => {
       cancelled = true;
     };
   }, []);
+
+  React.useEffect(() => refreshStatus(), [refreshStatus]);
 
   React.useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -167,7 +259,18 @@ export default function CopilotPage() {
         <Icon icon="mdi:robot-happy-outline" width={28} />
         <Typography variant="h4">Copilot</Typography>
         <StatusDot status={status} />
+        <Box sx={{ flex: 1 }} />
+        <Tooltip title="Configure model">
+          <IconButton onClick={() => setSettingsOpen(true)}>
+            <Icon icon="mdi:cog-outline" />
+          </IconButton>
+        </Tooltip>
       </Box>
+      <SettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onSaved={refreshStatus}
+      />
       <Typography color="text.secondary" sx={{ mb: 2 }}>
         An offline AI assistant grounded in <strong>{cluster || 'your cluster'}</strong>&apos;s latest
         scan <em>and</em> its live state (unhealthy pods, warning events, node health) — runs on your

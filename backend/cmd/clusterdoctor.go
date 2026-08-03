@@ -11,11 +11,13 @@ import (
 
 	"github.com/gorilla/mux"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/OA879/K8Sense/backend/pkg/clusterdoctor"
 	cdapi "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/api"
 	_ "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/checks" // registers check_fn implementations
 	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
+	"github.com/OA879/K8Sense/backend/pkg/kubeconfig"
 	"github.com/OA879/K8Sense/backend/pkg/logger"
 )
 
@@ -101,35 +103,51 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 		rules = append(rules, customRules...)
 	}
 
-	getClient := func(req *http.Request, clusterName string) (kubernetes.Interface, error) {
+	// resolveContext turns a cluster name into its kubeconfig context, handling
+	// both clusters loaded from disk at startup and "stateless" clusters added
+	// live in the browser (whose kubeconfig arrives per-request in the KUBECONFIG
+	// header and is cached under a per-user composite key). Shared by every
+	// Cluster Doctor cluster resolver so they behave identically.
+	resolveContext := func(req *http.Request, clusterName string) (*kubeconfig.Context, error) {
 		ctxtProxy, err := config.KubeConfigStore.GetContext(clusterName)
+		if err == nil {
+			return ctxtProxy, nil
+		}
+
+		kubeConfig := req.Header.Get("KUBECONFIG")
+		if kubeConfig == "" || !config.EnableDynamicClusters {
+			return nil, err
+		}
+
+		userID := req.Header.Get("X-K8SENSE-USER-ID")
+
+		key, sErr := config.cacheStatelessContext(kubeConfig, clusterName, userID)
+		if sErr != nil {
+			return nil, sErr
+		}
+
+		return config.KubeConfigStore.GetContext(key)
+	}
+
+	getClient := func(req *http.Request, clusterName string) (kubernetes.Interface, error) {
+		ctxtProxy, err := resolveContext(req, clusterName)
 		if err != nil {
-			// The plain-name lookup only sees clusters loaded from disk at startup.
-			// A cluster added live in the browser is "stateless": its kubeconfig is
-			// not on the server but arrives per-request in the KUBECONFIG header and
-			// is cached under a per-user composite key. Mirror the main proxy's
-			// resolution so Cluster Doctor works for those clusters too.
-			kubeConfig := req.Header.Get("KUBECONFIG")
-			if kubeConfig == "" || !config.EnableDynamicClusters {
-				return nil, err
-			}
-
-			userID := req.Header.Get("X-K8SENSE-USER-ID")
-
-			key, sErr := config.cacheStatelessContext(kubeConfig, clusterName, userID)
-			if sErr != nil {
-				return nil, sErr
-			}
-
-			ctxtProxy, err = config.KubeConfigStore.GetContext(key)
-			if err != nil {
-				return nil, err
-			}
+			return nil, err
 		}
 
 		token := config.requestTokenForContext(req, clusterName, ctxtProxy)
 
 		return ctxtProxy.ClientSetWithToken(token)
+	}
+
+	// getClientConfig backs the App Catalog's Helm operations.
+	getClientConfig := func(req *http.Request, clusterName string) (clientcmd.ClientConfig, error) {
+		ctxtProxy, err := resolveContext(req, clusterName)
+		if err != nil {
+			return nil, err
+		}
+
+		return ctxtProxy.ClientConfig(), nil
 	}
 
 	// Licence/branding/role config lives beside the SQLite database, but with a
@@ -149,6 +167,7 @@ func setupClusterDoctor(r *mux.Router, config *HeadlampConfig) {
 
 	licencePath := filepath.Join(configDir, "licence.k8sense-licence")
 	cdServer := cdapi.NewServer(database, rules, getClient, licencePath)
+	cdServer.SetClientConfigProvider(getClientConfig)
 
 	// Scheduled scans have no inbound request to derive a token from, so they
 	// resolve clients straight from the kubeconfig store instead of getClient.

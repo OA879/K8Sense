@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -31,7 +33,87 @@ func (s *Server) aiClient() *ai.Client {
 		return s.aiOverride
 	}
 
-	return ai.NewFromEnv()
+	return ai.New(s.loadAIConfig())
+}
+
+// aiConfigPath is where the operator-set endpoint/model live, beside the other
+// K8sense config files.
+func (s *Server) aiConfigPath() string {
+	return filepath.Join(s.configDir(), "ai-config.json")
+}
+
+// storedAIConfig is the persisted, UI-editable Copilot configuration. It only
+// carries endpoint + model; whether the Copilot is enabled at all remains an
+// env/admin concern (K8SENSE_AI_DISABLED).
+type storedAIConfig struct {
+	Endpoint string `json:"endpoint"`
+	Model    string `json:"model"`
+}
+
+// loadAIConfig resolves the effective Copilot config: env defaults, overridden
+// by whatever the operator saved from the UI. This is what unties the Copilot
+// from localhost — point it at a shared or in-cluster model without a rebuild.
+func (s *Server) loadAIConfig() ai.Config {
+	cfg := ai.ConfigFromEnv()
+
+	data, err := os.ReadFile(s.aiConfigPath())
+	if err != nil {
+		return cfg
+	}
+
+	var stored storedAIConfig
+	if err := json.Unmarshal(data, &stored); err != nil {
+		return cfg
+	}
+
+	if stored.Endpoint != "" {
+		cfg.Endpoint = strings.TrimRight(stored.Endpoint, "/")
+	}
+
+	if stored.Model != "" {
+		cfg.Model = stored.Model
+	}
+
+	return cfg
+}
+
+// GetAIConfig handles GET /cluster-doctor/ai/config — the current effective
+// endpoint/model for the settings form to prefill.
+func (s *Server) GetAIConfig(w http.ResponseWriter, r *http.Request) {
+	cfg := s.loadAIConfig()
+	writeJSON(w, storedAIConfig{Endpoint: cfg.Endpoint, Model: cfg.Model})
+}
+
+// SetAIConfig handles PUT /cluster-doctor/ai/config — persist the operator's
+// endpoint/model choice.
+func (s *Server) SetAIConfig(w http.ResponseWriter, r *http.Request) {
+	var req storedAIConfig
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, `{"error":"invalid request body"}`, http.StatusBadRequest)
+		return
+	}
+
+	req.Endpoint = strings.TrimRight(strings.TrimSpace(req.Endpoint), "/")
+	req.Model = strings.TrimSpace(req.Model)
+
+	if req.Endpoint == "" {
+		http.Error(w, `{"error":"endpoint is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	data, err := json.MarshalIndent(req, "", "  ")
+	if err != nil {
+		http.Error(w, `{"error":"could not encode config"}`, http.StatusInternalServerError)
+		return
+	}
+
+	if err := os.WriteFile(s.aiConfigPath(), data, 0o600); err != nil {
+		http.Error(w, `{"error":"could not save config"}`, http.StatusInternalServerError)
+		return
+	}
+
+	cfg := s.loadAIConfig()
+	writeJSON(w, storedAIConfig{Endpoint: cfg.Endpoint, Model: cfg.Model})
 }
 
 // aiStatusResponse is what the UI polls to decide whether to offer the Copilot.

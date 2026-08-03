@@ -36,6 +36,26 @@ export function getAIStatus(): Promise<AIStatus> {
   return apiFetch(`/ai/status`);
 }
 
+export interface AIConfig {
+  endpoint: string;
+  model: string;
+}
+
+/** Reads the operator-set Copilot endpoint/model. */
+export function getAIConfig(): Promise<AIConfig> {
+  return apiFetch(`/ai/config`);
+}
+
+/** Persists a Copilot endpoint/model — point it at any OpenAI-compatible server
+ *  (local, shared, or in-cluster) so the Copilot isn't tied to localhost. */
+export function setAIConfig(config: AIConfig): Promise<AIConfig> {
+  return apiFetch(`/ai/config`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  });
+}
+
 /**
  * Sends the conversation to the local model, grounded in the cluster's latest
  * scan findings on the backend. Returns the assistant's reply.

@@ -125,6 +125,7 @@ import AuditLogPage from '../../pages/cluster-doctor/AuditLogPage';
 import FindingsPage from '../../pages/cluster-doctor/FindingsPage';
 import HistoryPage from '../../pages/cluster-doctor/HistoryPage';
 import MultiScanPage from '../../pages/cluster-doctor/MultiScanPage';
+import CatalogPage from '../../pages/cluster-doctor/CatalogPage';
 import CompliancePage from '../../pages/cluster-doctor/CompliancePage';
 import CopilotPage from '../../pages/cluster-doctor/CopilotPage';
 import CostPage from '../../pages/cluster-doctor/CostPage';
@@ -305,6 +306,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <UpgradePage />,
+  },
+  clusterDoctorCatalog: {
+    path: '/cluster-doctor/catalog',
+    name: 'App Catalog',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <CatalogPage />,
   },
   clusterDoctorCopilot: {
     path: '/cluster-doctor/copilot',
