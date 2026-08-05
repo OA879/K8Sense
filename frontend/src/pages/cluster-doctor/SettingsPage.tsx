@@ -1,14 +1,17 @@
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 import { BrandingSettings } from '../../components/cluster-doctor/BrandingSettings';
 import { LicenceStatus } from '../../components/cluster-doctor/LicenceStatus';
 import { NotificationSettings } from '../../components/cluster-doctor/NotificationSettings';
 import { useBranding } from '../../lib/cluster-doctor-branding-api';
+import { getRegistry, setRegistry } from '../../lib/cluster-doctor-registry-api';
 import { useCluster } from '../../lib/k8s';
 import {
   StorageStats,
@@ -17,6 +20,73 @@ import {
   purgeScans,
   testConnection,
 } from '../../lib/cluster-doctor-settings-api';
+
+function InternalRegistrySettings() {
+  const [registry, setRegistryValue] = React.useState('');
+  const [airGapped, setAirGapped] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+  const [msg, setMsg] = React.useState<string | null>(null);
+  const [err, setErr] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    getRegistry()
+      .then(r => {
+        setRegistryValue(r.registry);
+        setAirGapped(r.airGapped);
+      })
+      .catch(() => undefined);
+  }, []);
+
+  async function save() {
+    setSaving(true);
+    setMsg(null);
+    setErr(null);
+    try {
+      const r = await setRegistry(registry.trim());
+      setRegistryValue(r.registry);
+      setMsg(r.registry ? `Images will be pulled from ${r.registry}.` : 'Internal registry cleared.');
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Box>
+      <Typography variant="body2" color="text.secondary" gutterBottom>
+        Set your internal registry to run K8sense fully air-gapped. Every feature&apos;s default
+        image — the Runbooks runner, the Trivy scanner and its DB, and catalog charts that honour{' '}
+        <code>global.imageRegistry</code> — is pulled from here. Seed it once with the{' '}
+        <code>airgap/seed-registry.sh</code> script.{' '}
+        {airGapped && <Chip size="small" color="warning" label="air-gapped mode on" sx={{ ml: 1 }} />}
+      </Typography>
+      <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'flex-start' }}>
+        <TextField
+          size="small"
+          fullWidth
+          label="Internal registry"
+          placeholder="registry.bank.internal"
+          value={registry}
+          onChange={e => setRegistryValue(e.target.value)}
+        />
+        <Button variant="contained" onClick={save} disabled={saving}>
+          {saving ? 'Saving…' : 'Save'}
+        </Button>
+      </Box>
+      {msg && (
+        <Alert severity="success" sx={{ mt: 2 }}>
+          {msg}
+        </Alert>
+      )}
+      {err && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {err}
+        </Alert>
+      )}
+    </Box>
+  );
+}
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -96,6 +166,10 @@ export default function SettingsPage() {
               : `Unreachable: ${conn.error}`}
           </Alert>
         )}
+      </Section>
+
+      <Section title="Internal registry (air-gap)">
+        <InternalRegistrySettings />
       </Section>
 
       <Section title="Notifications & Scheduled Scans">

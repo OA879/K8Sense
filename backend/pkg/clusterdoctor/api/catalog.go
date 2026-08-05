@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -106,6 +110,60 @@ func catalogApps() []catalogApp {
 	}
 }
 
+// chartsDir is where bundled Helm charts live for air-gapped installs: an
+// explicit override, then next to the executable (packaged build), then the
+// working directory (dev). Charts are optional — absence just means "install
+// from the public repo instead".
+func chartsDir() string {
+	if dir := strings.TrimSpace(os.Getenv("K8SENSE_CHARTS_DIR")); dir != "" {
+		return dir
+	}
+
+	if exe, err := os.Executable(); err == nil {
+		candidate := filepath.Join(filepath.Dir(exe), "charts")
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+
+	return "charts"
+}
+
+// findLocalChart returns the path to a bundled chart tarball for chartName
+// (matching <chartName>-<version>.tgz), or "" if none is bundled.
+func findLocalChart(dir, chartName string) string {
+	matches, err := filepath.Glob(filepath.Join(dir, chartName+"-*.tgz"))
+	if err != nil || len(matches) == 0 {
+		return ""
+	}
+
+	sort.Strings(matches) // stable pick when multiple versions are present
+
+	return matches[len(matches)-1]
+}
+
+// chartValues returns the app's install values, injecting the internal registry
+// (Bitnami-style global.imageRegistry) when one is configured, so charts that
+// honour it pull images from the mirror without per-chart tweaking.
+func (s *Server) chartValues(app catalogApp) map[string]interface{} {
+	values := map[string]interface{}{}
+	for k, v := range app.values {
+		values[k] = v
+	}
+
+	if registry := s.internalRegistry(); registry != "" {
+		global, _ := values["global"].(map[string]interface{})
+		if global == nil {
+			global = map[string]interface{}{}
+		}
+
+		global["imageRegistry"] = registry
+		values["global"] = global
+	}
+
+	return values
+}
+
 func findCatalogApp(id string) (catalogApp, bool) {
 	for _, a := range catalogApps() {
 		if a.ID == id {
@@ -174,13 +232,21 @@ func (s *Server) InstallApp(w http.ResponseWriter, r *http.Request) {
 	install.Namespace = app.Namespace
 	install.CreateNamespace = true
 	install.Timeout = catalogInstallTimeout
-	install.ChartPathOptions.RepoURL = app.repoURL
-	install.ChartPathOptions.Version = app.version
 
-	chartPath, err := install.ChartPathOptions.LocateChart(app.chart, cli.New())
-	if err != nil {
-		writeCatalogError(w, "locating chart (is the cluster/registry reachable?)", err)
-		return
+	// Prefer a bundled chart (air-gapped: no repo call); fall back to the public
+	// repo when no local chart is present.
+	chartPath := findLocalChart(chartsDir(), app.chart)
+	if chartPath == "" {
+		install.ChartPathOptions.RepoURL = app.repoURL
+		install.ChartPathOptions.Version = app.version
+
+		located, err := install.ChartPathOptions.LocateChart(app.chart, cli.New())
+		if err != nil {
+			writeCatalogError(w, "locating chart — no bundled copy and the chart repo is unreachable (air-gapped? bundle the chart or set an internal registry)", err)
+			return
+		}
+
+		chartPath = located
 	}
 
 	chart, err := loader.Load(chartPath)
@@ -189,7 +255,7 @@ func (s *Server) InstallApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if _, err := install.Run(chart, app.values); err != nil {
+	if _, err := install.Run(chart, s.chartValues(app)); err != nil {
 		writeCatalogError(w, "installing "+app.Name, err)
 		return
 	}

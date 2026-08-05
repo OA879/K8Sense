@@ -74,16 +74,16 @@ type vulnConfig struct {
 }
 
 // trivyConfig resolves the Trivy image and optional mirrored DB repository.
+// An explicit image/DB (saved or env) is honoured as-is; when neither is set,
+// the defaults are rewritten onto the internal registry so a fully air-gapped
+// install needs only the single registry setting.
 func (s *Server) trivyConfig() vulnConfig {
-	cfg := vulnConfig{Image: defaultTrivyImage}
+	var cfg vulnConfig
 
 	if data, err := os.ReadFile(s.vulnConfigPath()); err == nil {
 		var stored vulnConfig
 		if json.Unmarshal(data, &stored) == nil {
-			if strings.TrimSpace(stored.Image) != "" {
-				cfg.Image = strings.TrimSpace(stored.Image)
-			}
-
+			cfg.Image = strings.TrimSpace(stored.Image)
 			cfg.DBRepository = strings.TrimSpace(stored.DBRepository)
 		}
 	}
@@ -94,6 +94,18 @@ func (s *Server) trivyConfig() vulnConfig {
 
 	if v := strings.TrimSpace(os.Getenv("TRIVY_DB_REPOSITORY")); v != "" && cfg.DBRepository == "" {
 		cfg.DBRepository = v
+	}
+
+	registry := s.internalRegistry()
+
+	if cfg.Image == "" {
+		cfg.Image = rewriteImage(defaultTrivyImage, registry)
+	}
+
+	// With an internal registry and no explicit DB, assume the standard Trivy DB
+	// path under that registry (operators can still override it).
+	if cfg.DBRepository == "" && registry != "" {
+		cfg.DBRepository = registry + "/aquasecurity/trivy-db"
 	}
 
 	return cfg

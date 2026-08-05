@@ -1,0 +1,37 @@
+# K8sense air-gap image manifest
+#
+# Every container image K8sense may run in a target cluster. On a machine with
+# internet access, run ./seed-registry.sh <your-registry> to copy all of these
+# into your internal registry; then set that registry once in
+# K8sense → Settings → Internal registry (or K8SENSE_INTERNAL_REGISTRY) and every
+# feature pulls from it. Lines beginning with # are comments.
+#
+# Pin these to the exact tags you have validated; :latest is shown for clarity.
+
+# --- Runbooks (Ansible automation) -----------------------------------------
+# NOTE: this image must contain the kubernetes.core collection and the Python
+# kubernetes library. Substitute your validated runner image if different.
+quay.io/ansible/ansible-runner:latest
+
+# --- Vulnerabilities (Trivy) ------------------------------------------------
+aquasec/trivy:latest
+# Trivy vulnerability database (OCI artifact). Mirror this, then set the DB
+# repository to <registry>/aquasecurity/trivy-db (K8sense defaults to this path).
+ghcr.io/aquasecurity/trivy-db:2
+
+# --- App Catalog workloads --------------------------------------------------
+# These are the images the bundled charts reference. Charts that honour
+# global.imageRegistry pick up the internal registry automatically; others may
+# need their own image values set at install time.
+quay.io/prometheus/prometheus:latest
+quay.io/prometheus/alertmanager:latest
+quay.io/prometheus-operator/prometheus-operator:latest
+docker.io/grafana/grafana:latest
+docker.io/grafana/loki:latest
+docker.io/grafana/promtail:latest
+registry.k8s.io/metrics-server/metrics-server:v0.7.2
+quay.io/jetstack/cert-manager-controller:latest
+quay.io/jetstack/cert-manager-webhook:latest
+quay.io/jetstack/cert-manager-cainjector:latest
+registry.k8s.io/ingress-nginx/controller:latest
+docker.io/velero/velero:latest

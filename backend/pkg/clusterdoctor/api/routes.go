@@ -48,6 +48,8 @@ func (s *Server) RegisterRoutes(r *mux.Router) {
 	r.HandleFunc("/cluster-doctor/vulnscan/config", s.VulnScanConfig).Methods("GET")
 	r.HandleFunc("/cluster-doctor/vulnscan/config", s.SetVulnScanConfig).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/vulnscan/{runId}", s.VulnScanStatus).Methods("GET")
+	r.HandleFunc("/cluster-doctor/registry", s.GetRegistry).Methods("GET")
+	r.HandleFunc("/cluster-doctor/registry", s.SetRegistry).Methods("PUT")
 	r.HandleFunc("/cluster-doctor/guided-fix", s.GuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/guided-fix/revert", s.RevertGuidedFix).Methods("POST")
 	r.HandleFunc("/cluster-doctor/findings/suppress", s.SuppressFinding).Methods("POST")

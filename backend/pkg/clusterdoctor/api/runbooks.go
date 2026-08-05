@@ -227,7 +227,9 @@ func (s *Server) runnerImage() string {
 		return v
 	}
 
-	return defaultRunnerImage
+	// No explicit override: use the default, rewritten onto the internal registry
+	// when one is set (so air-gap needs only the single registry setting).
+	return s.resolveImage(defaultRunnerImage)
 }
 
 // ListRunbooks handles GET /cluster-doctor/runbooks .
