@@ -129,6 +129,7 @@ import CatalogPage from '../../pages/cluster-doctor/CatalogPage';
 import CompliancePage from '../../pages/cluster-doctor/CompliancePage';
 import CopilotPage from '../../pages/cluster-doctor/CopilotPage';
 import CostPage from '../../pages/cluster-doctor/CostPage';
+import RunbooksPage from '../../pages/cluster-doctor/RunbooksPage';
 import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import TimelinePage from '../../pages/cluster-doctor/TimelinePage';
 import UpgradePage from '../../pages/cluster-doctor/UpgradePage';
@@ -313,6 +314,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <CatalogPage />,
+  },
+  clusterDoctorRunbooks: {
+    path: '/cluster-doctor/runbooks',
+    name: 'Runbooks',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <RunbooksPage />,
   },
   clusterDoctorCopilot: {
     path: '/cluster-doctor/copilot',

@@ -61,6 +61,11 @@ const STEPS: TourStep[] = [
     body: 'Know exactly what will break before a Kubernetes upgrade — deprecated and removed APIs, listed per resource with the replacement. Turns the scariest chore into a checklist.',
   },
   {
+    icon: 'mdi:script-text-play-outline',
+    title: 'Runbooks',
+    body: 'Governed Ansible automation against the pointed cluster — onboard a namespace, apply a default-deny policy, restart or scale a workload. Each run executes as an in-cluster Job (nothing runs on your machine, works the same on Windows), with dry-run and a full audit trail.',
+  },
+  {
     icon: 'mdi:robot-happy-outline',
     title: 'Copilot (offline AI)',
     body: 'An AI assistant grounded in your cluster\'s findings and its live state — ask what\'s crashing right now, how to fix the top issue, or whether it\'s safe to upgrade. Runs entirely on your hardware with a local model: no API key, no cloud, nothing leaves your network.',

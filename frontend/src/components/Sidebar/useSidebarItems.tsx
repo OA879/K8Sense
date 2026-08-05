@@ -245,6 +245,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('App Catalog'),
           },
           {
+            name: 'clusterDoctorRunbooks',
+            label: t('Runbooks'),
+          },
+          {
             name: 'clusterDoctorCopilot',
             label: t('Copilot'),
           },
