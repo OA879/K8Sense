@@ -125,6 +125,7 @@ export default function CatalogPage() {
   }, [load]);
 
   async function doInstall(app: CatalogApp) {
+    if (!cluster) return;
     setBusyId(app.id);
     setError(null);
     setNotice(null);
@@ -140,6 +141,7 @@ export default function CatalogPage() {
   }
 
   async function doUninstall(app: CatalogApp) {
+    if (!cluster) return;
     setConfirm(null);
     setBusyId(app.id);
     setError(null);

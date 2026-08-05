@@ -248,7 +248,7 @@ func (s *Server) catalogAction(w http.ResponseWriter, r *http.Request) (catalogA
 
 	cfg, err := s.clusterClientConfig(r, req.Cluster)
 	if err != nil {
-		http.Error(w, `{"error":"cluster not found"}`, http.StatusNotFound)
+		writeClusterNotFound(w, req.Cluster)
 		return req, catalogApp{}, nil, false
 	}
 
@@ -300,6 +300,21 @@ func listHelmReleases(cfg clientcmd.ClientConfig) map[string]string {
 func writeJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(v)
+}
+
+// writeClusterNotFound emits a plain, actionable 404 — the user should know
+// exactly what to do, not decode HTTP jargon. Shared so every cluster-scoped
+// handler speaks the same way.
+func writeClusterNotFound(w http.ResponseWriter, cluster string) {
+	msg := fmt.Sprintf(
+		"Cluster %q isn't connected to this backend. Select or re-add it in the cluster list, then try again.",
+		cluster)
+
+	body, _ := json.Marshal(map[string]string{"error": msg})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	_, _ = w.Write(body)
 }
 
 func writeCatalogError(w http.ResponseWriter, context string, err error) {

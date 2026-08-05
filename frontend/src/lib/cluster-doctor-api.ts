@@ -132,11 +132,53 @@ export async function apiFetch<T>(path: string, init?: RequestInit, cluster?: st
   });
 
   if (!response.ok) {
-    const body = await response.text().catch(() => '');
-    throw new Error(`cluster-doctor ${path} failed: ${response.status} ${body}`);
+    throw new Error(await plainError(response));
   }
 
   return response.json() as Promise<T>;
+}
+
+/**
+ * Turns a failed response into a plain, human-readable message: the backend's
+ * own `{"error": "..."}` text when present, otherwise a short status-based
+ * sentence. Never surfaces raw JSON, URLs, or HTTP jargon to the user — the goal
+ * is that they know exactly what went wrong without decoding anything.
+ */
+async function plainError(response: Response): Promise<string> {
+  const raw = (await response.text().catch(() => '')).trim();
+
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.error === 'string' && parsed.error) {
+        return parsed.error;
+      }
+      if (parsed && typeof parsed.message === 'string' && parsed.message) {
+        return parsed.message;
+      }
+    } catch {
+      // Body wasn't JSON; if it's short plain text, use it as-is.
+      if (raw.length < 200 && !raw.startsWith('<')) {
+        return raw;
+      }
+    }
+  }
+
+  switch (response.status) {
+    case 401:
+    case 403:
+      return "You don't have permission to do that.";
+    case 402:
+      return 'This feature requires a Pro licence.';
+    case 404:
+      return 'Not found — the cluster or resource is no longer available.';
+    case 502:
+    case 503:
+    case 504:
+      return "The backend couldn't be reached. Check that k8sense-server is running, then retry.";
+    default:
+      return `The request failed (HTTP ${response.status}).`;
+  }
 }
 
 /** Starts a scan on the given cluster context and returns its scan id. */

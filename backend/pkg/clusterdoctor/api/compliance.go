@@ -75,9 +75,11 @@ var complianceSystemNS = map[string]bool{
 
 // Compliance handles GET /cluster-doctor/compliance?cluster=&namespace= .
 func (s *Server) Compliance(w http.ResponseWriter, r *http.Request) {
-	clientset, err := s.getClient(r, r.URL.Query().Get("cluster"))
+	cluster := r.URL.Query().Get("cluster")
+
+	clientset, err := s.getClient(r, cluster)
 	if err != nil {
-		http.Error(w, `{"error": "cluster not found"}`, http.StatusNotFound)
+		writeClusterNotFound(w, cluster)
 		return
 	}
 
