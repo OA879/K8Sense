@@ -130,6 +130,7 @@ import CompliancePage from '../../pages/cluster-doctor/CompliancePage';
 import CopilotPage from '../../pages/cluster-doctor/CopilotPage';
 import CostPage from '../../pages/cluster-doctor/CostPage';
 import RunbooksPage from '../../pages/cluster-doctor/RunbooksPage';
+import VulnScanPage from '../../pages/cluster-doctor/VulnScanPage';
 import NetworkMapPage from '../../pages/cluster-doctor/NetworkMapPage';
 import TimelinePage from '../../pages/cluster-doctor/TimelinePage';
 import UpgradePage from '../../pages/cluster-doctor/UpgradePage';
@@ -328,6 +329,13 @@ const defaultRoutes: { [routeName: string]: Route } = {
     exact: true,
     sidebar: 'clusterDoctorScan',
     component: () => <CopilotPage />,
+  },
+  clusterDoctorVulnScan: {
+    path: '/cluster-doctor/vulnerabilities',
+    name: 'Vulnerabilities',
+    exact: true,
+    sidebar: 'clusterDoctorScan',
+    component: () => <VulnScanPage />,
   },
   clusterDoctorCompliance: {
     path: '/cluster-doctor/compliance',

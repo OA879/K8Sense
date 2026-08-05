@@ -71,6 +71,11 @@ const STEPS: TourStep[] = [
     body: 'An AI assistant grounded in your cluster\'s findings and its live state — ask what\'s crashing right now, how to fix the top issue, or whether it\'s safe to upgrade. Runs entirely on your hardware with a local model: no API key, no cloud, nothing leaves your network.',
   },
   {
+    icon: 'mdi:bug-outline',
+    title: 'Vulnerability scanning',
+    body: 'Scan the container images actually running in the cluster for known CVEs with Trivy — severity-ranked, per image, with the fix version. Runs as an in-cluster Job and works fully offline when the vulnerability DB is mirrored.',
+  },
+  {
     icon: 'mdi:shield-check-outline',
     title: 'Compliance & CIS Benchmark',
     body: 'One-click audit against the CIS Kubernetes Benchmark — Pod Security, RBAC wildcards, cluster-admin bindings, Network Policies. A pass/fail score with per-control findings, evaluated live and fully offline.',

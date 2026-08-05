@@ -253,6 +253,10 @@ export const useSidebarItems = (sidebarName: string = DefaultSidebars.IN_CLUSTER
             label: t('Copilot'),
           },
           {
+            name: 'clusterDoctorVulnScan',
+            label: t('Vulnerabilities'),
+          },
+          {
             name: 'clusterDoctorCompliance',
             label: t('Compliance / CIS'),
           },
