@@ -1,6 +1,6 @@
 {
   "name": "k8sense",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Kubernetes operations platform with built-in Cluster Doctor diagnostics",
   "main": "build/main.js",
   "homepage": "https://k8sense.io",
