@@ -60,8 +60,9 @@ const EXPOSURE_LABEL: Record<Exposure, string> = {
   external: 'External / mesh-only',
 };
 
-const COL_WIDTH = 300;
-const ROW_HEIGHT = 80;
+const COL_WIDTH = 320;
+const ROW_HEIGHT = 100;
+const LARGE_GRAPH = 50; // above this, nudge the user to focus on a namespace
 
 /** Lays out nodes in one column per namespace so cross-namespace edges read left-to-right. */
 function useGraph(
@@ -295,7 +296,10 @@ export default function NetworkMapPage() {
   const [map, setMap] = React.useState<NetworkMap | null>(null);
   const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
-  const [showAllowed, setShowAllowed] = React.useState(true);
+  // Allowed (policy) edges default OFF: on a real cluster they are an N×N grey
+  // hairball. Inferred/live edges are the signal; users toggle the policy web on
+  // per-namespace when they want it.
+  const [showAllowed, setShowAllowed] = React.useState(false);
   const [showLive, setShowLive] = React.useState(true);
   const [showInferred, setShowInferred] = React.useState(true);
   const [selected, setSelected] = React.useState<NetNode | null>(null);
@@ -352,6 +356,14 @@ export default function NetworkMapPage() {
             mesh (Istio) with a reachable Prometheus.
           </Alert>
         ))}
+
+      {map && !namespace && map.nodes.length > LARGE_GRAPH && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Large cluster — {map.nodes.length} workloads across {map.namespaces.length} namespaces.
+          Pick a <strong>namespace</strong> above to read it clearly; “Allowed connections” is off by
+          default to avoid a dense policy web (toggle it on when focused).
+        </Alert>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -439,7 +451,19 @@ export default function NetworkMapPage() {
             >
               <Background />
               <Controls showInteractive={false} />
-              <MiniMap pannable zoomable />
+              <MiniMap
+                pannable
+                zoomable
+                // The map canvas is dark in both themes, so style the minimap to
+                // match instead of the default white box.
+                style={{ backgroundColor: '#0f172a' }}
+                maskColor="rgba(15, 23, 42, 0.6)"
+                nodeColor={(n: Node) => {
+                  const border = n.style?.border ? String(n.style.border) : '';
+                  return border.split(' ').pop() || '#64748b';
+                }}
+                nodeStrokeWidth={0}
+              />
             </ReactFlow>
             {selected && map && (
               <NodeDetail node={selected} map={map} onClose={() => setSelected(null)} />
