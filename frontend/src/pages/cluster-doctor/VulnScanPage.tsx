@@ -292,6 +292,8 @@ export default function VulnScanPage() {
     }
   }
 
+  const allFailed = !!report && report.images.length > 0 && report.images.every(i => !!i.error);
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
@@ -340,28 +342,43 @@ export default function VulnScanPage() {
         >
           {scanning ? `Scanning… (${phase})` : 'Scan running images'}
         </Button>
-        {report && (
+        {report && report.images.length > 0 && (
           <Box>
             {SEVERITIES.map(s => (
               <SevChip key={s} sev={s} n={report.totals[s] || 0} />
             ))}
-            {SEVERITIES.every(s => !report.totals[s]) && (
+            {!allFailed && SEVERITIES.every(s => !report.totals[s]) && (
               <Chip size="small" color="success" variant="outlined" label="No known CVEs" />
             )}
           </Box>
         )}
       </Box>
 
-      {report && (
-        <Paper variant="outlined">
-          {report.images.length === 0 ? (
-            <Box sx={{ p: 2 }}>
-              <Typography color="text.secondary">No images scanned.</Typography>
-            </Box>
-          ) : (
-            report.images.map(img => <ImageRow key={img.image} img={img} />)
-          )}
-        </Paper>
+      {report && report.images.length === 0 && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          No running container images were found on <strong>{cluster}</strong> to scan — the cluster
+          has no workloads yet, or none are in a namespace you can read.
+        </Alert>
+      )}
+
+      {report && allFailed && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 2 }}
+          action={
+            <Button color="inherit" size="small" onClick={() => setConfigOpen(true)}>
+              Settings
+            </Button>
+          }
+        >
+          Every image failed to scan. The Trivy image or its vulnerability database is likely
+          unreachable from the cluster. Check the scanner settings, or inspect the Job with{' '}
+          <code>kubectl get pods -n k8sense-vulnscan</code>.
+        </Alert>
+      )}
+
+      {report && report.images.length > 0 && (
+        <Paper variant="outlined">{report.images.map(img => <ImageRow key={img.image} img={img} />)}</Paper>
       )}
 
       {report && (
