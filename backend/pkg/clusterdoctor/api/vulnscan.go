@@ -323,15 +323,66 @@ func (s *Server) VulnScanStatus(w http.ResponseWriter, r *http.Request) {
 
 	phase, finished := jobPhaseIn(r.Context(), clientset, vulnNamespace, runID)
 
+	// A pod stuck pulling the Trivy image (or otherwise wedged) reports as
+	// "Running" forever. Detect that and surface a plain, actionable error rather
+	// than an endless spinner.
+	if !finished {
+		if trouble := podTrouble(r.Context(), clientset, vulnNamespace, runID); trouble != "" {
+			writeJSON(w, map[string]interface{}{"phase": "Failed", "finished": true, "error": trouble})
+			return
+		}
+	}
+
 	resp := map[string]interface{}{"phase": phase, "finished": finished}
 
 	if finished {
 		logs := jobLogsIn(r.Context(), clientset, vulnNamespace, runID)
 		namespaces := scanMeta(r.Context(), clientset, runID)
 		resp["report"] = buildVulnReport(logs, namespaces)
+	} else {
+		// Progress: the runner streams "@@IMAGE <ref>" markers as it goes, so the
+		// UI can show how far along the scan is while it runs.
+		resp["logs"] = jobLogsIn(r.Context(), clientset, vulnNamespace, runID)
 	}
 
 	writeJSON(w, resp)
+}
+
+// podTrouble returns a plain message if the scan Job's pod is wedged in a way it
+// won't recover from on its own — most commonly the cluster being unable to pull
+// the Trivy image. Returns "" when the pod is healthy or simply still starting.
+func podTrouble(ctx context.Context, clientset kubernetes.Interface, namespace, jobName string) string {
+	pods, err := clientset.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{LabelSelector: "job-name=" + jobName})
+	if err != nil || len(pods.Items) == 0 {
+		return ""
+	}
+
+	pod := pods.Items[0]
+
+	image := "the scanner image"
+	if len(pod.Spec.Containers) > 0 {
+		image = pod.Spec.Containers[0].Image
+	}
+
+	statuses := append(append([]corev1.ContainerStatus{}, pod.Status.InitContainerStatuses...), pod.Status.ContainerStatuses...)
+
+	for _, cs := range statuses {
+		w := cs.State.Waiting
+		if w == nil {
+			continue
+		}
+
+		switch w.Reason {
+		case "ImagePullBackOff", "ErrImagePull", "InvalidImageName":
+			return fmt.Sprintf("the cluster can't pull the Trivy image %q (%s). For an air-gapped or "+
+				"restricted cluster, mirror it to your internal registry and set it in the scanner "+
+				"settings, or add image-pull credentials to the %q namespace.", image, w.Reason, namespace)
+		case "CreateContainerConfigError", "CreateContainerError":
+			return fmt.Sprintf("the scanner pod could not start (%s): %s", w.Reason, w.Message)
+		}
+	}
+
+	return ""
 }
 
 // scanMeta reads the image→namespaces map saved at scan time.

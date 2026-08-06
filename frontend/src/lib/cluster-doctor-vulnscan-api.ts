@@ -44,6 +44,10 @@ export interface VulnScanStatus {
   phase: string;
   finished: boolean;
   report?: VulnReport;
+  /** Set when the scan Job is wedged (e.g. the cluster can't pull the Trivy image). */
+  error?: string;
+  /** Partial runner output while the scan is still running, for progress. */
+  logs?: string;
 }
 
 export interface VulnConfig {

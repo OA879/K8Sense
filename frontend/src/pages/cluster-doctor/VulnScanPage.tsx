@@ -267,20 +267,34 @@ export default function VulnScanPage() {
     setError(null);
     setPhase('Starting');
     try {
-      const { runId } = await runVulnScan(cluster);
-      let stop = false;
+      const { runId, imageCount } = await runVulnScan(cluster);
+      const deadline = Date.now() + 6 * 60 * 1000; // stop spinning after 6 min
       const poll = async () => {
-        if (stop) return;
         try {
           const st = await vulnScanStatus(cluster, runId);
-          setPhase(st.phase);
+          if (st.error) {
+            setError(st.error);
+            setScanning(false);
+            return;
+          }
           if (st.finished) {
             setReport(st.report ?? { totals: {}, images: [] });
             setScanning(false);
             return;
           }
+          // Progress: count completed images from the streamed markers.
+          const done = (st.logs?.match(/@@END/g) || []).length;
+          setPhase(imageCount ? `${done}/${imageCount} images` : st.phase);
         } catch {
           // transient; keep polling
+        }
+        if (Date.now() > deadline) {
+          setError(
+            'The scan is taking too long — the Trivy pod is likely stuck pulling its image or ' +
+              'downloading the vulnerability DB. Check: kubectl get pods -n k8sense-vulnscan'
+          );
+          setScanning(false);
+          return;
         }
         setTimeout(poll, 3000);
       };
