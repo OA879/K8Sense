@@ -72,5 +72,8 @@ func (s *Server) runDueScans(ctx context.Context, getClient ScheduledClientFunc)
 			"cluster-doctor: starting scheduled scan")
 
 		go s.runScan(clientset, sched.ClusterID, scanID, live)
+
+		// Snapshot compliance posture on the same cadence and alert on drift.
+		go s.runScheduledCompliance(ctx, clientset, sched.ClusterID)
 	}
 }

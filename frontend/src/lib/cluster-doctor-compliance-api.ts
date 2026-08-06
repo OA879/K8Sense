@@ -51,3 +51,18 @@ export function getCompliance(cluster: string, namespace?: string): Promise<Comp
 
   return apiFetch(`/compliance?${q.toString()}`);
 }
+
+export interface ComplianceSnapshot {
+  clusterId: string;
+  takenAt: number;
+  score: number;
+  passed: number;
+  failed: number;
+  total: number;
+  failingControls: string[];
+}
+
+/** Fetches the compliance-score trend (snapshots recorded by scheduled runs). */
+export function getComplianceHistory(cluster: string): Promise<{ snapshots: ComplianceSnapshot[] }> {
+  return apiFetch(`/compliance/history?cluster=${encodeURIComponent(cluster)}`);
+}

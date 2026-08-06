@@ -81,6 +81,65 @@ func TeamsMessage(p NotificationPayload) []byte {
 	return body
 }
 
+// ComplianceDriftPayload describes a cluster slipping out of compliance between
+// two scheduled checks.
+type ComplianceDriftPayload struct {
+	Cluster      string
+	PrevScore    int
+	Score        int
+	NewlyFailing []string // control IDs that pass→fail'd since the last check
+}
+
+// ComplianceDriftSlack renders a compliance-drift alert for Slack.
+func ComplianceDriftSlack(p ComplianceDriftPayload) []byte {
+	var b strings.Builder
+
+	fmt.Fprintf(&b, "*K8sense — compliance drift on `%s`*\nScore %d%% → %d%%. Newly failing:\n",
+		p.Cluster, p.PrevScore, p.Score)
+
+	for i, id := range p.NewlyFailing {
+		if i >= maxListedFindings {
+			fmt.Fprintf(&b, "_…and %d more._\n", len(p.NewlyFailing)-maxListedFindings)
+			break
+		}
+
+		fmt.Fprintf(&b, "• `%s`\n", id)
+	}
+
+	body, _ := json.Marshal(map[string]string{"text": b.String()})
+
+	return body
+}
+
+// ComplianceDriftTeams renders a compliance-drift alert for Microsoft Teams.
+func ComplianceDriftTeams(p ComplianceDriftPayload) []byte {
+	var facts []map[string]string
+
+	for i, id := range p.NewlyFailing {
+		if i >= maxListedFindings {
+			break
+		}
+
+		facts = append(facts, map[string]string{"name": id, "value": "now failing"})
+	}
+
+	card := map[string]any{
+		"@type":      "MessageCard",
+		"@context":   "http://schema.org/extensions",
+		"themeColor": "F59E0B",
+		"summary":    fmt.Sprintf("K8sense: compliance drift on %s", p.Cluster),
+		"title":      fmt.Sprintf("K8sense — compliance drift (%d%% → %d%%)", p.PrevScore, p.Score),
+		"sections": []map[string]any{{
+			"activityTitle": fmt.Sprintf("Cluster **%s** — %d newly-failing control(s)", p.Cluster, len(p.NewlyFailing)),
+			"facts":         facts,
+		}},
+	}
+
+	body, _ := json.Marshal(card)
+
+	return body
+}
+
 func resourceLabel(f Finding) string {
 	if f.Namespace != "" {
 		return fmt.Sprintf("%s/%s", f.Namespace, f.ResourceName)

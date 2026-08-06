@@ -32,10 +32,42 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import {
   ComplianceReport,
+  ComplianceSnapshot,
   ControlResult,
   getCompliance,
+  getComplianceHistory,
 } from '../../lib/cluster-doctor-compliance-api';
 import { useCluster } from '../../lib/k8s';
+
+/** A tiny dependency-free SVG sparkline of compliance scores over time. */
+function Sparkline({ points }: { points: number[] }) {
+  const w = 180;
+  const h = 44;
+  const max = 100;
+  const min = Math.min(80, ...points) - 5;
+  const span = Math.max(1, max - min);
+  const coords = points.map((p, i) => {
+    const x = points.length === 1 ? w : (i / (points.length - 1)) * w;
+    const y = h - ((p - min) / span) * h;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const last = points[points.length - 1];
+  const stroke = last >= 90 ? '#2e7d32' : last >= 70 ? '#ed6c02' : '#d32f2f';
+
+  return (
+    <svg width={w} height={h} style={{ overflow: 'visible' }}>
+      <polyline points={coords.join(' ')} fill="none" stroke={stroke} strokeWidth={2} />
+      {points.length > 0 && (
+        <circle
+          cx={coords[coords.length - 1].split(',')[0]}
+          cy={coords[coords.length - 1].split(',')[1]}
+          r={3}
+          fill={stroke}
+        />
+      )}
+    </svg>
+  );
+}
 
 function scoreColor(score: number): string {
   if (score >= 90) return 'success.main';
@@ -120,6 +152,7 @@ function ControlRow({ control }: { control: ControlResult }) {
 export default function CompliancePage() {
   const cluster = useCluster();
   const [report, setReport] = React.useState<ComplianceReport | null>(null);
+  const [history, setHistory] = React.useState<ComplianceSnapshot[]>([]);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -127,10 +160,14 @@ export default function CompliancePage() {
 
     let cancelled = false;
     setReport(null);
+    setHistory([]);
     setError(null);
     getCompliance(cluster)
       .then(r => !cancelled && setReport(r))
       .catch(e => !cancelled && setError(e instanceof Error ? e.message : String(e)));
+    getComplianceHistory(cluster)
+      .then(r => !cancelled && setHistory(r.snapshots))
+      .catch(() => undefined);
 
     return () => {
       cancelled = true;
@@ -197,7 +234,26 @@ export default function CompliancePage() {
                 </Typography>
               </Box>
             </Paper>
+
+            {history.length >= 2 && (
+              <Paper sx={{ p: 2.5, minWidth: 220 }}>
+                <Typography variant="overline" color="text.secondary">
+                  Score trend
+                </Typography>
+                <Sparkline points={history.map(h => h.score)} />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                  {history.length} scheduled checks · {history[0].score}% →{' '}
+                  {history[history.length - 1].score}%
+                </Typography>
+              </Paper>
+            )}
           </Box>
+
+          <Alert severity="info" icon={<Icon icon="mdi:radar" />} sx={{ mb: 3 }}>
+            {history.length >= 2
+              ? 'Compliance is monitored: each scheduled scan records a snapshot and alerts your webhook if a control drifts from passing to failing.'
+              : 'Enable scheduled scans in Settings to monitor compliance over time and get a webhook alert when a cluster drifts out of compliance.'}
+          </Alert>
 
           {Object.entries(sections).map(([section, controls]) => (
             <Box key={section} sx={{ mb: 2.5 }}>
