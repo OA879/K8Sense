@@ -84,7 +84,7 @@ func (s *Server) GuidedFix(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.requireRole(w, clusterdoctor.RoleOperator) {
+	if !s.requireRole(w, r, clusterdoctor.RoleOperator) {
 		return
 	}
 
@@ -276,7 +276,7 @@ func (s *Server) RevertGuidedFix(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.requireRole(w, clusterdoctor.RoleOperator) {
+	if !s.requireRole(w, r, clusterdoctor.RoleOperator) {
 		return
 	}
 

@@ -152,7 +152,8 @@ func (s *Server) rolePath() string {
 	return filepath.Join(s.configDir(), "role.json")
 }
 
-// currentRole reads the configured in-app role, defaulting to admin.
+// currentRole reads the configured in-app role, defaulting to admin. This is the
+// file-based role used by the single-user desktop app.
 func (s *Server) currentRole() clusterdoctor.Role {
 	role, err := clusterdoctor.LoadRole(s.rolePath())
 	if err != nil {
@@ -163,11 +164,20 @@ func (s *Server) currentRole() clusterdoctor.Role {
 	return role
 }
 
-// requireRole enforces the in-app role on a write endpoint, writing a 403 and
-// returning false when the configured role is insufficient. See the doc on
-// clusterdoctor.Role for what this does and does not guarantee.
-func (s *Server) requireRole(w http.ResponseWriter, required clusterdoctor.Role) bool {
-	if !s.currentRole().AtLeast(required) {
+// effectiveRole is the role that governs a request: the authenticated user's role
+// when local auth is on (real per-user identity), otherwise the file-based role.
+func (s *Server) effectiveRole(r *http.Request) clusterdoctor.Role {
+	if authEnabled() {
+		return clusterdoctor.Role(currentUser(r).Role)
+	}
+
+	return s.currentRole()
+}
+
+// requireRole enforces the governing role on a write endpoint, writing a 403 and
+// returning false when it is insufficient. See the doc on clusterdoctor.Role.
+func (s *Server) requireRole(w http.ResponseWriter, r *http.Request, required clusterdoctor.Role) bool {
+	if !s.effectiveRole(r).AtLeast(required) {
 		http.Error(w,
 			`{"error":"Your K8sense role does not permit this action","code":"role_forbidden"}`,
 			http.StatusForbidden)

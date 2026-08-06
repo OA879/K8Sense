@@ -34,7 +34,7 @@ func (s *Server) SetBranding(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+	if !s.requireRole(w, r, clusterdoctor.RoleAdmin) {
 		return
 	}
 
@@ -63,7 +63,7 @@ func (s *Server) GetRole(w http.ResponseWriter, r *http.Request) {
 // SetRole handles PUT /cluster-doctor/role. Changing the role is itself an
 // admin action, so a viewer can't promote themselves through the UI.
 func (s *Server) SetRole(w http.ResponseWriter, r *http.Request) {
-	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+	if !s.requireRole(w, r, clusterdoctor.RoleAdmin) {
 		return
 	}
 

@@ -45,8 +45,10 @@ import ActionsNotifier from '../common/ActionsNotifier';
 import AlertNotification from '../common/AlertNotification';
 import DetailsDrawer from '../common/Resource/DetailsDrawer';
 import Sidebar, { NavigationTabs } from '../Sidebar';
+import AuthScreen from '../auth/AuthScreen';
 import FeatureTour from '../onboarding/FeatureTour';
 import WelcomeScreen from '../onboarding/WelcomeScreen';
+import { getAuthStatus, getMe } from '../../lib/cluster-doctor-auth-api';
 import RouteSwitcher from './RouteSwitcher';
 import ShortcutsSettings from './Settings/ShortcutsSettings';
 import { applyBackendThemeConfig } from './themeSlice';
@@ -227,6 +229,31 @@ export default function Layout({}: LayoutProps) {
   const [onboarded, setOnboarded] = useState(() => readFlag('k8sense.onboarded'));
   const [tourDone, setTourDone] = useState(() => readFlag('k8sense.tourDone'));
 
+  // Local-auth gate (web deployment). 'open' means no gate — either auth is off
+  // (desktop) or the user has a valid session. A failed status check also opens
+  // the app, so an older backend without auth never locks anyone out.
+  const [authState, setAuthState] = useState<'loading' | 'open' | 'login' | 'bootstrap'>('loading');
+  useEffect(() => {
+    let cancelled = false;
+    getAuthStatus()
+      .then(st => {
+        if (cancelled) return;
+        if (!st.authEnabled) {
+          setAuthState('open');
+        } else if (st.needsBootstrap) {
+          setAuthState('bootstrap');
+        } else {
+          getMe()
+            .then(() => !cancelled && setAuthState('open'))
+            .catch(() => !cancelled && setAuthState('login'));
+        }
+      })
+      .catch(() => !cancelled && setAuthState('open'));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   /** This fetches the cluster config from the backend and updates the redux store on an interval.
    * When stateless clusters are enabled, it also fetches the stateless cluster config from the
    * indexDB and then sends the backend to parse it and then updates the parsed value into redux
@@ -269,6 +296,14 @@ export default function Layout({}: LayoutProps) {
   const MAXIMUM_NUM_ALERTS = 2;
 
   const panels = useUIPanelsGroupedBySide();
+
+  if (authState === 'loading') {
+    return null;
+  }
+
+  if (authState === 'login' || authState === 'bootstrap') {
+    return <AuthScreen mode={authState} onDone={() => setAuthState('open')} />;
+  }
 
   if (!onboarded) {
     return (

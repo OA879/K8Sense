@@ -126,9 +126,13 @@ async function statelessHeaders(cluster?: string): Promise<Record<string, string
 export async function apiFetch<T>(path: string, init?: RequestInit, cluster?: string): Promise<T> {
   const stateless = await statelessHeaders(cluster ?? clusterFromPath(path));
 
+  // Local-auth session (web deployment). Empty on the single-user desktop app.
+  const session = localStorage.getItem('k8sense.session');
+  const authHeader: Record<string, string> = session ? { 'X-K8SENSE-SESSION': session } : {};
+
   const response = await fetch(apiUrl(path), {
     ...init,
-    headers: { ...getHeadlampAPIHeaders(), ...stateless, ...(init?.headers ?? {}) },
+    headers: { ...getHeadlampAPIHeaders(), ...stateless, ...authHeader, ...(init?.headers ?? {}) },
   });
 
   if (!response.ok) {

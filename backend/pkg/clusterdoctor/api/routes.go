@@ -7,10 +7,24 @@ import "github.com/gorilla/mux"
 // table the binary serves — no risk of the test router drifting from the real
 // one as endpoints are added.
 func (s *Server) RegisterRoutes(r *mux.Router) {
+	// Auth runs first (outermost) so the resolved user is in context for both the
+	// audit trail and role checks. It's a no-op unless K8SENSE_AUTH=local.
+	r.Use(s.authMiddleware)
+
 	// Record every cluster-doctor mutation/export in the audit log. The
 	// middleware self-scopes to /cluster-doctor paths, so sharing Headlamp's
 	// router is safe (see auditMiddleware).
 	r.Use(s.auditMiddleware)
+
+	// Local authentication (opt-in via K8SENSE_AUTH=local).
+	r.HandleFunc("/cluster-doctor/auth/status", s.AuthStatus).Methods("GET")
+	r.HandleFunc("/cluster-doctor/auth/bootstrap", s.Bootstrap).Methods("POST")
+	r.HandleFunc("/cluster-doctor/auth/login", s.Login).Methods("POST")
+	r.HandleFunc("/cluster-doctor/auth/logout", s.Logout).Methods("POST")
+	r.HandleFunc("/cluster-doctor/auth/me", s.Me).Methods("GET")
+	r.HandleFunc("/cluster-doctor/users", s.ListUsers).Methods("GET")
+	r.HandleFunc("/cluster-doctor/users", s.CreateUser).Methods("POST")
+	r.HandleFunc("/cluster-doctor/users/{id}", s.UpdateUser).Methods("PUT")
 
 	r.HandleFunc("/cluster-doctor/scan", s.StartScan).Methods("POST")
 	r.HandleFunc("/cluster-doctor/scan/multi", s.StartMultiScan).Methods("POST")

@@ -10,6 +10,7 @@ import React from 'react';
 import { BrandingSettings } from '../../components/cluster-doctor/BrandingSettings';
 import { LicenceStatus } from '../../components/cluster-doctor/LicenceStatus';
 import { NotificationSettings } from '../../components/cluster-doctor/NotificationSettings';
+import { UsersSettings } from '../../components/cluster-doctor/UsersSettings';
 import { useBranding } from '../../lib/cluster-doctor-branding-api';
 import { getRegistry, setRegistry } from '../../lib/cluster-doctor-registry-api';
 import { useCluster } from '../../lib/k8s';
@@ -166,6 +167,10 @@ export default function SettingsPage() {
               : `Unreachable: ${conn.error}`}
           </Alert>
         )}
+      </Section>
+
+      <Section title="Users &amp; Access">
+        <UsersSettings />
       </Section>
 
       <Section title="Internal registry (air-gap)">

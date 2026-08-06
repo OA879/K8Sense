@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+
+	cddb "github.com/OA879/K8Sense/backend/pkg/clusterdoctor/db"
 )
 
 // UnknownActor is recorded when no identity can be derived from the request.
@@ -31,10 +33,17 @@ type actorClaims struct {
 // We parse the claims for display; we do NOT treat this as an authorisation
 // decision, and we never log or store the token itself.
 //
-// Order: OIDC/JWT claims → explicit X-K8sense-Actor header → UnknownActor.
+// Order: local-auth session user → OIDC/JWT claims → explicit X-K8sense-Actor
+// header → UnknownActor.
 func actorFromRequest(r *http.Request) string {
 	if r == nil {
 		return UnknownActor
+	}
+
+	// When local auth is on, the authenticated user (resolved by authMiddleware)
+	// is the authoritative actor.
+	if u, ok := r.Context().Value(userCtxKey).(cddb.User); ok && u.Username != "" {
+		return u.Username
 	}
 
 	if actor := actorFromBearerToken(r.Header.Get("Authorization")); actor != "" {

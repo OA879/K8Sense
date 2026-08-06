@@ -57,7 +57,7 @@ func (s *Server) ListRulesForCluster(w http.ResponseWriter, r *http.Request) {
 // SetRuleSeverity handles PUT /cluster-doctor/rules/{id}/severity?cluster=&severity=.
 // An empty severity clears the override so the rule reverts to its default.
 func (s *Server) SetRuleSeverity(w http.ResponseWriter, r *http.Request) {
-	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+	if !s.requireRole(w, r, clusterdoctor.RoleAdmin) {
 		return
 	}
 
@@ -95,7 +95,7 @@ func (s *Server) SetRuleSeverity(w http.ResponseWriter, r *http.Request) {
 // cluster query param is required; enabled defaults to false when absent or
 // unparseable, matching the "off unless explicitly on" intent of a toggle.
 func (s *Server) ToggleRule(w http.ResponseWriter, r *http.Request) {
-	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+	if !s.requireRole(w, r, clusterdoctor.RoleAdmin) {
 		return
 	}
 

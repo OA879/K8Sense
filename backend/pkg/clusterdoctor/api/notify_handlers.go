@@ -49,7 +49,7 @@ func (s *Server) SetNotifyConfig(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.requireRole(w, clusterdoctor.RoleAdmin) {
+	if !s.requireRole(w, r, clusterdoctor.RoleAdmin) {
 		return
 	}
 
