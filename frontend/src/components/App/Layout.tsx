@@ -238,7 +238,9 @@ export default function Layout({}: LayoutProps) {
     getAuthStatus()
       .then(st => {
         if (cancelled) return;
-        if (!st.authEnabled) {
+        if (!st.authEnabled || st.mode === 'oidc') {
+          // OIDC identity is handled at the cluster level (the base OIDC flow) —
+          // there is no separate K8sense login screen.
           setAuthState('open');
         } else if (st.needsBootstrap) {
           setAuthState('bootstrap');

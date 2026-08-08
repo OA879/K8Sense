@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -38,9 +37,11 @@ type userCtxKeyType struct{}
 
 var userCtxKey = userCtxKeyType{}
 
-// authEnabled reports whether local auth is turned on (web deployment).
+// authEnabled reports whether authentication is on (any provider) — the web
+// deployment. Off by default, so the single-user desktop app is unaffected.
 func authEnabled() bool {
-	return strings.EqualFold(strings.TrimSpace(os.Getenv("K8SENSE_AUTH")), "local")
+	m := authMode()
+	return m == "local" || m == "oidc"
 }
 
 // hashPassword returns a bcrypt hash.
@@ -112,7 +113,19 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		user, ok := s.resolveSessionUser(r)
+		// OIDC mode derives identity from the cluster's id_token; local mode from
+		// a K8sense session.
+		var (
+			user cddb.User
+			ok   bool
+		)
+
+		if oidcMode() {
+			user, ok = resolveOIDCUser(r)
+		} else {
+			user, ok = s.resolveSessionUser(r)
+		}
+
 		if !ok {
 			http.Error(w, `{"error":"Please sign in.","code":"unauthenticated"}`, http.StatusUnauthorized)
 			return
@@ -127,9 +140,11 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 // AuthStatus handles GET /cluster-doctor/auth/status — tells the UI whether auth
 // is on and whether the install still needs its first admin.
 func (s *Server) AuthStatus(w http.ResponseWriter, r *http.Request) {
-	resp := map[string]interface{}{"authEnabled": authEnabled(), "needsBootstrap": false}
+	mode := authMode()
+	resp := map[string]interface{}{"authEnabled": authEnabled(), "mode": mode, "needsBootstrap": false}
 
-	if authEnabled() {
+	// Bootstrap only applies to local accounts; OIDC identities come from the IdP.
+	if mode == "local" {
 		n, err := cddb.CountUsers(r.Context(), s.db)
 		if err == nil {
 			resp["needsBootstrap"] = n == 0

@@ -32,6 +32,8 @@ export interface AuthUser {
 
 export interface AuthStatus {
   authEnabled: boolean;
+  /** 'local' | 'oidc' | '' (off). */
+  mode: string;
   needsBootstrap: boolean;
 }
 
