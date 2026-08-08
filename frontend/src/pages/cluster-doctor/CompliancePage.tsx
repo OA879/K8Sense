@@ -120,6 +120,23 @@ function ControlRow({ control }: { control: ControlResult }) {
       </AccordionSummary>
       {control.violations.length > 0 && (
         <AccordionDetails sx={{ pt: 0 }}>
+          {control.remediation && (
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1,
+                mb: 1.5,
+                p: 1.25,
+                borderRadius: 1,
+                bgcolor: 'action.hover',
+              }}
+            >
+              <Icon icon="mdi:wrench-outline" width={18} style={{ marginTop: 2, flex: 'none' }} />
+              <Typography variant="body2">
+                <strong>How to fix:</strong> {control.remediation}
+              </Typography>
+            </Box>
+          )}
           <Table size="small">
             <TableHead>
               <TableRow>

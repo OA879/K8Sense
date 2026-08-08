@@ -30,11 +30,30 @@ type complianceViolation struct {
 
 // controlResult is a control's outcome.
 type controlResult struct {
-	ID         string                `json:"id"`
-	Title      string                `json:"title"`
-	Section    string                `json:"section"`
-	Status     string                `json:"status"` // pass | fail
-	Violations []complianceViolation `json:"violations"`
+	ID          string                `json:"id"`
+	Title       string                `json:"title"`
+	Section     string                `json:"section"`
+	Status      string                `json:"status"` // pass | fail
+	Remediation string                `json:"remediation"`
+	Violations  []complianceViolation `json:"violations"`
+}
+
+// controlRemediations maps each control to plain, actionable guidance shown with
+// its findings — what to change to make it pass. Kept beside the controls so the
+// two stay in sync.
+var controlRemediations = map[string]string{
+	"CIS-5.1.1": "Remove the cluster-admin ClusterRoleBinding and grant a ClusterRole/Role scoped to only what the subject actually needs.",
+	"CIS-5.1.3": "Replace wildcard (*) verbs, resources or apiGroups with the explicit, minimal set the workload requires.",
+	"CIS-5.2.1": "Set securityContext.privileged: false; grant only the specific Linux capabilities the container needs.",
+	"CIS-5.2.2": "Remove hostPID: true from the pod spec — containers should not share the host process namespace.",
+	"CIS-5.2.3": "Remove hostIPC: true from the pod spec.",
+	"CIS-5.2.4": "Remove hostNetwork: true; expose the workload through a Service instead of host networking.",
+	"CIS-5.2.5": "Set securityContext.allowPrivilegeEscalation: false on each container.",
+	"CIS-5.2.6": "Set securityContext.runAsNonRoot: true (and a non-zero runAsUser) so the container can't run as root.",
+	"CIS-5.2.8": "Drop the added Linux capabilities; add back only those strictly required.",
+	"CIS-5.2.9": "Add securityContext.capabilities.drop: [\"ALL\"], then add back only the capabilities the container needs.",
+	"CIS-5.3.2": "Create a default-deny NetworkPolicy (ingress + egress) in the namespace, then allow only required flows. Runbooks → “Apply default-deny NetworkPolicy” does this in one click.",
+	"CIS-5.7.4": "Move workloads out of the default namespace into a dedicated, labelled namespace. Runbooks → “Onboard a namespace” sets one up with a quota and default-deny policy.",
 }
 
 // complianceReport is the whole benchmark run.
@@ -122,7 +141,8 @@ func buildComplianceReport(ctx context.Context, clientset kubernetes.Interface, 
 		}
 
 		report.Controls = append(report.Controls, controlResult{
-			ID: c.id, Title: c.title, Section: c.section, Status: status, Violations: violations,
+			ID: c.id, Title: c.title, Section: c.section, Status: status,
+			Remediation: controlRemediations[c.id], Violations: violations,
 		})
 	}
 

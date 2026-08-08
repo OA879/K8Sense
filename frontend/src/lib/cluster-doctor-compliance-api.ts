@@ -29,6 +29,7 @@ export interface ControlResult {
   title: string;
   section: string;
   status: 'pass' | 'fail';
+  remediation: string;
   violations: ComplianceViolation[];
 }
 
